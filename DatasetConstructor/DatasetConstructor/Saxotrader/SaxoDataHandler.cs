@@ -16,7 +16,7 @@ namespace DatasetConstructor.Saxotrader
             this.token = token;
         }
         public async Task<string> GetUserData() 
-        {
+        {//Checks user data
             var client = new RestClient("https://gateway.saxobank.com/sim/openapi/port/v1/users/me");
             var request = new RestRequest();
             request.AddHeader("Authorization", $"Bearer {token}");
@@ -25,14 +25,24 @@ namespace DatasetConstructor.Saxotrader
             return response.Content;
         }
 
-        public async Task GetCompanyData() 
-        {
-            var client = new RestClient("https://gateway.saxobank.com/sim/openapi/ref/v1/instruments?ExchangeId=NYSE&Keywords=Coca Cola co&AssetTypes=Stock");
+        public async Task<string> GetCompanyData(string exchange, string keyword, string assetType) 
+        {//Returns a single company
+            var client = new RestClient($"https://gateway.saxobank.com/sim/openapi/ref/v1/instruments?ExchangeId={exchange}&Keywords={keyword}&AssetTypes={assetType}");
             var request = new RestRequest();
             request.AddHeader("Authorization", $"Bearer {token}");
             request.AddHeader("Cookie", "oa-V4_ENT_DMZ_SIM_OA_CORE_8080=DMBEHEAK");
             RestResponse response = await client.ExecuteAsync(request);
-            Console.WriteLine(response.Content);
+            return response.Content;
+        }
+
+        public async Task GetCompanyData(string exchange, string assetType) 
+        {//Returns a list of companyes that match the exchange and assetType
+            var client = new RestClient($"https://gateway.saxobank.com/sim/openapi/ref/v1/instruments?ExchangeId={exchange}&AssetTypes={assetType}");
+            var request = new RestRequest();
+            request.AddHeader("Authorization", $"Bearer {token}");
+            request.AddHeader("Cookie", "oa-V4_ENT_DMZ_SIM_OA_CORE_8080=DMBEHEAK");
+            RestResponse response = await client.ExecuteAsync(request);
+            var test = response.Content;
         }
     }
 }

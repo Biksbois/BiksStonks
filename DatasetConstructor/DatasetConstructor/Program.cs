@@ -1,8 +1,9 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using DatasetConstructor.Saxotrader;
 
-string token = "";
+string token = "eyJhbGciOiJFUzI1NiIsIng1dCI6IkRFNDc0QUQ1Q0NGRUFFRTlDRThCRDQ3ODlFRTZDOTEyRjVCM0UzOTQifQ.eyJvYWEiOiI3Nzc3NSIsImlzcyI6Im9hIiwiYWlkIjoiMTA5IiwidWlkIjoiS2V3R3JGdk1ublNrdHRVODAyTHZaUT09IiwiY2lkIjoiS2V3R3JGdk1ublNrdHRVODAyTHZaUT09IiwiaXNhIjoiRmFsc2UiLCJ0aWQiOiIyMDAyIiwic2lkIjoiMDhmNjEwYTEwZDIxNDFmOGE3ODI2MmM5ZDNjNzYyMTgiLCJkZ2kiOiI4NCIsImV4cCI6IjE2NDYxMjU5NTIiLCJvYWwiOiIxRiJ9.J0sMvzcIjrBUG5yvprogZQ8VwV-ptS3s-_TjDvv1mEGnpzguY_oWV_s311YXGcuB4dYh2EAagphPDcXLBFNh5g";
 
 var saxoDataHandler = new SaxoDataHandler(token);
 
 Console.WriteLine(await saxoDataHandler.GetUserData());
+Console.WriteLine(await saxoDataHandler.GetCompanyData(Exchange.NYSE, AssetTypes.Stock));
