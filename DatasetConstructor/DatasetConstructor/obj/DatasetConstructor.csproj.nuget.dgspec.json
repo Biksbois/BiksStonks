@@ -43,6 +43,14 @@
             "Microsoft.Extensions.Configuration.UserSecrets": {
               "target": "Package",
               "version": "[5.0.0, )"
+            },
+            "Microsoft.Graph": {
+              "target": "Package",
+              "version": "[4.19.0, )"
+            },
+            "RestSharp": {
+              "target": "Package",
+              "version": "[107.3.0, )"
             }
           },
           "imports": [
