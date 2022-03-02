@@ -1,4 +1,6 @@
-﻿using RestSharp;
+﻿using DatasetConstructor.Saxotrader.Models;
+using Newtonsoft.Json;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,14 +37,25 @@ namespace DatasetConstructor.Saxotrader
             return response.Content;
         }
 
-        public async Task GetCompanyData(string exchange, string assetType) 
+        public async Task<StockData> GetCompanyData(string exchange, string assetType) 
         {//Returns a list of companyes that match the exchange and assetType
             var client = new RestClient($"https://gateway.saxobank.com/sim/openapi/ref/v1/instruments?ExchangeId={exchange}&AssetTypes={assetType}");
             var request = new RestRequest();
             request.AddHeader("Authorization", $"Bearer {token}");
             request.AddHeader("Cookie", "oa-V4_ENT_DMZ_SIM_OA_CORE_8080=DMBEHEAK");
             RestResponse response = await client.ExecuteAsync(request);
-            var test = response.Content;
+            return JsonConvert.DeserializeObject<StockData>(response.Content);
         }
+
+        public async Task<DataPoints> GetHistoricData(string assetType,int id ,int Horizon = 1, int count = 1200) 
+        {
+            var client = new RestClient($"https://gateway.saxobank.com/sim/openapi/chart/v1/charts/?AssetType={assetType}&Count={count}&Horizon={Horizon}&Uic={id}");
+            var request = new RestRequest();
+            request.AddHeader("Authorization", $"Bearer {token}");
+            request.AddHeader("Cookie", "oa-V4_ENT_DMZ_SIM_OA_CORE_8080=DJCEHEAK");
+            RestResponse response = await client.ExecuteAsync(request);
+            return JsonConvert.DeserializeObject<DataPoints>(response.Content);
+        }
+
     }
 }

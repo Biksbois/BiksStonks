@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "4/HFXtouOloHJTX7NvYwMF11itOLifNS+kydl/zy99TA6YuV2UlVQ8zl/UY1yIKqX4b5Dl/ztSMRcKEXoDaLnw==",
+  "dgSpecHash": "k20OHOAA7sTBn24wA3CsI6zR/6PkbiT7R+wb4YyiWaADiRMjQMAXM9vxnktylbBR6CMvpVTVAUX00sF6VN4SRg==",
   "success": true,
   "projectFilePath": "C:\\Users\\Jeppe\\Desktop\\NoteBooks\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
   "expectedPackageFiles": [
@@ -26,6 +26,7 @@
     "C:\\Users\\Jeppe\\.nuget\\packages\\microsoft.identitymodel.tokens\\6.15.1\\microsoft.identitymodel.tokens.6.15.1.nupkg.sha512",
     "C:\\Users\\Jeppe\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
     "C:\\Users\\Jeppe\\.nuget\\packages\\microsoft.netcore.targets\\1.1.0\\microsoft.netcore.targets.1.1.0.nupkg.sha512",
+    "C:\\Users\\Jeppe\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512",
     "C:\\Users\\Jeppe\\.nuget\\packages\\restsharp\\107.3.0\\restsharp.107.3.0.nupkg.sha512",
     "C:\\Users\\Jeppe\\.nuget\\packages\\system.collections\\4.3.0\\system.collections.4.3.0.nupkg.sha512",
     "C:\\Users\\Jeppe\\.nuget\\packages\\system.diagnostics.diagnosticsource\\4.7.1\\system.diagnostics.diagnosticsource.4.7.1.nupkg.sha512",

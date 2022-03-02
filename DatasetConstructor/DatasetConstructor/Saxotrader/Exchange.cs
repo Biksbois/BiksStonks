@@ -9,5 +9,6 @@ namespace DatasetConstructor.Saxotrader
     public static class Exchange
     {
         public const string NYSE = "NYSE";
+        public const string CSE = "CSE";
     }
 }
