@@ -2,18 +2,19 @@
 using DatasetConstructor.Saxotrader.Models;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Globalization;
 
-string token = GetXtraderCredentials();
+string token = GetToken();
 
 var saxoDataHandler = new SaxoDataHandler(token);
 
 //Console.WriteLine(await saxoDataHandler.GetUserData());
 StockData DanishStocks = await saxoDataHandler.GetCompanyData(Exchange.CSE, AssetTypes.Stock);
 DataPoints DataPoints = await saxoDataHandler.GetHistoricData(AssetTypes.Stock, DanishStocks.Data[0].Identifier);
-var test = CalcDatesToCheck();
+var DatesToCheck = CalcDatesToCheck().Select(x => x.ToString("yyyy - MM - ddTHH:mm: ss.ffffffZ", CultureInfo.InvariantCulture));
 Console.WriteLine("test");
-
-static string GetXtraderCredentials()
+//2022-03-02T13:03:48.442486Z
+static string GetToken()
 {
     var config = new ConfigurationBuilder()
     .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)

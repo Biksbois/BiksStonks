@@ -2243,19 +2243,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Jeppe\\.nuget\\packages\\": {}
+    "C:\\Users\\jeppe\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Jeppe\\Desktop\\NoteBooks\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
+      "projectUniqueName": "C:\\Users\\jeppe\\Documents\\Github\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
       "projectName": "DatasetConstructor",
-      "projectPath": "C:\\Users\\Jeppe\\Desktop\\NoteBooks\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
-      "packagesPath": "C:\\Users\\Jeppe\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Jeppe\\Desktop\\NoteBooks\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\obj\\",
+      "projectPath": "C:\\Users\\jeppe\\Documents\\Github\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
+      "packagesPath": "C:\\Users\\jeppe\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\jeppe\\Documents\\Github\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "C:\\Users\\Jeppe\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\jeppe\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
