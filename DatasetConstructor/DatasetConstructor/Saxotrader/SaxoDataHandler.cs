@@ -47,14 +47,14 @@ namespace DatasetConstructor.Saxotrader
             return JsonConvert.DeserializeObject<StockData>(response.Content);
         }
 
-        public async Task<DataPoints> GetHistoricData(string assetType,int id ,int Horizon = 1, int count = 1200) 
-        {
-            var client = new RestClient($"https://gateway.saxobank.com/sim/openapi/chart/v1/charts/?AssetType={assetType}&Count={count}&Horizon={Horizon}&Uic={id}");
+        public async Task<List<PriceValues>> GetHistoricData(string assetType,int id , string time ,string mode = "from",int Horizon = 1, int count = 1200)
+        {//https://gateway.saxobank.com/sim/openapi/chart/v1/charts/?AssetType=Stock&Horizon=1&Mode=from&Time=2022 - 03 - 02T13:03: 48.442486Z&Uic=15611
+            var client = new RestClient($"https://gateway.saxobank.com/sim/openapi/chart/v1/charts/?AssetType={assetType}&Count={count}&Horizon={Horizon}&Mode={mode}&Time={time}&Uic={id}");
             var request = new RestRequest();
             request.AddHeader("Authorization", $"Bearer {token}");
             request.AddHeader("Cookie", "oa-V4_ENT_DMZ_SIM_OA_CORE_8080=DJCEHEAK");
             RestResponse response = await client.ExecuteAsync(request);
-            return JsonConvert.DeserializeObject<DataPoints>(response.Content);
+            return JsonConvert.DeserializeObject<DataPoints>(response.Content).Data;
         }
 
     }

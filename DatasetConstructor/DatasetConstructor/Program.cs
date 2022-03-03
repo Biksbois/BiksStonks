@@ -8,12 +8,28 @@ string token = GetToken();
 
 var saxoDataHandler = new SaxoDataHandler(token);
 
-//Console.WriteLine(await saxoDataHandler.GetUserData());
 StockData DanishStocks = await saxoDataHandler.GetCompanyData(Exchange.CSE, AssetTypes.Stock);
-DataPoints DataPoints = await saxoDataHandler.GetHistoricData(AssetTypes.Stock, DanishStocks.Data[0].Identifier);
 var DatesToCheck = CalcDatesToCheck().Select(x => x.ToString("yyyy - MM - ddTHH:mm: ss.ffffffZ", CultureInfo.InvariantCulture));
-Console.WriteLine("test");
-//2022-03-02T13:03:48.442486Z
+Dictionary<Stock,List<PriceValues>> results = new Dictionary<Stock,List<PriceValues>>();
+foreach (Stock DanishStock in DanishStocks.Data) 
+{
+    results.Add(DanishStock, new List<PriceValues>());
+    Console.WriteLine();
+    foreach (string date in DatesToCheck) 
+    {
+        try
+        {
+            results[DanishStock].AddRange(await saxoDataHandler.GetHistoricData(AssetTypes.Stock, DanishStock.Identifier, date));
+        }
+        catch (Exception)
+        {
+            System.Threading.Thread.Sleep(100000);
+            results[DanishStock].AddRange(await saxoDataHandler.GetHistoricData(AssetTypes.Stock, DanishStock.Identifier, date));
+            continue;
+        }
+    }
+}
+
 static string GetToken()
 {
     var config = new ConfigurationBuilder()
