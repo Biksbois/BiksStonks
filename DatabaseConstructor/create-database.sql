@@ -4,7 +4,7 @@ CREATE DATABASE stonksdb;
 
 CREATE TABLE metadata_currency(
     id SERIAL PRIMARY KEY,
-    currency VARCHAR NOT NULL,
+    currency VARCHAR(100) NOT NULL,
     CONSTRAINT currency_unique UNIQUE (currency)
 );
 
