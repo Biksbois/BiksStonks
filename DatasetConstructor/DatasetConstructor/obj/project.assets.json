@@ -20,6 +20,15 @@
           "lib/net5.0/Azure.Core.dll": {}
         }
       },
+      "Dapper/2.0.123": {
+        "type": "package",
+        "compile": {
+          "lib/net5.0/Dapper.dll": {}
+        },
+        "runtime": {
+          "lib/net5.0/Dapper.dll": {}
+        }
+      },
       "Microsoft.Bcl.AsyncInterfaces/1.1.1": {
         "type": "package",
         "compile": {
@@ -281,6 +290,18 @@
         },
         "runtime": {
           "lib/netstandard2.0/Newtonsoft.Json.dll": {}
+        }
+      },
+      "Npgsql/6.0.3": {
+        "type": "package",
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        },
+        "compile": {
+          "lib/net6.0/Npgsql.dll": {}
+        },
+        "runtime": {
+          "lib/net6.0/Npgsql.dll": {}
         }
       },
       "RestSharp/107.3.0": {
@@ -553,6 +574,35 @@
         "runtime": {
           "lib/netcoreapp2.1/_._": {}
         }
+      },
+      "SharedDatabaseAccess/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v6.0",
+        "dependencies": {
+          "Dapper": "2.0.123",
+          "Npgsql": "6.0.3",
+          "SharedObjects": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/SharedDatabaseAccess.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/SharedDatabaseAccess.dll": {}
+        }
+      },
+      "SharedObjects/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v6.0",
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.1",
+          "RestSharp": "107.3.0"
+        },
+        "compile": {
+          "bin/placeholder/SharedObjects.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/SharedObjects.dll": {}
+        }
       }
     }
   },
@@ -577,6 +627,24 @@
         "lib/netcoreapp2.1/Azure.Core.xml",
         "lib/netstandard2.0/Azure.Core.dll",
         "lib/netstandard2.0/Azure.Core.xml"
+      ]
+    },
+    "Dapper/2.0.123": {
+      "sha512": "RDFF4rBLLmbpi6pwkY7q/M6UXHRJEOerplDGE5jwEkP/JGJnBauAClYavNKJPW1yOTWRPIyfj4is3EaJxQXILQ==",
+      "type": "package",
+      "path": "dapper/2.0.123",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Dapper.png",
+        "dapper.2.0.123.nupkg.sha512",
+        "dapper.nuspec",
+        "lib/net461/Dapper.dll",
+        "lib/net461/Dapper.xml",
+        "lib/net5.0/Dapper.dll",
+        "lib/net5.0/Dapper.xml",
+        "lib/netstandard2.0/Dapper.dll",
+        "lib/netstandard2.0/Dapper.xml"
       ]
     },
     "Microsoft.Bcl.AsyncInterfaces/1.1.1": {
@@ -1078,6 +1146,29 @@
         "newtonsoft.json.13.0.1.nupkg.sha512",
         "newtonsoft.json.nuspec",
         "packageIcon.png"
+      ]
+    },
+    "Npgsql/6.0.3": {
+      "sha512": "yt/3XFRhHsJ01a4+qHM9+0mtitQ3DY2wJLyGP9vtvZa1cB1nSAw762GJGdSX3Bbc7wZKzeo4dc4drD3yvQe7gA==",
+      "type": "package",
+      "path": "npgsql/6.0.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/net5.0/Npgsql.dll",
+        "lib/net5.0/Npgsql.xml",
+        "lib/net6.0/Npgsql.dll",
+        "lib/net6.0/Npgsql.xml",
+        "lib/netcoreapp3.1/Npgsql.dll",
+        "lib/netcoreapp3.1/Npgsql.xml",
+        "lib/netstandard2.0/Npgsql.dll",
+        "lib/netstandard2.0/Npgsql.xml",
+        "lib/netstandard2.1/Npgsql.dll",
+        "lib/netstandard2.1/Npgsql.xml",
+        "npgsql.6.0.3.nupkg.sha512",
+        "npgsql.nuspec",
+        "postgresql.png"
       ]
     },
     "RestSharp/107.3.0": {
@@ -2232,35 +2323,43 @@
         "useSharedDesignerContext.txt",
         "version.txt"
       ]
+    },
+    "SharedDatabaseAccess/1.0.0": {
+      "type": "project",
+      "path": "../../SharedProjects/SharedDatabaseAccess/SharedDatabaseAccess/SharedDatabaseAccess.csproj",
+      "msbuildProject": "../../SharedProjects/SharedDatabaseAccess/SharedDatabaseAccess/SharedDatabaseAccess.csproj"
+    },
+    "SharedObjects/1.0.0": {
+      "type": "project",
+      "path": "../../SharedProjects/SharedObjects/SharedObjects/SharedObjects.csproj",
+      "msbuildProject": "../../SharedProjects/SharedObjects/SharedObjects/SharedObjects.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net6.0": [
+      "Dapper >= 2.0.123",
       "Microsoft.Extensions.Configuration.UserSecrets >= 5.0.0",
       "Microsoft.Graph >= 4.19.0",
       "Newtonsoft.Json >= 13.0.1",
-      "RestSharp >= 107.3.0"
+      "RestSharp >= 107.3.0",
+      "SharedDatabaseAccess >= 1.0.0",
+      "SharedObjects >= 1.0.0"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\jeppe\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\madsh\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\jeppe\\Documents\\Github\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
+      "projectUniqueName": "C:\\Users\\madsh\\git\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
       "projectName": "DatasetConstructor",
-      "projectPath": "C:\\Users\\jeppe\\Documents\\Github\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
-      "packagesPath": "C:\\Users\\jeppe\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\jeppe\\Documents\\Github\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\obj\\",
+      "projectPath": "C:\\Users\\madsh\\git\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
+      "packagesPath": "C:\\Users\\madsh\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\madsh\\git\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\jeppe\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Users\\madsh\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -2273,7 +2372,14 @@
       "frameworks": {
         "net6.0": {
           "targetAlias": "net6.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Users\\madsh\\git\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj": {
+              "projectPath": "C:\\Users\\madsh\\git\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj"
+            },
+            "C:\\Users\\madsh\\git\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj": {
+              "projectPath": "C:\\Users\\madsh\\git\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
@@ -2286,6 +2392,10 @@
       "net6.0": {
         "targetAlias": "net6.0",
         "dependencies": {
+          "Dapper": {
+            "target": "Package",
+            "version": "[2.0.123, )"
+          },
           "Microsoft.Extensions.Configuration.UserSecrets": {
             "target": "Package",
             "version": "[5.0.0, )"

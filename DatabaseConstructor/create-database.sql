@@ -127,17 +127,56 @@ CREATE TYPE stock_type AS (
     Volume DECIMAL
 );
 
+CREATE TYPE dataset_type AS (
+    AssetType VARCHAR(100),
+    CurrencyCode VARCHAR(100),
+    Description VARCHAR(100),
+    ExchangeId VARCHAR(100),
+    GroupId VARCHAR(100),
+    Identifier INT,
+    IssuerCountry VARCHAR(100),
+    PrimaryListing VARCHAR(100),
+    SummaryType VARCHAR(100),
+    Symbol VARCHAR(100),
+    Category VARCHAR(100)
+);
+
 CREATE FUNCTION upsert_stock
 (
-    source stock_type
+    source stock_type[]
 )
 RETURNS VOID
 as $$
+DECLARE
+    s stock_type;
 BEGIN
-    UPDATE stock SET Close = source.Close, High = source.High, Interest = source.Interest, Low = source.Low, Open = source.Open, Volume = source.Volume WHERE Identifier = source.Identifier AND Time = source.Time;
-    IF NOT FOUND THEN
-    INSERT INTO stock(Identifier, Close, High, Interest, Low, Open, Time, Volume)
-    VALUES(source.Identifier, source.Close, source.High, source.Interest, source.Low, source.Open, source.Time, source.Volume);
-    END IF;
+    FOREACH s IN ARRAY source
+    LOOP
+        UPDATE stock SET Close = s.Close, High = s.High, Interest = s.Interest, Low = s.Low, Open = s.Open, Volume = s.Volume WHERE Identifier = s.Identifier AND Time = s.Time;
+        IF NOT FOUND THEN
+        INSERT INTO stock(Identifier, Close, High, Interest, Low, Open, Time, Volume)
+        VALUES(s.Identifier, s.Close, s.High, s.Interest, s.Low, s.Open, s.Time, s.Volume);
+        END IF;
+    END LOOP;
 end; $$
-language plpgsql
+language plpgsql;
+
+CREATE FUNCTION upsert_dataset
+(
+    source dataset_type[]
+)
+RETURNS VOID
+as $$
+DECLARE
+    s dataset_type;
+BEGIN
+    FOREACH s IN ARRAY source
+    LOOP
+        UPDATE dataset SET AssetType = s.AssetType, CurrencyCode = s.CurrencyCode, Description = s.Description, ExchangeId = s.ExchangeId, GroupId = s.GroupId, IssuerCountry = s.IssuerCountry, PrimaryListing = s.PrimaryListing, SummaryType = s.SummaryType, Symbol = s.Symbol, category = s.Category WHERE Identifier = s.Identifier;
+        IF NOT FOUND THEN
+        INSERT INTO dataset(Identifier, AssetType, CurrencyCode, Description, ExchangeId, GroupId, IssuerCountry, PrimaryListing, SummaryType, Symbol, Category)
+        VALUES(s.Identifier, s.AssetType, s.CurrencyCode, s.Description, s.ExchangeId, s.GroupId, s.IssuerCountry, s.PrimaryListing, s.SummaryType, s.Symbol, s.Category);
+        END IF;
+    END LOOP;
+end; $$
+language plpgsql;
