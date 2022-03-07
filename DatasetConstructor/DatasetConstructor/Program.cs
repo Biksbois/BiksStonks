@@ -1,6 +1,7 @@
 ﻿using DatasetConstructor.Saxotrader;
 using DatasetConstructor.Saxotrader.Models;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System;
 using System.Globalization;
 
@@ -28,6 +29,7 @@ foreach (Stock DanishStock in DanishStocks.Data)
             continue;
         }
     }
+    CreateFileForDataPoints(DanishStock, results[DanishStock]);
 }
 
 static string GetToken()
@@ -57,3 +59,13 @@ List<DateTime> CalcDatesToCheck(int years = 2,int Horizon = 1, int Count = 1200)
     }
     return result;
 } 
+
+async Task CreateFileForDataPoints(Stock stock, List<PriceValues> prices) 
+{
+    string path = "C:/Users/Stonker69/Desktop/Stonks/"+ stock.Description;
+    string stockText = JsonConvert.SerializeObject(stock);
+    string pricesText = JsonConvert.SerializeObject(prices);
+    System.IO.Directory.CreateDirectory(path);
+    await File.WriteAllTextAsync(path+"/stock.json", stockText);
+    await File.WriteAllTextAsync(path+"/prices.json", pricesText);
+}
