@@ -8,10 +8,13 @@
     ".NETCoreApp,Version=v6.0": {
       "DatasetConstructor/1.0.0": {
         "dependencies": {
+          "Dapper": "2.0.123",
           "Microsoft.Extensions.Configuration.UserSecrets": "5.0.0",
           "Microsoft.Graph": "4.19.0",
           "Newtonsoft.Json": "13.0.1",
-          "RestSharp": "107.3.0"
+          "RestSharp": "107.3.0",
+          "SharedDatabaseAccess": "1.0.0",
+          "SharedObjects": "1.0.0"
         },
         "runtime": {
           "DatasetConstructor.dll": {}
@@ -31,6 +34,14 @@
           "lib/net5.0/Azure.Core.dll": {
             "assemblyVersion": "1.22.0.0",
             "fileVersion": "1.2200.22.6212"
+          }
+        }
+      },
+      "Dapper/2.0.123": {
+        "runtime": {
+          "lib/net5.0/Dapper.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.0.123.33578"
           }
         }
       },
@@ -250,6 +261,17 @@
           }
         }
       },
+      "Npgsql/6.0.3": {
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        },
+        "runtime": {
+          "lib/net6.0/Npgsql.dll": {
+            "assemblyVersion": "6.0.3.0",
+            "fileVersion": "6.0.3.0"
+          }
+        }
+      },
       "RestSharp/107.3.0": {
         "runtime": {
           "lib/net6.0/RestSharp.dll": {
@@ -394,7 +416,26 @@
           "System.Runtime": "4.3.0"
         }
       },
-      "System.Threading.Tasks.Extensions/4.5.4": {}
+      "System.Threading.Tasks.Extensions/4.5.4": {},
+      "SharedDatabaseAccess/1.0.0": {
+        "dependencies": {
+          "Dapper": "2.0.123",
+          "Npgsql": "6.0.3",
+          "SharedObjects": "1.0.0"
+        },
+        "runtime": {
+          "SharedDatabaseAccess.dll": {}
+        }
+      },
+      "SharedObjects/1.0.0": {
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.1",
+          "RestSharp": "107.3.0"
+        },
+        "runtime": {
+          "SharedObjects.dll": {}
+        }
+      }
     }
   },
   "libraries": {
@@ -409,6 +450,13 @@
       "sha512": "sha512-ze/xRCHSSDe5TIk5vBDbVrauW1EN7UIbnBvIBfMH8KSt/I9+/7yPAjTBDgNBk0IwG6WBV+BBHp4IUtS/PGAQwQ==",
       "path": "azure.core/1.22.0",
       "hashPath": "azure.core.1.22.0.nupkg.sha512"
+    },
+    "Dapper/2.0.123": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-RDFF4rBLLmbpi6pwkY7q/M6UXHRJEOerplDGE5jwEkP/JGJnBauAClYavNKJPW1yOTWRPIyfj4is3EaJxQXILQ==",
+      "path": "dapper/2.0.123",
+      "hashPath": "dapper.2.0.123.nupkg.sha512"
     },
     "Microsoft.Bcl.AsyncInterfaces/1.1.1": {
       "type": "package",
@@ -564,6 +612,13 @@
       "path": "newtonsoft.json/13.0.1",
       "hashPath": "newtonsoft.json.13.0.1.nupkg.sha512"
     },
+    "Npgsql/6.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-yt/3XFRhHsJ01a4+qHM9+0mtitQ3DY2wJLyGP9vtvZa1cB1nSAw762GJGdSX3Bbc7wZKzeo4dc4drD3yvQe7gA==",
+      "path": "npgsql/6.0.3",
+      "hashPath": "npgsql.6.0.3.nupkg.sha512"
+    },
     "RestSharp/107.3.0": {
       "type": "package",
       "serviceable": true,
@@ -717,6 +772,16 @@
       "sha512": "sha512-zteT+G8xuGu6mS+mzDzYXbzS7rd3K6Fjb9RiZlYlJPam2/hU7JCBZBVEcywNuR+oZ1ncTvc/cq0faRr3P01OVg==",
       "path": "system.threading.tasks.extensions/4.5.4",
       "hashPath": "system.threading.tasks.extensions.4.5.4.nupkg.sha512"
+    },
+    "SharedDatabaseAccess/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SharedObjects/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     }
   }
 }

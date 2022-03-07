@@ -1,17 +1,40 @@
-﻿using DatasetConstructor.Saxotrader;
+﻿
+using DatasetConstructor.Saxotrader;
 using DatasetConstructor.Saxotrader.Models;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using SharedDatabaseAccess;
+using SharedObjects.MetaTables;
 using System;
 using System.Globalization;
 
-string token = GetToken();
+string token = GetAttributeFromConfig("token");
+
+//var connectionString = GetAttributeFromConfig("ConnectionString");
+
+//var stocks = new List<PriceValues>() { 
+//    new PriceValues() { Close=1.0, High=1.0, Interest=1.0, Low=1.0, Open=1.0, Time=new DateTime(2022, 10, 10), Volume=1.0 },
+//    new PriceValues() { Close=1.0, High=1.0, Interest=1.0, Low=1.0, Open=1.0, Time=new DateTime(2022, 10, 10), Volume=1.0 },
+//    new PriceValues() { Close=1.0, High=1.0, Interest=1.0, Low=1.0, Open=1.0, Time=new DateTime(2022, 10, 11), Volume=1.0 },
+//};
+
+//var companies = new List<Company>() {
+//    new Company() { Currencycode="DKK", Assettype="Stock", Exchangeid="CSE", Summarytype="Instrument", Issuercountry="DK", Category="UNKNOWN", Description="NET", Groupid="1", Identifier=1, Primarylisting="1", Symbol="YEET"},
+//    new Company() { Currencycode="DKK", Assettype="Stock", Exchangeid="CSE", Summarytype="Instrument", Issuercountry="DK", Category="UNKNOWN", Description="NORLYS", Groupid="1", Identifier=2, Primarylisting="1", Symbol="YEET"},
+//    new Company() { Currencycode="DKK", Assettype="Stock", Exchangeid="CSE", Summarytype="Instrument", Issuercountry="DK", Category="UNKNOWN", Description="NET", Groupid="1", Identifier=1, Primarylisting="1", Symbol="YEET"}
+//};
+
+//var conn = new StonksDbConnection();
+//conn.InsertStocks(stocks, connectionString, 100);
+//conn.InsertCompanies(companies, connectionString, "iUNKNOWN");
 
 var saxoDataHandler = new SaxoDataHandler(token);
 
-StockData DanishStocks = await saxoDataHandler.GetCompanyData(Exchange.CSE, AssetTypes.Stock);
+var DanishStocks = await saxoDataHandler.GetCompanyData(Exchange.CSE, AssetTypes.Stock);
 var DatesToCheck = CalcDatesToCheck().Select(x => x.ToString("yyyy - MM - ddTHH:mm: ss.ffffffZ", CultureInfo.InvariantCulture));
-Dictionary<Stock,List<PriceValues>> results = new Dictionary<Stock,List<PriceValues>>();
+var results = new Dictionary<Stock,List<PriceValues>>();
+
+
 foreach (Stock DanishStock in DanishStocks.Data) 
 {
     results.Add(DanishStock, new List<PriceValues>());
@@ -24,7 +47,7 @@ foreach (Stock DanishStock in DanishStocks.Data)
         }
         catch (Exception)
         {
-            System.Threading.Thread.Sleep(100000);
+            Thread.Sleep(100000);
             results[DanishStock].AddRange(await saxoDataHandler.GetHistoricData(AssetTypes.Stock, DanishStock.Identifier, date));
             continue;
         }
@@ -32,16 +55,14 @@ foreach (Stock DanishStock in DanishStocks.Data)
     CreateFileForDataPoints(DanishStock, results[DanishStock]);
 }
 
-static string GetToken()
+static string GetAttributeFromConfig(string attribute)
 {
     var config = new ConfigurationBuilder()
     .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
     .AddUserSecrets<Program>()
     .Build();
 
-    string token = config["token"];
-
-    return token;
+    return config[attribute];
 }
 
 List<DateTime> CalcDatesToCheck(int years = 2,int Horizon = 1, int Count = 1200) 

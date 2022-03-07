@@ -19,11 +19,6 @@ namespace DatasetConstructor.Saxotrader.Models
         public string SummaryType { get; set; }
         public string Symbol { get; set; }
         public List<string> TradableAs { get; set; }
-    }
-
-    public class StockData
-    {
-        public string __next { get; set; }
-        public List<Stock> Data { get; set; }
+        public string Category { get; set; }
     }
 }
