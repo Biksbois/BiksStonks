@@ -19,9 +19,9 @@ var dataFolder = config["datafolder"];
 ConstructDataset constructDataset = new ConstructDataset(token, connectionString);
 
 
-var companies = new List<string>() { "Danske Bank A/S", "Vestas Wind Systems A/S" };
+var companies = new List<string>() { "Orphazyme A/S" };// { "Danske Bank A/S", "Vestas Wind Systems A/S" };
 
-await constructDataset.ScrapeDataToFolder(dataFolder, companies);
+await constructDataset.ScrapeDataToFolder(dataFolder);//, companies);
 
 constructDataset.InsertDatafolder(dataFolder);
 

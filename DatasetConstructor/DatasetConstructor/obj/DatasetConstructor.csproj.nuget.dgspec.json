@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj": {}
+    "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj": {}
   },
   "projects": {
-    "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj": {
+    "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
+        "projectUniqueName": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
         "projectName": "DatasetConstructor",
-        "projectPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
-        "packagesPath": "C:\\Users\\madsh\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\obj\\",
+        "projectPath": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
+        "packagesPath": "C:\\Users\\Stonker69\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\madsh\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Stonker69\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -28,11 +28,11 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj": {
-                "projectPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj"
+              "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj": {
+                "projectPath": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj"
               },
-              "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj": {
-                "projectPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj"
+              "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj": {
+                "projectPath": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj"
               }
             }
           }
@@ -87,17 +87,17 @@
         }
       }
     },
-    "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj": {
+    "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj",
+        "projectUniqueName": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj",
         "projectName": "SharedDatabaseAccess",
-        "projectPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj",
-        "packagesPath": "C:\\Users\\madsh\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\obj\\",
+        "projectPath": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj",
+        "packagesPath": "C:\\Users\\Stonker69\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\madsh\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Stonker69\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -111,8 +111,8 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj": {
-                "projectPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj"
+              "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj": {
+                "projectPath": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj"
               }
             }
           }
@@ -155,17 +155,17 @@
         }
       }
     },
-    "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj": {
+    "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj",
+        "projectUniqueName": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj",
         "projectName": "SharedObjects",
-        "projectPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj",
-        "packagesPath": "C:\\Users\\madsh\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\obj\\",
+        "projectPath": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj",
+        "packagesPath": "C:\\Users\\Stonker69\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\madsh\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Stonker69\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [

@@ -55,6 +55,8 @@ namespace DatasetConstructor
         {
             var DatesToCheck = CalcDatesToCheck().Select(x => x.ToString("yyyy - MM - ddTHH:mm: ss.ffffffZ", CultureInfo.InvariantCulture));
             var results = new Dictionary<Stock, List<PriceValues>>();
+            
+
             foreach (Stock DanishStock in stocks)
             {
                 Console.WriteLine($"Currently fetching for {DanishStock.Description}");
