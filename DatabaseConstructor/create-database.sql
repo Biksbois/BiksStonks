@@ -56,6 +56,14 @@ INSERT INTO
     metadata_issuer(country)
 VALUES
     ('DK'),
+    ('SE'),
+    ('GB'),
+    ('CH'),
+    ('IS'),
+    ('FO'),
+    ('BS'),
+    ('FR'),
+    ('GL'),
     ('FI');
 
 CREATE TABLE metadata_category(

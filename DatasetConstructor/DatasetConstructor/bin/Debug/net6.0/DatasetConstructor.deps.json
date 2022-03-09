@@ -13,6 +13,7 @@
           "Microsoft.Graph": "4.19.0",
           "Newtonsoft.Json": "13.0.1",
           "RestSharp": "107.3.0",
+          "Serilog.Sinks.Grafana.Loki": "7.1.0",
           "SharedDatabaseAccess": "1.0.0",
           "SharedObjects": "1.0.0"
         },
@@ -277,6 +278,26 @@
           "lib/net6.0/RestSharp.dll": {
             "assemblyVersion": "107.3.0.0",
             "fileVersion": "107.3.0.0"
+          }
+        }
+      },
+      "Serilog/2.10.0": {
+        "runtime": {
+          "lib/netstandard2.1/Serilog.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.10.0.0"
+          }
+        }
+      },
+      "Serilog.Sinks.Grafana.Loki/7.1.0": {
+        "dependencies": {
+          "Serilog": "2.10.0",
+          "System.Text.Json": "6.0.2"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Serilog.Sinks.Grafana.Loki.dll": {
+            "assemblyVersion": "7.1.0.0",
+            "fileVersion": "7.1.0.0"
           }
         }
       },
@@ -625,6 +646,20 @@
       "sha512": "sha512-qu+A+VAnVLX3OeWVNm11UJz0aVErqSfYqIiOUbJM9x98uLymCOoL/oXRAjMb6XHra27WXxHmzy9EKEOKXWR6Pw==",
       "path": "restsharp/107.3.0",
       "hashPath": "restsharp.107.3.0.nupkg.sha512"
+    },
+    "Serilog/2.10.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-+QX0hmf37a0/OZLxM3wL7V6/ADvC1XihXN4Kq/p6d8lCPfgkRdiuhbWlMaFjR9Av0dy5F0+MBeDmDdRZN/YwQA==",
+      "path": "serilog/2.10.0",
+      "hashPath": "serilog.2.10.0.nupkg.sha512"
+    },
+    "Serilog.Sinks.Grafana.Loki/7.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-bubQYPhe+9FREZ0JtmGsnNPnQJFfBoMtdVlJUGvhDfzhty5RZhsHrjcunT9qtTICSTZm6wJwF71Co/jr0U4DVw==",
+      "path": "serilog.sinks.grafana.loki/7.1.0",
+      "hashPath": "serilog.sinks.grafana.loki.7.1.0.nupkg.sha512"
     },
     "System.Collections/4.3.0": {
       "type": "package",

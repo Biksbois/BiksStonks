@@ -19,6 +19,8 @@
     <PackageReference Include="Microsoft.Graph" Version="4.19.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="RestSharp" Version="107.3.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="5.0.0" />
+    <PackageReference Include="Serilog.Sinks.Grafana.Loki" Version="7.1.0" />
   </ItemGroup>
 
   <ItemGroup>

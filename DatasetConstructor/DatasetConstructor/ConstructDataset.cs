@@ -59,7 +59,7 @@ namespace DatasetConstructor
 
             foreach (Stock DanishStock in stocks)
             {
-                Console.WriteLine($"Currently fetching for {DanishStock.Description}");
+                Console.WriteLine($"Currently fetching for: '{DanishStock.Description}'");
                 results.Add(DanishStock, new List<PriceValues>());
 
                 foreach (string date in DatesToCheck)
@@ -75,9 +75,11 @@ namespace DatasetConstructor
                         results[DanishStock].AddRange(await saxoDataHandler.GetHistoricData(AssetTypes.Stock, DanishStock.Identifier, date));
                         continue;
                     }
+                    break;
                 }
 
                 await CreateFileForDataPoints(DanishStock, results[DanishStock], dataFolder);
+                break;
             }
         }
 
@@ -95,9 +97,6 @@ namespace DatasetConstructor
 
                 using (StreamReader file = File.OpenText(files[1]))
                 {
-                    //JsonSerializer serializer = new JsonSerializer();
-                    //company = (Company)serializer.Deserialize(file, typeof(Company));
-
                     company = JsonConvert.DeserializeObject<Company>(file.ReadToEnd());
 
                     Console.WriteLine(company.Description);
@@ -105,9 +104,6 @@ namespace DatasetConstructor
 
                 using (StreamReader file = File.OpenText(files[0]))
                 {
-                    //JsonSerializer serializer = new JsonSerializer();
-                    //prices = (List<PriceValues>)serializer.Deserialize(file, typeof(List<PriceValues>));
-
                     prices = JsonConvert.DeserializeObject<List<PriceValues>>(file.ReadToEnd());
                     prices.ForEach(x => x.Identifier = company.Identifier);
                 }
@@ -117,7 +113,7 @@ namespace DatasetConstructor
 
         private async Task CreateFileForDataPoints(Stock stock, List<PriceValues> prices, string dataFolder)
         {
-            string path = dataFolder + stock.Description;
+            string path = dataFolder + stock.Description.Replace('/', '-');
             string stockText = JsonConvert.SerializeObject(stock);
             string pricesText = JsonConvert.SerializeObject(prices);
             
