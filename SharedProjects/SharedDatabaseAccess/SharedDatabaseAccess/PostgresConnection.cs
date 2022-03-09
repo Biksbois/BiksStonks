@@ -9,6 +9,7 @@ namespace SharedDatabaseAccess
 {
     static class PostgresConnection
     {
+
         public static List<T> GetRowsWithParameters<T>(string query, string connectionString, object param)
         {
             // SELECT * FROM stock WHERE Time < @start

@@ -37,6 +37,44 @@ namespace DatasetConstructor.Saxotrader
             return response.Content;
         }
 
+        public async Task<List<Stock>> GetAllCompanyData(string exchange, string assetType)
+        {
+            var stockData = new StockData();
+            var companyInfo = new List<Stock>();
+            var isFirst = true;
+            var nextUrl = "";
+
+            RestClient client;
+
+            var request = new RestRequest();
+            request.AddHeader("Authorization", $"Bearer {token}");
+            request.AddHeader("Cookie", "oa-V4_ENT_DMZ_SIM_OA_CORE_8080=DMBEHEAK");
+
+            do
+            {
+                if (isFirst)
+                {
+                    client = new RestClient($"https://gateway.saxobank.com/sim/openapi/ref/v1/instruments?ExchangeId={exchange}&AssetTypes={assetType}");
+                    isFirst = false;
+                }
+                else
+                {
+                    nextUrl = nextUrl.Replace(":443", "");
+                    client = new RestClient(nextUrl);
+                }
+
+                RestResponse response = await client.ExecuteAsync(request);
+
+                var responseData = JsonConvert.DeserializeObject<StockData>(response.Content);
+
+                nextUrl = responseData.__next;
+                companyInfo.AddRange(responseData.Data);
+
+            } while (!String.IsNullOrEmpty(nextUrl));
+
+            return companyInfo;
+        }
+
         public async Task<StockData> GetCompanyData(string exchange, string assetType) 
         {//Returns a list of companyes that match the exchange and assetType
             var client = new RestClient($"https://gateway.saxobank.com/sim/openapi/ref/v1/instruments?ExchangeId={exchange}&AssetTypes={assetType}");
