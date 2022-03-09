@@ -12,11 +12,9 @@ namespace SharedDatabaseAccess
 {
     public class StonksDbConnection
     {
-        public void InsertStocks(List<PriceValues> stocks, string connectionString, int identifier)
+        public void InsertStocks(List<PriceValues> stocks, string connectionString)
         {
             var query = "upsert_stock";
-
-            stocks.ForEach(stock => stock.Identifier = identifier);
 
             var param = new { source = stocks.ToArray() };
 

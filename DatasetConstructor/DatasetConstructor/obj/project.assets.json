@@ -2347,19 +2347,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\madsh\\.nuget\\packages\\": {}
+    "C:\\Users\\Stonker69\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\madsh\\git\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
+      "projectUniqueName": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
       "projectName": "DatasetConstructor",
-      "projectPath": "C:\\Users\\madsh\\git\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
-      "packagesPath": "C:\\Users\\madsh\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\madsh\\git\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\obj\\",
+      "projectPath": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
+      "packagesPath": "C:\\Users\\Stonker69\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\madsh\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Stonker69\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -2373,11 +2373,11 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "projectReferences": {
-            "C:\\Users\\madsh\\git\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj": {
-              "projectPath": "C:\\Users\\madsh\\git\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj"
+            "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj": {
+              "projectPath": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj"
             },
-            "C:\\Users\\madsh\\git\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj": {
-              "projectPath": "C:\\Users\\madsh\\git\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj"
+            "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj": {
+              "projectPath": "C:\\Users\\Stonker69\\Documents\\GitHub\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj"
             }
           }
         }

@@ -55,7 +55,8 @@ CREATE TABLE metadata_issuer(
 INSERT INTO
     metadata_issuer(country)
 VALUES
-    ('DK');
+    ('DK'),
+    ('FI');
 
 CREATE TABLE metadata_category(
     id SERIAL PRIMARY KEY,
@@ -110,7 +111,7 @@ CREATE TABLE stock(
     Interest DECIMAL NOT NULL,
     Low DECIMAL NOT NULL,
     Open DECIMAL NOT NULL,
-    Time DATE NOT NULL,
+    Time TIMESTAMP NOT NULL,
     Volume DECIMAL NOT NULL
 );
 
@@ -123,7 +124,7 @@ CREATE TYPE stock_type AS (
     Interest DECIMAL,
     Low DECIMAL,
     Open DECIMAL,
-    Time DATE,
+    Time TIMESTAMP,
     Volume DECIMAL
 );
 
