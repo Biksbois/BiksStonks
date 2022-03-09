@@ -66,6 +66,14 @@
             "RestSharp": {
               "target": "Package",
               "version": "[107.3.0, )"
+            },
+            "Serilog.AspNetCore": {
+              "target": "Package",
+              "version": "[5.0.0, )"
+            },
+            "Serilog.Sinks.Grafana.Loki": {
+              "target": "Package",
+              "version": "[7.1.0, )"
             }
           },
           "imports": [

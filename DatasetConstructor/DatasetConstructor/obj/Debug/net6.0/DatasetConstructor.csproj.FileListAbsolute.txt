@@ -216,3 +216,5 @@ C:\Users\madsh\OneDrive\Code\Python\BiksStonks\DatasetConstructor\DatasetConstru
 C:\Users\madsh\OneDrive\Code\Python\BiksStonks\DatasetConstructor\DatasetConstructor\obj\Debug\net6.0\DatasetConstructor.pdb
 C:\Users\madsh\OneDrive\Code\Python\BiksStonks\DatasetConstructor\DatasetConstructor\obj\Debug\net6.0\DatasetConstructor.genruntimeconfig.cache
 C:\Users\madsh\OneDrive\Code\Python\BiksStonks\DatasetConstructor\DatasetConstructor\obj\Debug\net6.0\ref\DatasetConstructor.dll
+C:\Users\madsh\OneDrive\Code\Python\BiksStonks\DatasetConstructor\DatasetConstructor\bin\Debug\net6.0\Serilog.dll
+C:\Users\madsh\OneDrive\Code\Python\BiksStonks\DatasetConstructor\DatasetConstructor\bin\Debug\net6.0\Serilog.Sinks.Grafana.Loki.dll
