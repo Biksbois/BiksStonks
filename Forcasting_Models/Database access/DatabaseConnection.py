@@ -17,5 +17,4 @@ class DatabaseConnection:
         cur = conn.cursor()
         cur.execute(query)
         return cur.fetchall()
-test = DatabaseConnection.connect()
-print(DatabaseConnection.query(test, "SELECT * FROM stock"))
+    
