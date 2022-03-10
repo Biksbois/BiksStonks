@@ -526,3 +526,5 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+DatasetConstructor/DatasetConstructor/obj/Debug/net6.0/DatasetConstructor.assets.cache
+*.cache
