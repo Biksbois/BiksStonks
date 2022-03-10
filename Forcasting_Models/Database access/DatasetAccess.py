@@ -1,5 +1,3 @@
-from matplotlib.pyplot import cla
-
 from DatabaseConnection import DatabaseConnection
 
 
