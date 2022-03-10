@@ -8,14 +8,14 @@ class DatasetAccess:
         AllCompanies = self.conn.query("SELECT * FROM dataset")
         return AllCompanies
     
-    def getStockFrom(self, StockSymbol):
+    def getStockFromSymbol(self, StockSymbol):
         company = self.conn.query("SELECT * FROM dataset WHERE symbol = '" + StockSymbol + "'")
         return company
     
-    def getStockFrom(self, companies):
+    def getStockFromCompany(self, companies):
         result = []
         for company in companies:
-            result.append(self.getStockFrom(company[9]))
+            result.append(self.getStockFromSymbol(company[9]))
         return company
     
 DatasetAccess = DatasetAccess()
@@ -24,5 +24,5 @@ companies = DatasetAccess.getAllcompanies()
 print("selecting the first stock")
 print(companies[0][9])
 
-company = DatasetAccess.getStockFrom(companies[slice(0,4)])
+company = DatasetAccess.getStockFromCompany(companies[slice(0,4)])
 print(company)
