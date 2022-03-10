@@ -1,4 +1,3 @@
-from matplotlib.pyplot import connect
 import psycopg2 as pg
 ### Connect to the database
 class DatabaseConnection:
