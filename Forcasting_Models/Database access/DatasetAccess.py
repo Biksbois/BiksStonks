@@ -8,21 +8,25 @@ class DatasetAccess:
         AllCompanies = self.conn.query("SELECT * FROM dataset")
         return AllCompanies
     
-    def getStockFromSymbol(self, StockSymbol):
+    def getStockFromSymbol(self, StockSymbol, column = '*'):
         company = self.conn.query("SELECT * FROM dataset WHERE symbol = '" + StockSymbol + "'")
+        self.getStockFromCompany(company, column)
         return company
     
     def getStockFromCompany(self, companies, column = '*'):
         result = []
         for company in companies:
-            result.append(self.conn.query("SELECT '"+column+"' FROM stock WHERE identifier = '" + company[0] + "'"))
+            result.append(self.conn.query("SELECT '"+self.convertListToString(column)+"' FROM stock WHERE identifier = '" + company[0] + "'"))
         return result
     
-DatasetAccess = DatasetAccess()
-companies = DatasetAccess.getAllcompanies()
+    def convertListToString(self, column):
+        if type(column) != list:
+            return column
+        result = ''
+        for item in column:
+            result += item + ', '
+        return result[:-2]
     
-print("selecting the first stock")
-print(companies[0][9])
-
-company = DatasetAccess.getStockFromCompany(companies[slice(0,2)])
-print(company)
+def GetCloseValue(indexes=slice(0)):
+    return DatasetAccess().getStockFromCompany(DatasetAccess().getAllcompanies()[indexes], ['close'])
+    
