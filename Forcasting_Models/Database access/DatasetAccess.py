@@ -1,4 +1,3 @@
-from urllib3 import Retry
 from DatabaseConnection import DatabaseConnection
 class DatasetAccess:
     def __init__(self):
