@@ -16,7 +16,7 @@ class DatasetAccess:
     def getStockFromCompany(self, companies, column = '*'):
         result = []
         for company in companies:
-            result.append(self.conn.query("SELECT "+self.convertListToString(column)+" FROM stock WHERE identifier = '" + company[0] + "'"))
+            result.append(self.conn.query("SELECT "+self.convertListToString(column)+" FROM stock WHERE identifier = '" + str(company[0]) + "'"))
         return result
     
     def convertListToString(self, column):
@@ -33,5 +33,5 @@ def GetCloseValue(indexes=slice(1)):
     
 test = GetCloseValue()
 print("start")
-# for t in test:
-#     print(t)
+for t in test:
+    print(t)
