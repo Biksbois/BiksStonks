@@ -12,11 +12,11 @@ class DatasetAccess:
         company = self.conn.query("SELECT * FROM dataset WHERE symbol = '" + StockSymbol + "'")
         return company
     
-    def getStockFromCompany(self, companies):
+    def getStockFromCompany(self, companies, column = '*'):
         result = []
         for company in companies:
-            result.append(self.conn.query("SELECT * FROM stock WHERE identifier = '" + company[0] + "'"))
-        return company
+            result.append(self.conn.query("SELECT '"+column+"' FROM stock WHERE identifier = '" + company[0] + "'"))
+        return result
     
 DatasetAccess = DatasetAccess()
 companies = DatasetAccess.getAllcompanies()
