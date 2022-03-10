@@ -24,5 +24,5 @@ companies = DatasetAccess.getAllcompanies()
 print("selecting the first stock")
 print(companies[0][9])
 
-company = DatasetAccess.getStockFrom(companies.slice(0,2))
+company = DatasetAccess.getStockFrom(companies[slice(0,4)])
 print(company)
