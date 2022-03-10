@@ -17,7 +17,7 @@ class DatabaseConnection:
         
     ### send query to database
     def query(self, query):
-        cur = self.conn.cursor(cursor_factory=pg.extras.NamedTupleCursor)
+        cur = self.conn.cursor()
         cur.execute(query)
         return cur.fetchall()
 # Database = DatabaseConnection()
