@@ -1,6 +1,4 @@
 from DatabaseConnection import DatabaseConnection
-
-
 class DatasetAccess:
     def __init__(self):
         self.conn = DatabaseConnection()
