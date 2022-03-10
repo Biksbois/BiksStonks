@@ -30,3 +30,7 @@ class DatasetAccess:
 def GetCloseValue(indexes=slice(0)):
     return DatasetAccess().getStockFromCompany(DatasetAccess().getAllcompanies()[indexes], ['close'])
     
+def PlotCloseValue(indexes=slice(0)):
+    import matplotlib.pyplot as plt
+    plt.plot(GetCloseValue(indexes))
+    plt.show()
