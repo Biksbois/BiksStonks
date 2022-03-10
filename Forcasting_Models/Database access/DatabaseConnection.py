@@ -1,23 +1,26 @@
 import psycopg2 as pg
 ### Connect to the database
 class DatabaseConnection:
+    def __init__(self):
+        self.conn = self.connect()
     def connect(self):
         try:
-            conn = pg.connect(
+            self.conn = pg.connect(
                 "dbname='stonksdb' user='postgres' host='localhost' password='stonk'")
             print("Connection made succ")
-            return conn
+            return self.conn
         except:
             print("I am unable to connect to the database")
             return None
-    def close(self, conn):
-        conn.close()
+    def close(self):
+        self.conn.close()
         
     ### send query to database
-    def query(self, conn, query):
-        cur = conn.cursor()
+    def query(self, query):
+        cur = self.conn.cursor()
         cur.execute(query)
         return cur.fetchall()
-Database = DatabaseConnection()
-con = Database.connect()
-stock = Database.query(con, "SELECT * FROM stock")
+# Database = DatabaseConnection()
+# stock = Database.query("SELECT * FROM stock")
+# for s in stock:
+#     print(s) 
