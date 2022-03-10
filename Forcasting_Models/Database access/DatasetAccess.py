@@ -1,20 +1,28 @@
+from unittest import result
 from DatabaseConnection import DatabaseConnection
 class DatasetAccess:
     def __init__(self):
         self.conn = DatabaseConnection()
     
-    def getAllCompanyes(self):
+    def getAllcompanies(self):
         AllCompanies = self.conn.query("SELECT * FROM dataset")
         return AllCompanies
     
     def getStockFrom(self, StockSymbol):
         company = self.conn.query("SELECT * FROM dataset WHERE symbol = '" + StockSymbol + "'")
         return company
+    
+    def getStockFrom(self, companies):
+        result = []
+        for company in companies:
+            result.append(self.getStockFrom(company[9]))
+        return company
+    
 DatasetAccess = DatasetAccess()
-companys = DatasetAccess.getAllCompanyes()
+companies = DatasetAccess.getAllcompanies()
     
 print("selecting the first stock")
-print(companys[0][9])
+print(companies[0][9])
 
-company = DatasetAccess.getStockFrom(companys[0][9])
+company = DatasetAccess.getStockFrom(companies.slice(0,2))
 print(company)
