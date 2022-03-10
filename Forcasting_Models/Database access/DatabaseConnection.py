@@ -5,6 +5,7 @@ class DatabaseConnection:
         try:
             conn = pg.connect(
                 "dbname='stonksdb' user='postgres' host='localhost' password='stonk'")
+            print("Connection made succ")
             return conn
         except:
             print("I am unable to connect to the database")
@@ -17,4 +18,5 @@ class DatabaseConnection:
         cur = conn.cursor()
         cur.execute(query)
         return cur.fetchall()
-    
+test = DatabaseConnection.connect()
+print(DatabaseConnection.query(test, "SELECT * FROM stock"))
