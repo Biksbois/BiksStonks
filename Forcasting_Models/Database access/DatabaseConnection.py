@@ -2,7 +2,7 @@ import psycopg2 as pg
 ### Connect to the database
 class DatabaseConnection:
     def __init__(self):
-        conn = connect()
+        conn = self.connect()
     def connect(self):
         try:
             conn = pg.connect(
