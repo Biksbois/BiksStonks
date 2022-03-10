@@ -39,6 +39,10 @@ namespace DatasetConstructor
         {
             var DanishStocks = await _saxoDataHandler.GetAllCompanyData(Exchange.CSE, AssetTypes.Stock);
 
+            DanishStocks.RemoveAll(x => x.Description.Contains("**See ESG:xcse(Ennogie Solar Group A/S)"));
+
+            var a = DanishStocks.Select(stock => stock.Description).ToList();
+
             await ScrapeDataFromStocks(dataFolder, _saxoDataHandler, DanishStocks);
         }
 
@@ -61,25 +65,24 @@ namespace DatasetConstructor
             {
                 Console.WriteLine($"Currently fetching for: '{DanishStock.Description}'");
                 results.Add(DanishStock, new List<PriceValues>());
-
-                foreach (string date in DatesToCheck)
+                if (!Directory.Exists(GetPath(DanishStock, dataFolder)))
                 {
-                    try
+                    foreach (string date in DatesToCheck)
                     {
-                        results[DanishStock].AddRange(await saxoDataHandler.GetHistoricData(AssetTypes.Stock, DanishStock.Identifier, date));
+                        try
+                        {
+                            results[DanishStock].AddRange(await saxoDataHandler.GetHistoricData(AssetTypes.Stock, DanishStock.Identifier, date));
+                        }
+                        catch (Exception)
+                        {
+                            Console.WriteLine("En exception occured, retrying in 90sec.");
+                            Thread.Sleep(100000);
+                            results[DanishStock].AddRange(await saxoDataHandler.GetHistoricData(AssetTypes.Stock, DanishStock.Identifier, date));
+                            continue;
+                        }
                     }
-                    catch (Exception)
-                    {
-                        Console.WriteLine("En exception occured, retrying in 90sec.");
-                        Thread.Sleep(100000);
-                        results[DanishStock].AddRange(await saxoDataHandler.GetHistoricData(AssetTypes.Stock, DanishStock.Identifier, date));
-                        continue;
-                    }
-                    break;
+                    await CreateFileForDataPoints(DanishStock, results[DanishStock], dataFolder);
                 }
-
-                await CreateFileForDataPoints(DanishStock, results[DanishStock], dataFolder);
-                break;
             }
         }
 
@@ -111,16 +114,22 @@ namespace DatasetConstructor
             }
         }
 
+
         private async Task CreateFileForDataPoints(Stock stock, List<PriceValues> prices, string dataFolder)
         {
-            string path = dataFolder + stock.Description.Replace('/', '-');
+            string path = GetPath(stock, dataFolder);
             string stockText = JsonConvert.SerializeObject(stock);
             string pricesText = JsonConvert.SerializeObject(prices);
-            
+
             Directory.CreateDirectory(path);
 
             await File.WriteAllTextAsync(path + "/stock.json", stockText);
             await File.WriteAllTextAsync(path + "/prices.json", pricesText);
+        }
+
+        private static string GetPath(Stock stock, string dataFolder)
+        {
+            return dataFolder + stock.Description;
         }
 
         private List<DateTime> CalcDatesToCheck(int years = 2, int Horizon = 1, int Count = 1200)
