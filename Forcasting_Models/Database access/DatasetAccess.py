@@ -27,10 +27,15 @@ class DatasetAccess:
             result += item + ', '
         return result[:-2]
     
-def GetCloseValue(indexes=slice(0)):
-    return DatasetAccess().getStockFromCompany(DatasetAccess().getAllcompanies()[indexes], ['close'])
+def GetCloseValue(indexes=slice(1)):
+    dbAccess = DatasetAccess()
+    return dbAccess.getStockFromCompany(dbAccess.getAllcompanies()[indexes], 'close')
     
 def PlotCloseValue(indexes=slice(0)):
     import matplotlib.pyplot as plt
     plt.plot(GetCloseValue(indexes))
     plt.show()
+test = GetCloseValue()
+print("start")
+for t in test:
+    print(t)
