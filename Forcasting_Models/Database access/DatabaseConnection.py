@@ -9,5 +9,13 @@ class DatabaseConnection:
         except:
             print("I am unable to connect to the database")
             return None
+    def close(conn):
+        conn.close()
+        
+    ### send query to database
+    def query(conn, query):
+        cur = conn.cursor()
+        cur.execute(query)
+        return cur.fetchall()
 test = DatabaseConnection.connect()
-print(test)
+print(DatabaseConnection.query(test, "SELECT * FROM stock"))
