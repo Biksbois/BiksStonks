@@ -7,8 +7,10 @@ class DatasetAccess:
         AllCompanies = self.conn.query("SELECT * FROM dataset")
         return AllCompanies
     
-    def getStockFrom(self, stockName):
-        print(test)
+    def getStockFrom(self, StockSymbol):
+        company = self.conn.query("SELECT * FROM dataset WHERE symbol = '" + StockSymbol + "'")
 DatasetAccess = DatasetAccess()
-for data in DatasetAccess.getAllCompanyes():
-    print(data)
+companys = DatasetAccess.getAllCompanyes()
+    
+print("selecting the first stock")
+print(companys[0].symbol)
