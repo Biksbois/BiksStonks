@@ -528,3 +528,7 @@ FodyWeavers.xsd
 *.sln.iml
 DatasetConstructor/DatasetConstructor/obj/Debug/net6.0/DatasetConstructor.assets.cache
 *.cache
+*.cache
+*.cache
+DatasetConstructor/.vs/DatasetConstructor/v17/.suo
+*.v1
