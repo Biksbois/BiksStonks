@@ -532,3 +532,10 @@ DatasetConstructor/DatasetConstructor/obj/Debug/net6.0/DatasetConstructor.assets
 *.cache
 DatasetConstructor/.vs/DatasetConstructor/v17/.suo
 *.v1
+*.json
+*.props
+*.cache
+*.cache
+*.editorconfig
+*.json
+*.cache

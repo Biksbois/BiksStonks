@@ -1,5 +1,7 @@
 from unittest import result
 from DatabaseConnection import DatabaseConnection
+import pandas as pd
+
 class DatasetAccess:
     def __init__(self):
         self.conn = DatabaseConnection()
@@ -26,7 +28,13 @@ class DatasetAccess:
         for item in column:
             result += item + ', '
         return result[:-2]
-    
+
+    def GetAllStocksAsDF():
+        Stocks = self.conn.query("SELECT * FROM stock")
+        PandaStock = pd.read_sql('SELECT * FROM stock', self.conn)
+        print(PandaStock)
+        print(Stocks)
+
 def extractNumbers(numbers):
     result = []
     for number in numbers:
@@ -42,4 +50,6 @@ def PlotCloseValue(indexes=slice(1)):
     import matplotlib.pyplot as plt
     plt.plot(GetCloseValue(indexes))
     plt.show()
+    
+
 PlotCloseValue()
