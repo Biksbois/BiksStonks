@@ -1,4 +1,5 @@
 from unittest import result
+import psycopg2 as pg
 from DatabaseConnection import DatabaseConnection
 import pandas as pd
 
@@ -20,6 +21,12 @@ class DatasetAccess:
         for company in companies:
             result.append(self.conn.query("SELECT "+self.convertListToString(column)+" FROM stock WHERE identifier = '" + str(company[0]) + "'"))
         return result
+
+    def getStockDFFromCompany(self, companies, column = '*'):
+        result = []
+        for company in companies:
+            result.append(pd.read_sql("SELECT * FROM stock WHERE identifier = '" + str(company[0]) + "'", self.conn.GetConnector()))
+        return result
     
     def convertListToString(self, column):
         if type(column) != list:
@@ -29,11 +36,9 @@ class DatasetAccess:
             result += item + ', '
         return result[:-2]
 
-    def GetAllStocksAsDF():
-        Stocks = self.conn.query("SELECT * FROM stock")
-        PandaStock = pd.read_sql('SELECT * FROM stock', self.conn)
+    def GetAllStocksAsDF(self):
+        PandaStock = pd.read_sql('SELECT * FROM stock', self.conn.GetConnector())
         print(PandaStock)
-        print(Stocks)
 
 def extractNumbers(numbers):
     result = []
@@ -50,6 +55,9 @@ def PlotCloseValue(indexes=slice(1)):
     import matplotlib.pyplot as plt
     plt.plot(GetCloseValue(indexes))
     plt.show()
-    
 
-PlotCloseValue()
+def GetSigleStockDF():
+    dbAccess = DatasetAccess()
+    comp = dbAccess.getAllcompanies()
+    return dbAccess.getStockDFFromCompany([comp[0]])
+
