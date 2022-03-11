@@ -56,8 +56,9 @@ def PlotCloseValue(indexes=slice(1)):
     plt.plot(GetCloseValue(indexes))
     plt.show()
 
-def GetSigleStockDF():
+def GetSingleStockDF():
     dbAccess = DatasetAccess()
     comp = dbAccess.getAllcompanies()
     return dbAccess.getStockDFFromCompany([comp[0]])
 
+print(GetSingleStockDF())
