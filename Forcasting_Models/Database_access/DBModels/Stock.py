@@ -1,5 +1,5 @@
-from DBModels.PricePoint import PricePoint
-from DBModels.PricePoint import Company
+from Database_access.DBModels.PricePoint import PricePoint
+from Database_access.DBModels.PricePoint import Company
 
 
 class stock:
