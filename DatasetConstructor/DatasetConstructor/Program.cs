@@ -18,11 +18,13 @@ var token = config["token"];
 var connectionString = config["ConnectionString"];
 var dataFolder = config["datafolder"];
 
+// **See ESG:xcse(Ennogie Solar Group A/S)
+
 ConstructDataset constructDataset = new ConstructDataset(token, connectionString);
 
 var companies = new List<string>() { "Danske Bank A/S", "Vestas Wind Systems A/S" };
 
-await constructDataset.ScrapeDataToFolder(dataFolder, companies);
+//await constructDataset.ScrapeDataToFolder(dataFolder, companies);
 
 constructDataset.InsertDatafolder(dataFolder);
 

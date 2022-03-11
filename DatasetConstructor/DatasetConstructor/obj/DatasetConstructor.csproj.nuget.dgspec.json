@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj": {}
+    "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj": {}
   },
   "projects": {
-    "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj": {
+    "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
+        "projectUniqueName": "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
         "projectName": "DatasetConstructor",
-        "projectPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
-        "packagesPath": "C:\\Users\\madsh\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\obj\\",
+        "projectPath": "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\DatasetConstructor.csproj",
+        "packagesPath": "C:\\Users\\ronih\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\DatasetConstructor\\DatasetConstructor\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\madsh\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\ronih\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -28,11 +32,11 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj": {
-                "projectPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj"
+              "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj": {
+                "projectPath": "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj"
               },
-              "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj": {
-                "projectPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj"
+              "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj": {
+                "projectPath": "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj"
               }
             }
           }
@@ -91,21 +95,25 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.200\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.201\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj": {
+    "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj",
+        "projectUniqueName": "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj",
         "projectName": "SharedDatabaseAccess",
-        "projectPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj",
-        "packagesPath": "C:\\Users\\madsh\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\obj\\",
+        "projectPath": "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\SharedDatabaseAccess.csproj",
+        "packagesPath": "C:\\Users\\ronih\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\SharedProjects\\SharedDatabaseAccess\\SharedDatabaseAccess\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\madsh\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\ronih\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -119,8 +127,8 @@
           "net6.0": {
             "targetAlias": "net6.0",
             "projectReferences": {
-              "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj": {
-                "projectPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj"
+              "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj": {
+                "projectPath": "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj"
               }
             }
           }
@@ -159,21 +167,25 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.200\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.201\\RuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj": {
+    "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj",
+        "projectUniqueName": "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj",
         "projectName": "SharedObjects",
-        "projectPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj",
-        "packagesPath": "C:\\Users\\madsh\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\madsh\\OneDrive\\Code\\Python\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\obj\\",
+        "projectPath": "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\SharedObjects.csproj",
+        "packagesPath": "C:\\Users\\ronih\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\ronih\\Documents\\UNI\\Project\\BiksStonks\\SharedProjects\\SharedObjects\\SharedObjects\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\madsh\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\ronih\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -223,7 +235,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.200\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.201\\RuntimeIdentifierGraph.json"
         }
       }
     }
