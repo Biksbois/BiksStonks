@@ -11,6 +11,10 @@ class DatasetAccess:
         AllCompanies = self.conn.query("SELECT * FROM dataset")
         return AllCompanies
     
+    def getNcompanies(self, N):
+        AllCompanies = self.conn.query("SELECT * FROM dataset limit "+ str(N)+"")
+        return AllCompanies
+
     def getStockFromSymbol(self, StockSymbol, column = '*'):
         company = self.conn.query("SELECT * FROM dataset WHERE symbol = '" + StockSymbol + "'")
         self.getStockFromCompany(company, column)
@@ -58,7 +62,12 @@ def PlotCloseValue(indexes=slice(1)):
 
 def GetSingleStockDF():
     dbAccess = DatasetAccess()
-    comp = dbAccess.getAllcompanies()
-    return dbAccess.getStockDFFromCompany([comp[0]])
+    comp = dbAccess.getNcompanies(2)
+    return dbAccess.getStockDFFromCompany(comp)
+
+def GetNStockDFs(N):
+    dbAccess = DatasetAccess()
+    comp = dbAccess.getNcompanies(N)
+    return dbAccess.getStockDFFromCompany(comp)
 
 print(GetSingleStockDF())
