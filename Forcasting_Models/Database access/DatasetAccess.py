@@ -27,18 +27,19 @@ class DatasetAccess:
             result += item + ', '
         return result[:-2]
     
+def extractNumbers(numbers):
+    result = []
+    for number in numbers:
+        result.append(number[0])
+    return result
+
 def GetCloseValue(indexes=slice(1)):
     dbAccess = DatasetAccess()
+    print(dbAccess.getAllcompanies()[indexes])
     return extractNumbers(dbAccess.getStockFromCompany(dbAccess.getAllcompanies()[indexes], 'close')[0])
     
 def PlotCloseValue(indexes=slice(1)):
     import matplotlib.pyplot as plt
     plt.plot(GetCloseValue(indexes))
     plt.show()
-print(GetCloseValue()[0])
-def extractNumbers(numbers):
-    result = []
-    for number in numbers:
-        result.append(number[0])
-    return result
 PlotCloseValue()
