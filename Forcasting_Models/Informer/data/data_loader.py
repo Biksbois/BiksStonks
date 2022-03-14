@@ -188,7 +188,8 @@ class Dataset_ETT_minute(Dataset):
 class Dataset_Custom(Dataset):
     def __init__(self, root_path, flag='train', size=None, 
                  features='S', data_path='ETTh1.csv', 
-                 target='OT', scale=True, inverse=False, timeenc=0, freq='h', cols=None):
+                 target='OT', scale=True, inverse=False, timeenc=0, freq='h', cols=None,
+                 use_df=False, df=None):
         # size [seq_len, label_len, pred_len]
         # info
         if size == None:
@@ -213,11 +214,17 @@ class Dataset_Custom(Dataset):
         self.cols=cols
         self.root_path = root_path
         self.data_path = data_path
+        self.use_df= use_df
+        self.df = df
         self.__read_data__()
 
     def __read_data__(self):
         self.scaler = StandardScaler()
-        df_raw = pd.read_csv(os.path.join(self.root_path,
+        if self.use_df:
+            df_raw = self.df
+            assert 'date' in df_raw.columns[0]
+        else:
+            df_raw = pd.read_csv(os.path.join(self.root_path,
                                           self.data_path))
         '''
         df_raw.columns: ['date', ...(other features), target feature]
@@ -287,7 +294,7 @@ class Dataset_Custom(Dataset):
 class Dataset_Pred(Dataset):
     def __init__(self, root_path, flag='pred', size=None, 
                  features='S', data_path='ETTh1.csv', 
-                 target='OT', scale=True, inverse=False, timeenc=0, freq='15min', cols=None):
+                 target='OT', scale=True, inverse=False, timeenc=0, freq='15min', cols=None, ):
         # size [seq_len, label_len, pred_len]
         # info
         if size == None:
