@@ -526,9 +526,9 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-*.v1
+**/*.v1
 *.json
 *.props
-*.editorconfig
-*.v2
+**/*.editorconfig
+**/*.v2
 
