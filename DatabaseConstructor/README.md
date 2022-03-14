@@ -87,6 +87,8 @@ A few things to note about the database:
 
 1. Install Postgres [here](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads) and set it up.
 2. Go to the bin folder of the postgres folder
-3. Run the command `.\psql.exe -U postgres -a -f [PATH]\creaate-database.sql`
+3. Run the command `.\psql.exe -U postgres -a -f [PATH]\create-database.sql`
 4. Insert usersecret `ConnectionString` in the `DatasetConstructor` project.
-    - This is in the format: `Server=localhost;Port=5432;Database=stonksdb;User Id=[USERNAME];Password=[PASSWORD];`
+    - This is in the format: `Server=localhost;Port=5432;Database=stonksdb;User Id=[USERNAME];Password=[PASSWORD];Command Timeout=100`
+
+'docker run -d --name seq --restart unless-stopped -p 5341:80 -p 80:80 -v "C:\ProgramData\Seq\Data" -e ACCEPT_EULA=Y datalust/seq'

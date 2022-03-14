@@ -163,7 +163,7 @@ bld/
 [Ll]ogs/
 
 # Visual Studio 2015/2017 cache/options directory
-.vs/
+*/.vs/
 # Uncomment if you have tasks that create the project's static files in wwwroot
 #wwwroot/
 
@@ -526,5 +526,13 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-DatasetConstructor/DatasetConstructor/obj/Debug/net6.0/DatasetConstructor.assets.cache
-*.cache
+**/*.v1
+*.json
+*.props
+**/*.editorconfig
+**/*.v2
+**/*.dtbcache.v2
+**/*.csproj.nuget.dgspec.json
+**/*.csproj.nuget.g.props
+**/*.dtbcache.v2
+

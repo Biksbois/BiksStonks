@@ -87,7 +87,7 @@ CREATE TABLE dataset(
     IssuerCountry VARCHAR(100) NOT NULL,
     PrimaryListing VARCHAR(100) NOT NULL,
     SummaryType VARCHAR(100) NOT NULL,
-    Symbol VARCHAR(100) NOT NULL,
+    Symbol VARCHAR(100) NOT NULL, 
     Category VARCHAR(100) NOT NULL,
 
     CONSTRAINT fk_asset

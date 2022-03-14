@@ -14,7 +14,9 @@ class DatabaseConnection:
             return None
     def close(self):
         self.conn.close()
-        
+    
+    def GetConnector(self):
+        return self.conn
     ### send query to database
     def query(self, query):
         cur = self.conn.cursor()
