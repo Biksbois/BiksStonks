@@ -531,4 +531,8 @@ FodyWeavers.xsd
 *.props
 **/*.editorconfig
 **/*.v2
+**/*.dtbcache.v2
+**/*.csproj.nuget.dgspec.json
+**/*.csproj.nuget.g.props
+**/*.dtbcache.v2
 
