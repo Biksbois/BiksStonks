@@ -526,16 +526,13 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-DatasetConstructor/DatasetConstructor/obj/Debug/net6.0/DatasetConstructor.assets.cache
-*.cache
-*.cache
-*.cache
-DatasetConstructor/.vs/DatasetConstructor/v17/.suo
-*.v1
+**/*.v1
 *.json
 *.props
-*.cache
-*.cache
-*.editorconfig
-*.json
-*.cache
+**/*.editorconfig
+**/*.v2
+**/*.dtbcache.v2
+**/*.csproj.nuget.dgspec.json
+**/*.csproj.nuget.g.props
+**/*.dtbcache.v2
+
