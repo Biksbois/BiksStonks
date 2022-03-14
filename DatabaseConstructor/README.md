@@ -82,6 +82,32 @@ classDiagram
 
 The following tables are related to models, forecasts and metrics:
 
+```mermaid
+classDiagram
+    score <|-- model
+    score <|-- metadata_metric
+    class model{
+        SERIAL id PK,
+        VARCHAR name,
+        VARCHAR description
+        CONSTRAINT name_unique()
+    }
+    class metadata_metric{
+        SERIAL id PK,
+        VARCHAR name,
+        CONSTRAINT name_unique()
+    }
+    class score{
+        SERIAL id PK,
+        VARCHAR metric,
+        VARCHAR model,
+        DECIMAL value,
+        TIMESTAMP time,
+        CONSTRAINT fk_metric(),
+        CONSTRAINT fk_model()
+    }
+```
+
 A few things to note about the database:
 
 - An index is created called `stock_id_index` to ensure fast lookup time on Identifier and Time on stocks.
