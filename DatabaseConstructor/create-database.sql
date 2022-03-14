@@ -2,6 +2,36 @@ CREATE DATABASE stonksdb;
 
 \c stonksdb
 
+CREATE TABLE IF NOT EXISTS model(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    description VARCHAR(150),
+    
+    CONSTRAINT name_unique UNIQUE (name)
+)
+
+CREATE TABLE metadata_metric(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    CONSTRAINT name_unique UNIQUE (name)
+)
+
+CREATE TABLE metric(
+    id SERIAL PRIMARY KEY,
+    metric_name VARCHAR(100),
+    model_name VARCHAR(100),
+    value DECIMAL,
+    time TIMESTAMP,
+
+    CONSTRAINT fk_metric_name
+        FOREIGN KEY (metric_name)
+            REFERENCES metadata_metric(name)
+    
+    CONSTRAINT fk_model_name
+        FOREIGN KEY (model_name)
+            REFERENCES model(name)
+)
+
 CREATE TABLE metadata_currency(
     id SERIAL PRIMARY KEY,
     currency VARCHAR(100) NOT NULL,
