@@ -1,5 +1,8 @@
 from unittest import result
-from Forcasting_Models.Database_access.DatabaseConnection import DatabaseConnection
+import psycopg2 as pg
+from DatabaseConnection import DatabaseConnection
+import pandas as pd
+
 class DatasetAccess:
     def __init__(self):
         self.conn = DatabaseConnection()
@@ -8,6 +11,10 @@ class DatasetAccess:
         AllCompanies = self.conn.query("SELECT * FROM dataset")
         return AllCompanies
     
+    def getNcompanies(self, N):
+        AllCompanies = self.conn.query("SELECT * FROM dataset limit "+ str(N)+"")
+        return AllCompanies
+
     def getStockFromSymbol(self, StockSymbol, column = '*'):
         company = self.conn.query("SELECT * FROM dataset WHERE symbol = '" + StockSymbol + "'")
         self.getStockFromCompany(company, column)
@@ -18,6 +25,12 @@ class DatasetAccess:
         for company in companies:
             result.append(self.conn.query("SELECT "+self.convertListToString(column)+" FROM stock WHERE identifier = '" + str(company[0]) + "'"))
         return result
+
+    def getStockDFFromCompany(self, companies, column = '*'):
+        result = []
+        for company in companies:
+            result.append(pd.read_sql("SELECT * FROM stock WHERE identifier = '" + str(company[0]) + "'", self.conn.GetConnector()))
+        return result
     
     def convertListToString(self, column):
         if type(column) != list:
@@ -26,7 +39,11 @@ class DatasetAccess:
         for item in column:
             result += item + ', '
         return result[:-2]
-    
+
+    def GetAllStocksAsDF(self):
+        PandaStock = pd.read_sql('SELECT * FROM stock', self.conn.GetConnector())
+        print(PandaStock)
+
 def extractNumbers(numbers):
     result = []
     for number in numbers:
@@ -42,4 +59,15 @@ def PlotCloseValue(indexes=slice(1)):
     import matplotlib.pyplot as plt
     plt.plot(GetCloseValue(indexes))
     plt.show()
-PlotCloseValue()
+
+def GetSingleStockDF():
+    dbAccess = DatasetAccess()
+    comp = dbAccess.getNcompanies(2)
+    return dbAccess.getStockDFFromCompany(comp)
+
+def GetNStockDFs(N):
+    dbAccess = DatasetAccess()
+    comp = dbAccess.getNcompanies(N)
+    return dbAccess.getStockDFFromCompany(comp)
+
+print(GetSingleStockDF())
