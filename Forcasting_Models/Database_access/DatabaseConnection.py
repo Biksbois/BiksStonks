@@ -6,7 +6,7 @@ class DatabaseConnection:
     def connect(self):
         try:
             self.conn = pg.connect(
-                "dbname='stonksdb' user='postgres' host='localhost' password='admin'")
+                "dbname='stonksdb' user='postgres' host='localhost' password='stonk'")
             print("Connection made succ")
             return self.conn
         except:
@@ -14,7 +14,9 @@ class DatabaseConnection:
             return None
     def close(self):
         self.conn.close()
-        
+    
+    def GetConnector(self):
+        return self.conn
     ### send query to database
     def query(self, query):
         cur = self.conn.cursor()
