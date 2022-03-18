@@ -71,9 +71,9 @@ def GetNStockDFs(N):
     comp = dbAccess.getNcompanies(N)
     return dbAccess.getStockDFFromCompany(comp)
 
-def get_data_for_datasetid(datasetid, conn, interval):
+def get_data_for_datasetid(datasetid, conn, interval, time='0001-01-01 00:00:00'):
     df = pd.read_sql_query(f"SELECT time AS date, open, high, low, close, volume \
-                     FROM stock WHERE identifier = {datasetid} \
+                     FROM stock WHERE identifier = {datasetid} AND time > '{time}' \
                      ORDER BY time ASC;", conn)
     df.set_index(pd.DatetimeIndex(df['date']), inplace=True)
     # df.drop(['date'], axis=1, inplace=True)
