@@ -22,12 +22,12 @@ def make_batch():
 class Attention(nn.Module):
     def __init__(self):
         super(Attention, self).__init__()
-        self.enc_cell = nn.RNN(input_size=n_class, hidden_size=n_hidden, dropout=0.5)
-        self.dec_cell = nn.RNN(input_size=n_class, hidden_size=n_hidden, dropout=0.5)
+        self.enc_cell = nn.RNN(input_size=n_class, hidden_size=n_hidden, dropout=0.5) # enc_len
+        self.dec_cell = nn.RNN(input_size=n_class, hidden_size=n_hidden, dropout=0.5) # dec_len 
 
         # Linear for attention
         self.attn = nn.Linear(n_hidden, n_hidden)
-        self.out = nn.Linear(n_hidden * 2, n_class)
+        self.out = nn.Linear(n_hidden * 2, n_class) # pred_len
 
     def forward(self, enc_inputs, hidden, dec_inputs):
         enc_inputs = enc_inputs.transpose(0, 1)  # enc_inputs: [n_step(=n_step, time step), batch_size, n_class]
@@ -88,10 +88,13 @@ if __name__ == '__main__':
     hidden = torch.zeros(1, 1, n_hidden)
 
     model = Attention()
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss()#mean square error
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     input_batch, output_batch, target_batch = make_batch()
+    print(input_batch.shape, input_batch)
+    print(output_batch.shape, output_batch)
+    print(target_batch.shape, target_batch)
 
     # Train
     for epoch in range(2000):
