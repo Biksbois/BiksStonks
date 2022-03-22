@@ -1,6 +1,11 @@
 from datetime import datetime
+import numpy as np
 import pandas as pd
 import seaborn as sns
+
+
+from utils.metrics import metric
+
 
 def plot_preds_with_date(trues, preds, data_set, idx, **kwargs):
     """
@@ -21,4 +26,30 @@ def plot_preds_with_date(trues, preds, data_set, idx, **kwargs):
     sns.set(style="darkgrid")
     df_eval.plot(**kwargs)
 
+# Predict for any set of data
+# load data
+def predict_and_metrics(model, exp, flag):
+    model = exp.model
+    data_set, data_loader = exp._get_data(flag)
+
+    model.eval()
+
+    preds = []
+    trues = []
+
+    for i, (batch_x,batch_y,batch_x_mark,batch_y_mark) in enumerate(data_loader):
+        pred, true = exp._process_one_batch(
+            data_set, batch_x, batch_y, batch_x_mark, batch_y_mark)
+        preds.append(pred.detach().cpu().numpy())
+        trues.append(true.detach().cpu().numpy())
+    
+    preds = np.array(preds)
+    trues = np.array(trues)
+    print('test shape:', preds.shape, trues.shape)
+    preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
+    trues = trues.reshape(-1, trues.shape[-2], trues.shape[-1])
+    print('test shape:', preds.shape, trues.shape)
+    metrics = [mae, mse, rmse, mape, mspe] = metric(preds, trues)
+
+    return preds, trues, metrics
         
