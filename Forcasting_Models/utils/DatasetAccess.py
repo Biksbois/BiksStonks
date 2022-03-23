@@ -1,6 +1,7 @@
 from unittest import result
 import psycopg2 as pg
-from DatabaseConnection import DatabaseConnection
+from utils.DatabaseConnection import DatabaseConnection
+import utils.preprocess as preprocess
 import pandas as pd
 
 class DatasetAccess:
@@ -70,4 +71,18 @@ def GetNStockDFs(N):
     comp = dbAccess.getNcompanies(N)
     return dbAccess.getStockDFFromCompany(comp)
 
-print(GetSingleStockDF())
+def get_data_for_datasetid(datasetid, conn, interval, time='0001-01-01 00:00:00'):
+    df = pd.read_sql_query(f"SELECT time AS date, open, high, low, close, volume \
+                     FROM stock WHERE identifier = {datasetid} AND time > '{time}' \
+                     ORDER BY time ASC;", conn)
+    df.set_index(pd.DatetimeIndex(df['date']), inplace=True)
+    # df.drop(['date'], axis=1, inplace=True)
+
+    df = preprocess.resample_data_to_interval(interval, df)
+
+    # resample minutely to hourly
+
+    return df
+
+if __name__ == "__main__":
+    print(GetSingleStockDF())
