@@ -2,6 +2,8 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import torch
+import matplotlib.pyplot as plt
 
 
 from utils.metrics import metric
@@ -52,4 +54,38 @@ def predict_and_metrics(model, exp, flag):
     metrics = [mae, mse, rmse, mape, mspe] = metric(preds, trues)
 
     return preds, trues, metrics
+
+def plot_sample(exp, data_obj, idx, dates=False, **kwargs):
+    """
+    Plots the given sample.
+
+    Args:
+        sample: The sample to be plotted.
+        idx: The index of the sample to be plotted.
+        dates: Whether to plot the dates. Not implemented yet
+    """
+    exp.model.eval()
+    if dates:
+        raise NotImplementedError
+    args = exp.args
+    x, y, x_mark, y_mark = data_obj[idx]
+    x = torch.FloatTensor(x).unsqueeze(0)
+    x_mark = torch.FloatTensor(x_mark).unsqueeze(0)
+    y = torch.FloatTensor(y).unsqueeze(0)
+    y_mark = torch.FloatTensor(y_mark).unsqueeze(0)
+
+    y_hat, y_true = exp._process_one_batch(data_obj, x, y, x_mark, y_mark)
+    y_hat = y_hat.detach().cpu().numpy().flatten()
+    y_true = y_true.cpu().numpy().flatten()
+
+    x_seq = np.arange(args.seq_len)
+    x_preds = np.arange(args.seq_len, args.seq_len+args.pred_len)
+
+    sns.set(style="darkgrid")
+    fig, ax = plt.subplots(**kwargs)
+    ax.plot(x_seq, x[0,:,-1] , label='Input sequence')
+    ax.plot(x_preds, y_hat, label='Prediction')
+    ax.plot(x_preds, y_true, label='GroundTruth')
+    ax.legend()
+    fig.show()
         
