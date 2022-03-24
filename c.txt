@@ -1,130 +1,126 @@
-"Blue Vision A/S A"
-"Boozt AB"
-"Brd. Klee B A/S"
-"Brdr. A & O Johansen præf. A/S"
-"Brdr.Hartmann A/S"
-"Brøndbyernes IF Fodbold A/S"
-"Carlsberg A A/S"
-"Carlsberg B A/S"
-"ChemoMetec A/S"
-"Chr. Hansen Holding A/S"
-"Coloplast B A/S"
-"Columbus A/S"
-"Copenhagen Capital A/S"
-"D/S Norden"
-"Danske Andelskassers Bank A/S"
-"Dantax A/S"
-"DFDS A/S"
-"Djurslands Bank A/S"
-"EAC Invest A/S"
-"Flugger Group A/S"
-"GN Store Nord A/S"
-"Green Hydrogen Systems A/S"
-"H+H International A/S"
-"H. Lundbeck A/S"
-"ISS A/S"
-"Jyske Bank A/S"
-"Matas A/S"
-"Netcompany Group A/S"
-"NKT A/S"
-"Nordea Bank Abp"
-"A.P. Møller - Mærsk A A/S"
-"A.P. Møller - Mærsk B A/S"
-"Aalborg Boldspilklub A/S"
-"Agat Ejendomme"
-"AGF A/S"
-"ALK-Abelló B A/S"
-"Alm. Brand A/S"
-"Ambu A/S"
-"Aquaporin A/S"
-"Atlantic Petroleum P/F"
-"Bang & Olufsen Holding A/S"
-"BankNordik P/F"
-"Bavarian Nordic A/S"
-"BioPorto A/S"
-"cBrain A/S"
-"Cemat A/S"
-"Danske Bank A/S"
-"Demant A/S"
-"DSV A/S"
-"Fast Ejendom Danmark A/S"
-"FirstFarms A/S"
-"FLSmidth & Co. A/S"
-"Novo Nordisk B A/S"
-"Novozymes A/S"
-"NTG Nordic Transport Group"
-"Orphazyme A/S"
-"Pandora A/S"
-"Rockwool International A A/S"
-"Rockwool International B A/S"
-"Royal Unibrew A/S"
-"SAS AB"
-"Solar B A/S"
-"Spar Nord Bank A/S"
-"Sydbank A/S"
-"Topdanmark A/S"
-"TORM Plc A"
-"Tryg A/S"
-"Vestas Wind Systems A/S"
-"Zealand Pharma A/S"
-"Ørsted A/S"
-"Fynske Bank A/S"
-"Gabriel Holding A/S"
-"Genmab A/S"
-"German High Street Properties A/S"
-"Glunz & Jensen Holding A/S"
-"GreenMobility A/S"
-"Grønlandsbanken A/S"
-"Gyldendal B A/S"
-"Harboes Bryggeri B A/S"
-"HusCompagniet"
-"Hvidbjerg Bank A/S"
-"InterMail A/S"
-"Jeudan A/S"
-"Kreditbanken A/S"
-"Københavns Lufthavne A/S"
-"Lollands Bank A/S"
-"Luxor B A/S"
-"Lån og Spar Bank A/S"
-"MT Hojgaard Holding A/S"
-"Møns Bank A/S"
-"Newcap Holding A/S"
-"Nilfisk Holding A/S"
-"NNIT A/S"
-"Nordfyns Bank A/S"
-"Nordic Shipholding A/S"
-"North Media A/S"
-"NTR Holding B A/S"
-"Onxeo SA (Copenhagen)"
-"Park Street A/S"
-"PARKEN Sport & Entertainment A/S"
-"Per Aarsleff Holding A/S B"
-"Prime Office A/S"
-"Q-Interline A/S"
-"Rias B A/S"
-"Ringkjøbing Landbobank A/S"
-"Roblon B A/S"
-"Rovsing A/S"
-"RTX A/S"
-"Sanistål A/S"
-"Scandinavian Brake Systems A/S"
-"Scandinavian Investment Group A/S"
-"Scandinavian Tobacco Group A/S"
-"Schouw & Co. A/S"
-"Silkeborg IF Invest A/S"
-"SimCorp A/S"
-"SKAKO A/S"
-"Skjern Bank A/S"
-"SP Group A/S"
-"Sparekassen Sjælland-Fyn A/S"
-"Stenocare A/S"
-"Strategic Investments A/S"
-"TCM Group A/S"
-"The Drilling Company of 1972 A/S"
-"Tivoli A/S"
-"Totalbanken A/S"
-"Trifork Holding AG"
-"United International Enterprises Ltd"
-"Vestjysk Bank A/S"
-"Wealth Invest Secure Select Aktier"
-"Össur hf."
+{ "Blue Vision A/S A", ("finance", "investing") },
+{ "Boozt AB", ("detail", "store") },
+{ "Brd. Klee B A/S", ("industry", "hardware_store") },
+{ "Brdr. A & O Johansen præf. A/S", ("industry", "hardware_store") },
+{ "Brdr.Hartmann A/S", ("industry", "factory") },
+{ "Brøndbyernes IF Fodbold A/S", ("entertainment", "sport") },
+{ "Carlsberg A A/S", ("detail", "brewery") },
+{ "Carlsberg B A/S", ("detail", "brewery") },
+{ "ChemoMetec A/S", ("medicin", "equipment") },
+{ "Chr. Hansen Holding A/S", ("medicin", "biotech") },
+{ "Coloplast B A/S", ("medicin", "equipment") },
+{ "Columbus A/S", ("it", "consultant") },
+{ "Copenhagen Capital A/S", ("finance", "investing") },
+{ "D/S Norden", ("industry", "logistic") },
+{ "Danske Andelskassers Bank A/S", ("finance", "bank") },
+{ "Dantax A/S", ("detail", "tech") },
+{ "DFDS A/S", ("industri", "logistic") },
+{ "Djurslands Bank A/S", ("finance", "bank") },
+{ "EAC Invest A/S", ("finance", "investing") },
+{ "Flugger Group A/S", ("industry", "hardware_store") },
+{ "GN Store Nord A/S", ("medicin", "equipment") },
+{ "Green Hydrogen Systems A/S", ("industry", "energi") },
+{ "H+H International A/S", ("industri", "hardware_store") },
+{ "H. Lundbeck A/S", ("medicin", "drugs") },
+{ "Jyske Bank A/S", ("finance", "bank") },
+{ "Matas A/S", ("detail", "store") },
+{ "Netcompany Group A/S", ("it", "consultant") },
+{ "NKT A/S", ("industri", "factory") },
+{ "Nordea Bank Abp", ("finance", "bank") },
+{ "A.P. Møller - Mærsk A A/S", ("industry", "logistic") },
+{ "A.P. Møller - Mærsk B A/S", ("industry", "logistic") },
+{ "Aalborg Boldspilklub A/S", ("entertainment", "sport") },
+{ "Agat Ejendomme", ("industry", "construction") },
+{ "AGF A/S", ("entertainment", "sport") },
+{ "ALK-Abelló B A/S", ("medicin", "drugs") },
+{ "Alm. Brand A/S", ("finance", "ensurance") },
+{ "Ambu A/S", ("medicin", "equipment") },
+{ "Atlantic Petroleum P/F", ("industry", "commodities") },
+{ "Bang & Olufsen Holding A/S", ("detail", "tech") },
+{ "BankNordik P/F", ("finance", "bank") },
+{ "Bavarian Nordic A/S", ("medicin", "drugs") },
+{ "BioPorto A/S", ("medicin", "drugs") },
+{ "cBrain A/S", ("it", "end-to-end") },
+{ "Cemat A/S", ("finance", "real_estate") },
+{ "Danske Bank A/S", ("finance", "bank") },
+{ "Demant A/S", ("medicin", "equipment") },
+{ "DSV A/S", ("industry", "logistic") },
+{ "Fast Ejendom Danmark A/S", ("finance", "real_estate") },
+{ "FirstFarms A/S", ("industry", "commodities") },
+{ "FLSmidth & Co. A/S", ("industry", "factory") },
+{ "Novo Nordisk B A/S", ("medicin", "drugs") },
+{ "Novozymes A/S", ("medicin", "biotech") },
+{ "NTG Nordic Transport Group", ("industry", "logistic") },
+{ "Orphazyme A/S", ("medicin", "drugs") },
+{ "Pandora A/S", ("detail", "store") },
+{ "Rockwool International A A/S", ("industry", "factory") },
+{ "Rockwool International B A/S", ("industry", "factory") },
+{ "Royal Unibrew A/S", ("detail", "brewery") },
+{ "SAS AB", ("industri", "logistic") },
+{ "Solar B A/S", ("industry", "factory") },
+{ "Spar Nord Bank A/S", ("finance", "bank") },
+{ "Sydbank A/S", ("finance", "bank") },
+{ "Topdanmark A/S", ("finance", "ensurance") },
+{ "TORM Plc A", ("industry", "logistic") },
+{ "Tryg A/S", ("finance", "ensurance") },
+{ "Vestas Wind Systems A/S", ("industry", "power") },
+{ "Zealand Pharma A/S", ("medicin", "drugs") },
+{ "Ørsted A/S", ("industry", "power") },
+{ "Fynske Bank A/S", ("finance", "bank") },
+{ "Gabriel Holding A/S", ("industry", "factory") },
+{ "Genmab A/S", ("medicin", "drugs") },
+{ "German High Street Properties A/S", ("finance", "real_estate") },
+{ "Glunz & Jensen Holding A/S", ("industry", "factory") },
+{ "GreenMobility A/S", ("industry", "power") },
+{ "Grønlandsbanken A/S", ("finance", "bank") },
+{ "Gyldendal B A/S", ("detail", "store") },
+{ "Harboes Bryggeri B A/S", ("detail", "brewery") },
+{ "HusCompagniet", ("finance", "real_estate") },
+{ "Hvidbjerg Bank A/S", ("finance", "bank") },
+{ "InterMail A/S", ("it", "end-to-end") },
+{ "Jeudan A/S", ("finance", "real_estate") },
+{ "Kreditbanken A/S", ("finance", "bank") },
+{ "Københavns Lufthavne A/S", ("industry", "logistic") },
+{ "Lollands Bank A/S", ("finance", "bank") },
+{ "Luxor B A/S", ("finance", "investing") },
+{ "Lån og Spar Bank A/S", ("finance", "bank") },
+{ "MT Hojgaard Holding A/S", ("industry", "construction") },
+{ "Møns Bank A/S", ("finance", "bank") },
+{ "Newcap Holding A/S", ("finance", "ensurance") },
+{ "Nilfisk Holding A/S", ("detail", "tech") },
+{ "NNIT A/S", ("it", "consultant") },
+{ "Nordfyns Bank A/S", ("finance", "bank") },
+{ "Nordic Shipholding A/S", ("industry", "logistic") },
+{ "North Media A/S", ("it", "media_group") },
+{ "NTR Holding B A/S", ("industry", "factory") },
+{ "Onxeo SA (Copenhagen)", ("medicin", "drugs") },
+{ "Park Street A/S", ("finance", "real_estate") },
+{ "PARKEN Sport & Entertainment A/S", ("entertainment", "parks") },
+{ "Per Aarsleff Holding A/S B", ("industry", "construction") },
+{ "Prime Office A/S", ("finance", "real_estate") },
+{ "Q-Interline A/S", ("it", "end-to-end") },
+{ "Rias B A/S", ("industry", "factory") },
+{ "Ringkjøbing Landbobank A/S", ("finance", "bank") },
+{ "Roblon B A/S", ("industry", "factory") },
+{ "Rovsing A/S", ("it", "end-to-end") },
+{ "RTX A/S", ("detail", "tech") },
+{ "Sanistål A/S", ("industry", "factory") },
+{ "Scandinavian Brake Systems A/S", ("industry", "factory") },
+{ "Scandinavian Investment Group A/S", ("finance", "investing") },
+{ "Schouw & Co. A/S", ("industry", "factory") },
+{ "Silkeborg IF Invest A/S", ("entertainment", "sport") },
+{ "SimCorp A/S", ("it", "end-to-end") },
+{ "SKAKO A/S", ("industry", "factory") },
+{ "Skjern Bank A/S", ("finance", "bank") },
+{ "SP Group A/S", ("industry", "producent") },
+{ "Sparekassen Sjælland-Fyn A/S", ("finance", "bank") },
+{ "Stenocare A/S", ("medicin", "drugs") },
+{ "Strategic Investments A/S", ("finance", "investing") },
+{ "The Drilling Company of 1972 A/S", ("industry", "commodities") },
+{ "Tivoli A/S", ("entertainment", "park") },
+{ "Totalbanken A/S", ("finance", "bank") },
+{ "Trifork Holding AG", ("it", "consultant") },
+{ "United International Enterprises Ltd", ("finance", "investing") },
+{ "Vestjysk Bank A/S", ("finance", "bank") },
+{ "Wealth Invest Secure Select Aktier", ("finance", "investing") },
+{ "Össur hf.", ("medicin", "equipment" )}

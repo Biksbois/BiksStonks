@@ -66,7 +66,8 @@ BEGIN
             PrimaryListing VARCHAR(100),
             SummaryType VARCHAR(100),
             Symbol VARCHAR(100),
-            Category VARCHAR(100)
+            PrimaryCategory VARCHAR(100),
+            SecondaryCategory VARCHAR(100)
         ); 
     END IF;
 END
@@ -149,7 +150,8 @@ CREATE TABLE IF NOT EXISTS dataset(
     PrimaryListing VARCHAR(100) NOT NULL,
     SummaryType VARCHAR(100) NOT NULL,
     Symbol VARCHAR(100) NOT NULL, 
-    Category VARCHAR(100) NOT NULL,
+    PrimaryCategory VARCHAR(100) NOT NULL,
+    SecondaryCategory VARCHAR(100) NOT NULL,
 
     CONSTRAINT fk_asset
         FOREIGN KEY(AssetType)
@@ -167,8 +169,12 @@ CREATE TABLE IF NOT EXISTS dataset(
         FOREIGN KEY(IssuerCountry)
             REFERENCES metadata_issuer(country),
     
-    CONSTRAINT fk_category
-        FOREIGN KEY(Category)
+    CONSTRAINT fk_primary_category
+        FOREIGN KEY(SecondaryCategory)
+            REFERENCES metadata_category(category),
+
+    CONSTRAINT fk_secondary_category
+        FOREIGN KEY(SecondaryCategory)
             REFERENCES metadata_category(category)
 );
 
@@ -217,10 +223,10 @@ DECLARE
 BEGIN
     FOREACH s IN ARRAY source
     LOOP
-        UPDATE dataset SET AssetType = s.AssetType, CurrencyCode = s.CurrencyCode, Description = s.Description, ExchangeId = s.ExchangeId, GroupId = s.GroupId, IssuerCountry = s.IssuerCountry, PrimaryListing = s.PrimaryListing, SummaryType = s.SummaryType, Symbol = s.Symbol, category = s.Category WHERE Identifier = s.Identifier;
+        UPDATE dataset SET AssetType = s.AssetType, CurrencyCode = s.CurrencyCode, Description = s.Description, ExchangeId = s.ExchangeId, GroupId = s.GroupId, IssuerCountry = s.IssuerCountry, PrimaryListing = s.PrimaryListing, SummaryType = s.SummaryType, Symbol = s.Symbol, PrimaryCategory = s.PrimaryCategory, SecondaryCategory = s.SecondaryCategory WHERE Identifier = s.Identifier;
         IF NOT FOUND THEN
-        INSERT INTO dataset(Identifier, AssetType, CurrencyCode, Description, ExchangeId, GroupId, IssuerCountry, PrimaryListing, SummaryType, Symbol, Category)
-        VALUES(s.Identifier, s.AssetType, s.CurrencyCode, s.Description, s.ExchangeId, s.GroupId, s.IssuerCountry, s.PrimaryListing, s.SummaryType, s.Symbol, s.Category);
+        INSERT INTO dataset(Identifier, AssetType, CurrencyCode, Description, ExchangeId, GroupId, IssuerCountry, PrimaryListing, SummaryType, Symbol, PrimaryCategory, SecondaryCategory)
+        VALUES(s.Identifier, s.AssetType, s.CurrencyCode, s.Description, s.ExchangeId, s.GroupId, s.IssuerCountry, s.PrimaryListing, s.SummaryType, s.Symbol, s.PrimaryCategory, s.SecondaryCategory);
         END IF;
     END LOOP;
 end; $$
@@ -265,77 +271,71 @@ BEGIN
 end; $$
 language plpgsql;
 
-DO $$
-BEGIN
-    IF 0 = (SELECT COUNT(*) FROM metadata_issuer) THEN
-        INSERT INTO
-            metadata_issuer(country)
-        VALUES
-            ('DK'),
-            ('SE'),
-            ('GB'),
-            ('CH'),
-            ('IS'),
-            ('FO'),
-            ('BS'),
-            ('FR'),
-            ('GL'),
-            ('FI');
-    END IF;
-END
-$$;
+INSERT INTO
+    metadata_issuer(country)
+VALUES
+    ('DK'),
+    ('SE'),
+    ('GB'),
+    ('CH'),
+    ('IS'),
+    ('FO'),
+    ('BS'),
+    ('FR'),
+    ('GL'),
+    ('FI') ON CONFLICT (country) DO NOTHING;
 
-DO $$
-BEGIN
-    IF 0 = (SELECT COUNT(*) FROM metadata_currency) THEN
-        INSERT INTO 
-            metadata_currency(currency)
-        VALUES
-            ('DKK');
-    END IF;
-END
-$$;
 
-DO $$
-BEGIN
-    IF 0 = (SELECT COUNT(*) FROM metadata_asset) THEN
-        INSERT INTO
-            metadata_asset(asset)
-        VALUES
-            ('Stock');
-    END IF;
-END
-$$;
+INSERT INTO 
+    metadata_currency(currency)
+VALUES
+    ('DKK') ON CONFLICT (currency) DO NOTHING;
 
-DO $$
-BEGIN
-    IF 0 = (SELECT COUNT(*) FROM metadata_exchange) THEN
-        INSERT INTO 
-            metadata_exchange(exchange)
-        VALUES
-            ('CSE');
-    END IF;
-END
-$$;
 
-DO $$
-BEGIN
-    IF 0 = (SELECT COUNT(*) FROM metadata_summary) THEN
-        INSERT INTO 
-            metadata_summary(summary)
-        VALUES
-            ('Instrument');
-    END IF;
-END
-$$;
+INSERT INTO
+    metadata_asset(asset)
+VALUES
+    ('Stock') ON CONFLICT (asset) DO NOTHING;
 
-DO $$
-BEGIN
-    IF 0 = (SELECT COUNT(*) FROM metadata_category) THEN
-        INSERT INTO
-            metadata_category(category)
-        VALUES
-            ('UNKNOWN');
-    END IF;
-END
-$$;
+INSERT INTO 
+    metadata_exchange(exchange)
+VALUES
+    ('CSE') ON CONFLICT (exchange) DO NOTHING;
+
+
+INSERT INTO 
+    metadata_summary(summary)
+VALUES
+    ('Instrument') ON CONFLICT (summary) DO NOTHING;
+
+INSERT INTO
+    metadata_category(category)
+VALUES
+    ('industry'),
+    ('factory'),
+    ('hardware_store'),
+    ('construction'),
+    ('commodities'),
+    ('energy'),
+    ('medicin'),
+    ('biotech'),
+    ('equipment'),
+    ('drugs'),
+    ('entertainment'),
+    ('sport'),
+    ('parks'),
+    ('finance'),
+    ('investing'),
+    ('real_estate'),
+    ('bank'),
+    ('logistic'),
+    ('ensurance'),
+    ('it'),
+    ('consultant'),
+    ('detail'),
+    ('tech'),
+    ('end-to-end'),
+    ('store'),
+    ('brewery'),
+    ('media_group'),
+    ('UNKNOWN') ON CONFLICT (category) DO NOTHING;

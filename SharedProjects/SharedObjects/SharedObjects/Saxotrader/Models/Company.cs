@@ -12,6 +12,7 @@
         public string Primarylisting { get; set; }
         public string Summarytype { get; set; }
         public string Symbol { get; set; }
-        public string Category { get; set; }
+        public string PrimaryCategory { get; set; }
+        public string SecondaryCategory { get; set; }
     }
 }

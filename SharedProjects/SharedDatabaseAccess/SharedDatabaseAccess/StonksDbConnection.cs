@@ -21,11 +21,9 @@ namespace SharedDatabaseAccess
             PostgresConnection.InsertRows(param, connectionString, query);
         }
 
-        public void InsertCompanies(List<Company> companies, string connectionString, string category)
+        public void InsertCompanies(List<Company> companies, string connectionString)
         {
             var query = "upsert_dataset";
-
-            companies.ForEach(company => company.Category = category);
 
             var param = new { source = companies.ToArray() };
 
