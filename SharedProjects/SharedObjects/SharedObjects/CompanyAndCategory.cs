@@ -151,6 +151,5 @@ namespace SharedObjects
                 return (defaultCategory, defaultCategory);
             }
         }
-
     }
 }
