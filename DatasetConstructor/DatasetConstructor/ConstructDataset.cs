@@ -55,6 +55,15 @@ namespace DatasetConstructor
             await ScrapeDataFromStocks(dataFolder, _saxoDataHandler, relevantCompanies);
         }
 
+        public async Task ScrapeDataToFolder(string dataFolder, int num)
+        {
+            var DanishStocks = await _saxoDataHandler.GetAllCompanyData(Exchange.CSE, AssetTypes.Stock);
+
+            var relevantCompanies = DanishStocks.Take(num).ToList();
+
+            await ScrapeDataFromStocks(dataFolder, _saxoDataHandler, relevantCompanies);
+        }
+
         private async Task ScrapeDataFromStocks(string dataFolder, SaxoDataHandler saxoDataHandler, List<Stock> stocks)
         {
             var DatesToCheck = CalcDatesToCheck().Select(x => x.ToString("yyyy - MM - ddTHH:mm: ss.ffffffZ", CultureInfo.InvariantCulture));

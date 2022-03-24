@@ -24,7 +24,7 @@ ConstructDataset constructDataset = new ConstructDataset(token, connectionString
 
 var companies = new List<string>() { "Danske Bank A/S", "Vestas Wind Systems A/S" };
 
-await constructDataset.ScrapeDataToFolder(dataFolder, companies);
+await constructDataset.ScrapeDataToFolder(dataFolder, 10);
 
 constructDataset.InsertDatafolder(dataFolder);
 
