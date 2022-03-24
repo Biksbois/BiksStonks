@@ -2,6 +2,7 @@
 using DatasetConstructor.Saxotrader.Models;
 using Newtonsoft.Json;
 using SharedDatabaseAccess;
+using SharedObjects;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -31,7 +32,7 @@ namespace DatasetConstructor
                 stocks.ForEach(stock => stock.Time = DateTime.SpecifyKind(stock.Time, DateTimeKind.Unspecified));
 
                 conn.InsertStocks(stocks, _connectionString);
-                conn.InsertCompanies(new List<Company>() { company }, _connectionString, "UNKNOWN");
+                conn.InsertCompanies(new List<Company>() { company }, _connectionString);
             }
         }
 
@@ -110,6 +111,23 @@ namespace DatasetConstructor
                 using (StreamReader file = File.OpenText(files[1]))
                 {
                     company = JsonConvert.DeserializeObject<Company>(file.ReadToEnd());
+
+                    (string primary, string secondary) = CompanyAndCategory.GetCategoryOrDefault(company.Description);
+
+                    company.PrimaryCategory = primary;
+                    company.SecondaryCategory = secondary;
+
+
+                    if (CompanyAndCategory.Values.TryGetValue(company.Description, out (string primary, string secondary) category))
+                    {
+                        company.PrimaryCategory = category.primary;
+                        company.SecondaryCategory = category.secondary;
+                    }
+                    else
+                    {
+                        company.PrimaryCategory = category.primary;
+                        company.SecondaryCategory = category.secondary;
+                    }
 
                     Console.WriteLine(company.Description);
                 }
