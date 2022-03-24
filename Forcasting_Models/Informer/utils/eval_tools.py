@@ -106,3 +106,13 @@ def plot_sample(exp, flag, idx, dates=False, **kwargs):
         ax.legend()
         fig.show()
         
+def stock_id_to_df(stock_id, pg_conn, agg, sample_freq):
+    query = f'SELECT time AS date, open, high, low, volume, close \
+                        FROM stock WHERE identifier = {stock_id} \
+                        ORDER BY time ASC;'
+    df = pd.read_sql(query, pg_conn)
+    df.set_index(pd.DatetimeIndex(df['date']), inplace=True)
+    # resample 
+    df = df.resample(sample_freq).agg(agg).dropna()
+    df.reset_index(inplace=True)
+    return df
