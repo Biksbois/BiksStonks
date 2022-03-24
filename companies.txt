@@ -1,0 +1,157 @@
+Gabriel Holding - industri - producent
+NTR - industri - producent (sikkerhedsveste)
+Rias - industri - producent (plastic)
+Roblon - industri - producent
+Scandinavian brake system - industri - producent
+Schouw and co - industri - producent
+Sanistål - industri - producent
+Skako - industri - producent
+SP Group - industri - producent
+Glunz og jensen - industri - producent
+Solar - industri - producent
+Rockwoll - industri - producent
+FLSmith and Co - industri - producent
+Brd. Klee - industri - byggemarkede
+Brd hartmann - industri - producent
+NKT - industri - producent
+
+Brd A og O Johansen - industri - byggemarkede
+flugger - industri - byggemarkede
+H+H internationals - industri - byggemarkede
+
+Per Aarsleff - industri - byggeri
+MT Hojgård - industri - byggeri
+Agat ejndomme - industri - byggeri
+
+Atlantic Petroleum - industri - commodities
+The Drilling Company - industri - commodities
+FirstFarms - industri - commodities
+
+Green hydrogren system - industry - energi
+Vestas - industry - energi
+Ørsted - industry - energi
+
+
+Novozymes A/S - medicin - biotech
+Chr hansen holding - medicin - biotech
+
+ChemoMetec - medicin - equipment
+Coloplast - medicin - equipment
+Ambu - medicin - equipment
+Ossur - medicin - equipment
+demant - medicin - equipment
+GN store nord - medicin - equipment
+
+
+H. Lundbech - medicin - drugs
+ALK Abello - medicin - drugs
+Bavarin Nordic - medicin - drugs
+BioPorto - medicin - drugs
+Novo Nordisk - medicin - drugs
+Orphazyme - medicin - drugs
+Zealand - medicin - drugs
+Onxeo - medicin - drugs
+Genmab - medicin - drugs
+Stenocare - medicin - drugs
+
+Brønby - entertainment - sport
+AAB - entertainment - sport
+AGF - entertainment - sport
+Silkeborg IF - entertainment - sport
+
+
+Tivoli - entertainment - ?
+Parken - entertainment - ?
+
+
+Scandinavian invenstement group - Finance - Investering
+Strategic invest - Finance - Investering
+United International Enterprice - Finance - Investering
+Wealth invest secure select - Finance - Investering
+luxor - Finance - Investering
+Blue Vision - Finance - Investering
+copenhagen capital - Finance - Investering
+EAC  invest - Finance - Investering
+
+
+Cemat - finance - realstate
+Fast ejndom - finance - realstate
+German Hih Street Properties - finance - realstate
+HusCompagniet - finance - realstate
+jeudan - finance - realstate
+Park street - finance - realstate
+Prime Office - finance - realstate
+
+
+Danks andelskassers banks - banks
+Djusrsland banks - banks
+Jyske bank - bank
+Nordea - bank
+BankNordik - bank
+dankse bank - bank
+sydbank - bank
+Spar nord - bank
+Fynsk bank - bank
+Grønlandsbank - bank
+Hvidberg bank - bank
+kreditbanken - bank
+lollands bank - bank
+Lån og spar - bank
+Møns bank - bank
+Nordfyns bank - bank
+Rinkkgjøbing Landobank - bank
+Vestjysk Bank - bank
+Skjern bank - bank
+Sparekassen sjælland-fyn  - bank
+Totalbanken - bank
+
+
+DFDS - logistic
+Mærks  logistic
+DSV - logistic
+NTG Nordic Transport Group - logistic
+SAS - logistic
+TORM pic - logistic (kun olie)
+københavn lufthavn - logistic
+Nordic shipholding - logistic
+D/S norden - logistic
+
+
+Aml Brand - Forsikring
+TopDanmark - Forsikring
+Tryg - Forsikring
+Newcap - Forsikring
+
+
+Trifork - it - konsulent
+Netcompany - it - konsulent
+Columbus - it - konsulent
+NNIT - it - konsulent
+North Media - it - media group
+cbrain - it - end-to-end
+Q Interline - it - end-to-end
+Rovsing - it - end-to-end
+SimCorp - it - end-to-end
+InterMail - it - end-to-end
+
+
+Bang og olufsen - detail - tech
+dantax - detail - tech
+RTX - detail - tech
+Nilfisk - detail - tech
+Boozt - detail - butik
+Matas - detail - butik
+Pandora - detail - butik
+Gyldendal - detail - butik
+Scandinavian tobacco group - detail
+Harboe - detail - bryggeri
+Royal - detail - bryggeri
+carslberg - detail - bryggeri
+
+
+
+
+aquaporin - natural water machines
+green mobility - car sharing
+TCM Group - træ køkken
+ISS - it
