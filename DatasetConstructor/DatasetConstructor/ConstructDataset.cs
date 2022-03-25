@@ -56,11 +56,11 @@ namespace DatasetConstructor
             await ScrapeDataFromStocks(dataFolder, _saxoDataHandler, relevantCompanies);
         }
 
-        public async Task ScrapeDataToFolder(string dataFolder, int num)
+        public async Task ScrapeDataToFolder(string dataFolder, int num=-1)
         {
             var DanishStocks = await _saxoDataHandler.GetAllCompanyData(Exchange.CSE, AssetTypes.Stock);
 
-            var relevantCompanies = DanishStocks.Take(num).ToList();
+            var relevantCompanies = num > 0 ? DanishStocks.Take(num).ToList(): DanishStocks;
 
             await ScrapeDataFromStocks(dataFolder, _saxoDataHandler, relevantCompanies);
         }
@@ -114,20 +114,8 @@ namespace DatasetConstructor
 
                     (string primary, string secondary) = CompanyAndCategory.GetCategoryOrDefault(company.Description);
 
-                    company.PrimaryCategory = primary;
-                    company.SecondaryCategory = secondary;
-
-
-                    if (CompanyAndCategory.Values.TryGetValue(company.Description, out (string primary, string secondary) category))
-                    {
-                        company.PrimaryCategory = category.primary;
-                        company.SecondaryCategory = category.secondary;
-                    }
-                    else
-                    {
-                        company.PrimaryCategory = category.primary;
-                        company.SecondaryCategory = category.secondary;
-                    }
+                    company.Primarycategory = primary;
+                    company.Secondarycategory = secondary;
 
                     Console.WriteLine(company.Description);
                 }
