@@ -9,12 +9,17 @@ using System;
 using System.Linq;
 using System.Globalization;
 using DatasetConstructor;
-
-
+using SharedSaxoToken;
 
 var config = GetConfig();
 
-var token = config["token"];
+//var token = config["token"];
+var username = config["saxoUsername"];
+var password = config["saxoPassword"];
+var edgeLocation = config["edgeLocation"];
+
+var token = await SeleniumDriver.GetToken(username, password, edgeLocation);
+
 var connectionString = config["ConnectionString"];
 var dataFolder = config["datafolder"];
 
@@ -24,7 +29,7 @@ ConstructDataset constructDataset = new ConstructDataset(token, connectionString
 
 var companies = new List<string>() { "Danske Bank A/S", "Vestas Wind Systems A/S" };
 
-//await constructDataset.ScrapeDataToFolder(dataFolder);
+await constructDataset.ScrapeDataToFolder(dataFolder);
 
 constructDataset.InsertDatafolder(dataFolder);
 
