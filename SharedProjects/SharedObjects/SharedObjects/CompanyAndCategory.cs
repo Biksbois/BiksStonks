@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -150,6 +151,19 @@ namespace SharedObjects
             {
                 return (defaultCategory, defaultCategory);
             }
+        }
+
+        public async static Task<(string,string)> GetCompanyCategory(string tradingSymbol) 
+        {
+            var url = $"https://www.marketwatch.com/investing/stock/{tradingSymbol}/company-profile?countrycode=dk&mod=mw_quote_tab";
+            var httpClient = new HttpClient();
+            var html = await httpClient.GetStringAsync(url);
+            var htmlDocument = new HtmlDocument();
+            htmlDocument.LoadHtml(html);
+
+            var industry = htmlDocument.DocumentNode.SelectSingleNode("/html/body/div[3]/div[7]/div[1]/div[1]/div/ul/li[1]/span");
+            var sector = htmlDocument.DocumentNode.SelectSingleNode("/html/body/div[3]/div[7]/div[1]/div[1]/div/ul/li[2]/span");
+            return (industry.InnerText,sector.InnerText);
         }
     }
 }
