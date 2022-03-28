@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedObjects", "..\SharedP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedDatabaseAccess", "..\SharedProjects\SharedDatabaseAccess\SharedDatabaseAccess\SharedDatabaseAccess.csproj", "{3879E0B5-2B6B-45E9-A7C4-6811114EBF04}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedSaxoToken", "..\SharedProjects\SharedSaxoToken\SharedSaxoToken\SharedSaxoToken.csproj", "{850002AB-A624-409B-8622-B8C6AE7BADD4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{3879E0B5-2B6B-45E9-A7C4-6811114EBF04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3879E0B5-2B6B-45E9-A7C4-6811114EBF04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3879E0B5-2B6B-45E9-A7C4-6811114EBF04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{850002AB-A624-409B-8622-B8C6AE7BADD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{850002AB-A624-409B-8622-B8C6AE7BADD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{850002AB-A624-409B-8622-B8C6AE7BADD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{850002AB-A624-409B-8622-B8C6AE7BADD4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
