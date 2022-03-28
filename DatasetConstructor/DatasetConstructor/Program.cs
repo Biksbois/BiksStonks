@@ -9,9 +9,9 @@ using System;
 using System.Linq;
 using System.Globalization;
 using DatasetConstructor;
+using SharedObjects;
 
-
-
+var test = await CompanyAndCategory.GetCompanyCategory("danske");
 var config = GetConfig();
 
 var token = config["token"];
