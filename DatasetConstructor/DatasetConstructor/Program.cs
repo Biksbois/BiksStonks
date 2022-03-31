@@ -18,6 +18,8 @@ var username = config["saxoUsername"];
 var password = config["saxoPassword"];
 var edgeLocation = config["edgeLocation"];
 
+var yearsBack = 10;
+
 var token = await SeleniumDriver.GetToken(username, password, edgeLocation);
 
 var connectionString = config["ConnectionString"];
@@ -29,7 +31,7 @@ ConstructDataset constructDataset = new ConstructDataset(token, connectionString
 
 var companies = new List<string>() { "Danske Bank A/S", "Vestas Wind Systems A/S" };
 
-await constructDataset.ScrapeDataToFolder(dataFolder);
+await constructDataset.ScrapeDataToFolder(dataFolder, yearsBack);
 
 constructDataset.InsertDatafolder(dataFolder);
 
