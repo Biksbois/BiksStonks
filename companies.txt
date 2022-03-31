@@ -11,10 +11,10 @@ Glunz og jensen - industri - producent
 Solar - industri - producent
 Rockwoll - industri - producent
 FLSmith and Co - industri - producent
-Brd. Klee - industri - byggemarkede
 Brd hartmann - industri - producent
 NKT - industri - producent
 
+Brd. Klee - industri - byggemarkede
 Brd A og O Johansen - industri - byggemarkede
 flugger - industri - byggemarkede
 H+H internationals - industri - byggemarkede
@@ -60,8 +60,8 @@ AGF - entertainment - sport
 Silkeborg IF - entertainment - sport
 
 
-Tivoli - entertainment - ?
-Parken - entertainment - ?
+Tivoli - entertainment - parks
+Parken - entertainment - parks
 
 
 Scandinavian invenstement group - Finance - Investering

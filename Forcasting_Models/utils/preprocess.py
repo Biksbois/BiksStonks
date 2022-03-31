@@ -10,6 +10,8 @@ def resample_data_to_interval(interval, df):
             'close': 'last', 
             'volume': 'sum'}).dropna()
     df_d.reset_index(inplace=True)
+
+
     # df_d = df_d[["date","close"]]
 
     # df_d["date"] = pd.to_datetime(df_d['date'])
