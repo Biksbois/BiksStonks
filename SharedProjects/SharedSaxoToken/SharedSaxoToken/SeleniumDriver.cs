@@ -39,10 +39,10 @@ namespace SharedSaxoToken
 
                 // Open dropdown menu and press "get 24h token
                 driver.FindElement(By.XPath(_dropdownButtonXPath)).Click();
-                await Task.Delay(100);
+                await Task.Delay(1000);
 
                 driver.FindElement(By.XPath(_tokenButtonXPaht)).Click();
-                await Task.Delay(100);
+                await Task.Delay(1000);
 
 
                 // Login to saxo with username and email
@@ -55,11 +55,11 @@ namespace SharedSaxoToken
                 driver.FindElement(By.XPath(_loginXPath)).Click();
 
                 // Accept terms and conditions
-                await Task.Delay(100);
+                await Task.Delay(1000);
                 driver.FindElement(By.XPath(_acceptTermsXPath)).Click();
 
                 // Copy token
-                await Task.Delay(100);
+                await Task.Delay(1000);
 
                 var token = driver.FindElement(By.Id(_tokenId)).Text;
 

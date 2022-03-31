@@ -155,7 +155,7 @@ namespace SharedObjects
 
         public async static Task<(string,string)> GetCompanyCategory(string tradingSymbol) 
         {
-            var url = $"https://www.marketwatch.com/investing/stock/{tradingSymbol}/company-profile?countrycode=dk&mod=mw_quote_tab";
+            var url = $"https://www.marketwatch.com/investing/stock/{tradingSymbol.ToLower()}/company-profile?countrycode=dk&mod=mw_quote_tab";
             var httpClient = new HttpClient();
             var html = await httpClient.GetStringAsync(url);
             var htmlDocument = new HtmlDocument();

@@ -36,7 +36,7 @@ namespace DatasetConstructor
             }
         }
 
-        public async Task ScrapeDataToFolder(string dataFolder)
+        public async Task ScrapeDataToFolder(string dataFolder, int yearsBack)
         {
             var DanishStocks = await _saxoDataHandler.GetAllCompanyData(Exchange.CSE, AssetTypes.Stock);
 
@@ -44,30 +44,30 @@ namespace DatasetConstructor
 
             var a = DanishStocks.Select(stock => stock.Description).ToList();
 
-            await ScrapeDataFromStocks(dataFolder, _saxoDataHandler, DanishStocks);
+            await ScrapeDataFromStocks(dataFolder, _saxoDataHandler, DanishStocks, yearsBack);
         }
 
-        public async Task ScrapeDataToFolder(string dataFolder, List<string> companies)
+        public async Task ScrapeDataToFolder(string dataFolder, List<string> companies, int yearsBack)
         {
             var DanishStocks = await _saxoDataHandler.GetAllCompanyData(Exchange.CSE, AssetTypes.Stock);
 
             var relevantCompanies = DanishStocks.Where(x => companies.Contains(x.Description)).ToList();
 
-            await ScrapeDataFromStocks(dataFolder, _saxoDataHandler, relevantCompanies);
+            await ScrapeDataFromStocks(dataFolder, _saxoDataHandler, relevantCompanies, yearsBack);
         }
 
-        public async Task ScrapeDataToFolder(string dataFolder, int num=-1)
+        public async Task ScrapeDataToFolder(string dataFolder, int yearsBack, int num=-1)
         {
             var DanishStocks = await _saxoDataHandler.GetAllCompanyData(Exchange.CSE, AssetTypes.Stock);
 
             var relevantCompanies = num > 0 ? DanishStocks.Take(num).ToList(): DanishStocks;
 
-            await ScrapeDataFromStocks(dataFolder, _saxoDataHandler, relevantCompanies);
+            await ScrapeDataFromStocks(dataFolder, _saxoDataHandler, relevantCompanies, yearsBack);
         }
 
-        private async Task ScrapeDataFromStocks(string dataFolder, SaxoDataHandler saxoDataHandler, List<Stock> stocks)
+        private async Task ScrapeDataFromStocks(string dataFolder, SaxoDataHandler saxoDataHandler, List<Stock> stocks, int yearsBack)
         {
-            var DatesToCheck = CalcDatesToCheck().Select(x => x.ToString("yyyy - MM - ddTHH:mm: ss.ffffffZ", CultureInfo.InvariantCulture));
+            var DatesToCheck = CalcDatesToCheck(yearsBack).Select(x => x.ToString("yyyy - MM - ddTHH:mm: ss.ffffffZ", CultureInfo.InvariantCulture));
             var results = new Dictionary<Stock, List<PriceValues>>();
             
 
