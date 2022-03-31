@@ -25,6 +25,7 @@ if __name__ == "__main__":
             print(
                 f"Models will be trained on companies with primary category in {arguments.primarycategory}"
             )
+
     elif arguments.secondarycategory:
         if ensure_valid_values(
             arguments.secondarycategory, secondary_category, "secondary category"
@@ -32,11 +33,13 @@ if __name__ == "__main__":
             print(
                 f"Models will be trained on companies with secondary category in {arguments.secondarycategory}"
             )
+
     elif arguments.companyid:
         if ensure_valid_values(arguments.companyid, company_id, "companyid"):
             print(
                 f"Models will be trained on companies with company id in {arguments.companyid}"
             )
+
     else:
         print("No information was provided. No models will be trained.")
 
