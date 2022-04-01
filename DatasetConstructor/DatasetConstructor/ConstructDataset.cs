@@ -3,6 +3,7 @@ using DatasetConstructor.Saxotrader.Models;
 using Newtonsoft.Json;
 using SharedDatabaseAccess;
 using SharedObjects;
+using SharedSaxoToken;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,11 +17,19 @@ namespace DatasetConstructor
     {
         private readonly SaxoDataHandler _saxoDataHandler;
         private readonly string _connectionString;
+        private readonly StonksDbConnection _stonksdb;
+        private readonly string _password;
+        private readonly string _username;
+        private readonly string _edgeLocation;
 
-        public ConstructDataset(string token, string connectionString)
+        public ConstructDataset(string connectionString, string username, string password, string edgeLocation)
         {
-            _saxoDataHandler = new SaxoDataHandler(token);
+            _saxoDataHandler = new SaxoDataHandler();
             _connectionString = connectionString;
+            _stonksdb = new StonksDbConnection();
+            _username = username;
+            _password = password;
+            _edgeLocation = edgeLocation;
         }
 
         public void InsertDatafolder(string dataFolder)
@@ -38,7 +47,8 @@ namespace DatasetConstructor
 
         public async Task ScrapeDataToFolder(string dataFolder, int yearsBack)
         {
-            var DanishStocks = await _saxoDataHandler.GetAllCompanyData(Exchange.CSE, AssetTypes.Stock);
+            var token = await GetToken();
+            var DanishStocks = await _saxoDataHandler.GetAllCompanyData(token, Exchange.CSE, AssetTypes.Stock);
 
             DanishStocks.RemoveAll(x => x.Description.Contains("**See ESG:xcse(Ennogie Solar Group A/S)"));
 
@@ -49,7 +59,8 @@ namespace DatasetConstructor
 
         public async Task ScrapeDataToFolder(string dataFolder, List<string> companies, int yearsBack)
         {
-            var DanishStocks = await _saxoDataHandler.GetAllCompanyData(Exchange.CSE, AssetTypes.Stock);
+            var token = await GetToken();
+            var DanishStocks = await _saxoDataHandler.GetAllCompanyData(token, Exchange.CSE, AssetTypes.Stock);
 
             var relevantCompanies = DanishStocks.Where(x => companies.Contains(x.Description)).ToList();
 
@@ -58,7 +69,8 @@ namespace DatasetConstructor
 
         public async Task ScrapeDataToFolder(string dataFolder, int yearsBack, int num=-1)
         {
-            var DanishStocks = await _saxoDataHandler.GetAllCompanyData(Exchange.CSE, AssetTypes.Stock);
+            var token = await GetToken();
+            var DanishStocks = await _saxoDataHandler.GetAllCompanyData(token, Exchange.CSE, AssetTypes.Stock);
 
             var relevantCompanies = num > 0 ? DanishStocks.Take(num).ToList(): DanishStocks;
 
@@ -73,6 +85,7 @@ namespace DatasetConstructor
 
             foreach (Stock DanishStock in stocks)
             {
+                var token = await GetToken();
                 Console.WriteLine($"Currently fetching for: '{DanishStock.Description}'");
                 results.Add(DanishStock, new List<PriceValues>());
                 if (!Directory.Exists(GetPath(DanishStock, dataFolder)))
@@ -81,19 +94,24 @@ namespace DatasetConstructor
                     {
                         try
                         {
-                            results[DanishStock].AddRange(await saxoDataHandler.GetHistoricData(AssetTypes.Stock, DanishStock.Identifier, date));
+                            results[DanishStock].AddRange(await saxoDataHandler.GetHistoricData(token, AssetTypes.Stock, DanishStock.Identifier, date));
                         }
                         catch (Exception)
                         {
                             Console.WriteLine("En exception occured, retrying in 90sec.");
                             Thread.Sleep(100000);
-                            results[DanishStock].AddRange(await saxoDataHandler.GetHistoricData(AssetTypes.Stock, DanishStock.Identifier, date));
+                            results[DanishStock].AddRange(await saxoDataHandler.GetHistoricData(token, AssetTypes.Stock, DanishStock.Identifier, date));
                             continue;
                         }
                     }
                     await CreateFileForDataPoints(DanishStock, results[DanishStock], dataFolder);
                 }
             }
+        }
+
+        private async Task<string> GetToken()
+        {
+            return await SaxoToken.GetAsync(_username, _password, _edgeLocation, _connectionString, _stonksdb);
         }
 
         private IEnumerable<(Company, List<PriceValues>)> ExtractDataFromPath(string basePath)

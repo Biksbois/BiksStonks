@@ -24,6 +24,17 @@ namespace SharedDatabaseAccess
             }
         }
 
+        public static T GetSingleRowWithParameters<T>(string query, string connectionString, object param)
+        {
+            using (var connection = new NpgsqlConnection(connectionString))
+            {
+                connection.Open();
+                var value = connection.QueryFirstOrDefault<T>(query, param);
+
+                return value;
+            }
+        }
+
         public static List<T> GetRows<T>(string query, string connectionString)
         {
             using (var connection = new NpgsqlConnection(connectionString))
@@ -32,6 +43,15 @@ namespace SharedDatabaseAccess
                 var value = connection.Query<T>(query).ToList();
 
                 return value;
+            }
+        }
+
+        public static void InsertRow(object param, string connectionString, string query)
+        {
+            using (var connection = new NpgsqlConnection(connectionString))
+            {
+                connection.Open();
+                connection.Query(query, param);
             }
         }
 

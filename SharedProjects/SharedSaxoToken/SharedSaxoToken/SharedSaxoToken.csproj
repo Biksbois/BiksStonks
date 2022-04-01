@@ -15,4 +15,8 @@
     <PackageReference Include="Selenium.WebDriver" Version="4.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\SharedDatabaseAccess\SharedDatabaseAccess\SharedDatabaseAccess.csproj" />
+  </ItemGroup>
+
 </Project>

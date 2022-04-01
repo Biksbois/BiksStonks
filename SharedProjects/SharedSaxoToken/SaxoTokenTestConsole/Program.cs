@@ -1,18 +1,26 @@
 ﻿
 
 
+using Microsoft.Extensions.Configuration;
+using SharedDatabaseAccess;
 using SharedSaxoToken;
 
-var selenium = new SeleniumDriver();
 var token = "??";
 
-var username = "";
-var password = "";
-var edgeLocation = "";
+var config = GetConfig();
+
+//var token = config["token"];
+var username = config["saxoUsername"];
+var password = config["saxoPassword"];
+var edgeLocation = config["edgeLocation"];
+var connectionString = config["connectionString"];
+
+var stonksdb = new StonksDbConnection();
 
 try
 {
-    token = await selenium.GetToken(username, password, edgeLocation);
+    token = await SaxoToken.GetAsync(username, password, edgeLocation, connectionString, stonksdb);
+    //token = await SeleniumDriver.GetToken(username, password, edgeLocation);
 }
 catch (Exception e)
 {
@@ -23,4 +31,12 @@ catch (Exception e)
 Console.WriteLine("TOKEN:");
 Console.WriteLine(token);
 
+static IConfigurationRoot? GetConfig()
+{
+    var config = new ConfigurationBuilder()
+    .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+    .AddUserSecrets<Program>()
+    .Build();
 
+    return config;
+}

@@ -103,6 +103,13 @@ CREATE TABLE IF NOT EXISTS score(
             REFERENCES model(name)
 );
 
+CREATE TABLE IF NOT EXISTS token(
+    id SERIAL PRIMARY KEY,
+    value VARCHAR(600),
+    valid_from TIMESTAMP,
+    valid_to TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS metadata_currency(
     id SERIAL PRIMARY KEY,
     currency VARCHAR(100) NOT NULL,

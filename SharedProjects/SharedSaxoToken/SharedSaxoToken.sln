@@ -4,8 +4,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.1.32210.238
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedSaxoToken", "SharedSaxoToken\SharedSaxoToken.csproj", "{5D925EDD-10A3-40EF-8D49-9CD3B970794D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E59DCAB4-23FF-4454-8EBF-DDEC8E2FD7FC} = {E59DCAB4-23FF-4454-8EBF-DDEC8E2FD7FC}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SaxoTokenTestConsole", "SaxoTokenTestConsole\SaxoTokenTestConsole.csproj", "{58A13E39-74EA-4782-BDFE-ED2969CE9E3F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedDatabaseAccess", "..\SharedDatabaseAccess\SharedDatabaseAccess\SharedDatabaseAccess.csproj", "{E59DCAB4-23FF-4454-8EBF-DDEC8E2FD7FC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharedObjects", "..\SharedObjects\SharedObjects\SharedObjects.csproj", "{0DF3299B-DA2F-45AF-9E42-9E89BD01DB68}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +28,14 @@ Global
 		{58A13E39-74EA-4782-BDFE-ED2969CE9E3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58A13E39-74EA-4782-BDFE-ED2969CE9E3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58A13E39-74EA-4782-BDFE-ED2969CE9E3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E59DCAB4-23FF-4454-8EBF-DDEC8E2FD7FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E59DCAB4-23FF-4454-8EBF-DDEC8E2FD7FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E59DCAB4-23FF-4454-8EBF-DDEC8E2FD7FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E59DCAB4-23FF-4454-8EBF-DDEC8E2FD7FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DF3299B-DA2F-45AF-9E42-9E89BD01DB68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DF3299B-DA2F-45AF-9E42-9E89BD01DB68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DF3299B-DA2F-45AF-9E42-9E89BD01DB68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DF3299B-DA2F-45AF-9E42-9E89BD01DB68}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

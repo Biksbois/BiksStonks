@@ -13,21 +13,18 @@ using SharedSaxoToken;
 
 var config = GetConfig();
 
-//var token = config["token"];
 var username = config["saxoUsername"];
 var password = config["saxoPassword"];
 var edgeLocation = config["edgeLocation"];
 
 var yearsBack = 10;
 
-var token = await SeleniumDriver.GetToken(username, password, edgeLocation);
-
 var connectionString = config["ConnectionString"];
 var dataFolder = config["datafolder"];
 
 // **See ESG:xcse(Ennogie Solar Group A/S)
 
-ConstructDataset constructDataset = new ConstructDataset(token, connectionString);
+ConstructDataset constructDataset = new ConstructDataset(connectionString, username, password, edgeLocation);
 
 var companies = new List<string>() { "Danske Bank A/S", "Vestas Wind Systems A/S" };
 
