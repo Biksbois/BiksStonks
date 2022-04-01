@@ -131,6 +131,10 @@ def get_secondary_category(conn):
 
     return df_list
 
+def get_company_name(identifier,conn):
+    return pd.read_sql_query(f"SELECT description from dataset where identifier = {identifier}", conn)
+
+
 
 def get_companyid(conn):
     df = pd.read_sql_query("SELECT DISTINCT identifier FROM dataset", conn)

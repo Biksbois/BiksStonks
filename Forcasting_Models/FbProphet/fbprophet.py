@@ -37,8 +37,8 @@ def model_fit(training_set, mcmc_samples=300, yearly_seasonality=False, weekly_s
     return model
 
 
-def get_cross_validation(model, horizon, initial, cutoff):
-    return cross_validation(model, horizon=horizon, initial=initial, cutoff=cutoff)
+def get_cross_validation(model, horizon):
+    return cross_validation(model, horizon=horizon)
 
 
 def get_performance_metrics(df):
