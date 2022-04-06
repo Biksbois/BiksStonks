@@ -1,5 +1,6 @@
 from unittest.mock import sentinel
 from utils.sentiment_analysis import SentimentAnalysis
+from utils.companines import CompaniesInHeadline
 from utils.translator import Translator
 from sentiment_sources.boersen import Boersen
 from utils.logger import initialize_logger
@@ -16,8 +17,9 @@ if __name__ == "__main__":
 
     analyzer = SentimentAnalysis()
     danish_translator = Translator(source_language="da", target_language="en")
+    company_in_headline = CompaniesInHeadline()
 
-    boersen = Boersen(analyzer, danish_translator, logger)
+    boersen = Boersen(analyzer, danish_translator, company_in_headline, logger)
 
     news_source = [boersen]
 
