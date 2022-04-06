@@ -56,6 +56,7 @@ DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'dataset_type') THEN
         CREATE TYPE dataset_type AS (
+
             AssetType VARCHAR(100),
             CurrencyCode VARCHAR(100),
             Description VARCHAR(100),
@@ -72,6 +73,45 @@ BEGIN
     END IF;
 END
 $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'sentiment_type') THEN
+        CREATE TYPE sentiment_type AS (
+            release_date TIMESTAMP,
+            source_headline VARCHAR(300),
+            target_headline VARCHAR(300),
+            source_language VARCHAR(10),
+            target_language VARCHAR(10),
+            neg DECIMAL,
+            pos DECIMAL,
+            neu DECIMAL,
+            compound DECIMAL,
+            url VARCHAR(300),
+            companies VARCHAR(100),
+            category VARCHAR(30)
+        ); 
+    END IF;
+END
+$$;
+
+CREATE TABLE IF NOT EXISTS sentiment(
+    id SERIAL PRIMARY KEY,
+    release_date TIMESTAMP,
+    source_headline VARCHAR(300),
+    target_headline VARCHAR(300),
+    source_language VARCHAR(10),
+    target_language VARCHAR(10),
+    neg DECIMAL,
+    pos DECIMAL,
+    neu DECIMAL,
+    compound DECIMAL,
+    url VARCHAR(300),
+    companies VARCHAR(100),
+    category VARCHAR(30),
+
+    CONSTRAINT source_headline_unique UNIQUE(source_headline)
+);
 
 CREATE TABLE IF NOT EXISTS model(
     id SERIAL PRIMARY KEY,
@@ -198,6 +238,37 @@ CREATE TABLE IF NOT EXISTS stock(
 );
 
 CREATE INDEX IF NOT EXISTS stock_id_index ON stock(Identifier, Time);
+CREATE INDEX IF NOT EXISTS sentiment_index ON sentiment(release_date, company, category);
+CREATE INDEX IF NOT EXISTS sentiment_headline_index ON sentiment(source_headline);
+
+CREATE OR REPLACE FUNCTION upsert_sentiment
+(
+    in_release_date TIMESTAMP,
+    in_source_headline VARCHAR(300),
+    in_target_headline VARCHAR(300),
+    in_source_language VARCHAR(10),
+    in_target_language VARCHAR(10),
+    in_neg DECIMAL,
+    in_pos DECIMAL,
+    in_neu DECIMAL,
+    in_compound DECIMAL,
+    in_url VARCHAR(300),
+    in_companies VARCHAR(100),
+    in_category VARCHAR(30)
+
+)
+RETURNS VOID
+as $$
+DECLARE
+    s sentiment_type;
+BEGIN
+    UPDATE sentiment SET release_date = in_release_date, target_headline = in_target_headline, source_language = in_source_language, target_language = in_target_language, neg = in_neg, pos = in_pos, neu = in_neu, compound = in_compound, url = in_url, companies = in_companies, category = in_category  WHERE source_headline = in_source_headline;
+    IF NOT FOUND THEN
+    INSERT INTO sentiment(release_date, source_headline, target_headline, source_language, target_language, neg, pos, neu, compound, url, companies, category) 
+    VALUES (in_release_date, in_source_headline, in_target_headline, in_source_language, in_target_language, in_neg, in_pos, in_neu, in_compound, in_url, in_companies, in_category);
+    END IF;
+end; $$
+language plpgsql;
 
 CREATE OR REPLACE FUNCTION upsert_stock
 (

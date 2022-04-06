@@ -3,11 +3,11 @@ from utils.translator import Translator
 from utils.scraper import call_url_get_bs4
 from utils.companines import CompaniesInHeadline
 from bs4 import BeautifulSoup
-import logging
 import pandas as pd
 import time
 import re
 from datetime import datetime, timedelta
+from tqdm import tqdm
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -20,46 +20,44 @@ class Boersen:
         analyzer: SentimentAnalysis,
         translator: Translator,
         company_headline: CompaniesInHeadline,
-        logger,
+        db,
     ):
         self.analyzer = analyzer
         self.translator = translator
         self.company_headline = company_headline
-        self.logger = logger
+        self.db = db
         self.name = "boersen"
         self.base_url = "https://api.borsen.dk/nyheder/side"
 
     def start(self):
-        articels = self._get_article_dataframe()
         i = 1
         while True:
+            articels = self._get_article_dataframe()
             try:
-                self.logger.info(
-                    "about to fetch for page {page} from {source}",
-                    page=i,
-                    source=self.name,
-                )
-                print(f"page {i}")
+                print(f"about to fetch for page {i} from {self.name}")
                 soup = call_url_get_bs4(
                     f"{self.base_url}/{i}",
                     cookies=self._get_cookies(),
                     headers=self._get_headers(),
                 )
                 page = soup.find_all("div", {"class": "col offset-md-2 body"})
+                categories = soup.find_all("div", {"class": "d-none d-md-block"})
                 if len(page) == 0 or i == 10:
                     break
                 else:
-                    articels = self._parse_articels_in_page(page)
+                    articels = self._parse_articels_in_page(page, categories)
+                    self.db.dataframe_to_db(articels, "upsert_sentiment")
                     i += 1
                     break
             except Exception as e:
                 print(f"exception at {i} - {str(e)}")
                 time.sleep(5)
-        articels.to_csv("this.csv")
 
-    def _parse_articels_in_page(self, page):
+    def _parse_articels_in_page(self, page, categories):
         articels = self._get_article_dataframe()
-        for link in page:
+        error_urls = []
+        for i in tqdm(range(len(page))):
+            link = page[i]
             while True:
                 try:
                     if not link.a == None:
@@ -70,25 +68,49 @@ class Boersen:
                             headers=self._get_headers(),
                         )
 
-                        publish_date = inner_soup.find_all(
+                        publish_date1 = inner_soup.find_all(
                             "span", {"class": "published"}
                         )
 
-                        if self._date_with_correct_format_exists(publish_date):
-                            articels = self._parse_data_to_dataframe(
-                                articels, link, publish_date, url
-                            )
+                        publish_date2 = inner_soup.find_all(
+                            "div",
+                            {
+                                "class": "label label-M font__gtamerica_condensed--medium"
+                            },
+                        )
 
+                        if self._date_with_correct_format_exists(publish_date1):
+                            articels = self._parse_data_to_dataframe(
+                                articels, link, publish_date1, url, categories[i]
+                            )
+                        elif self._date_with_correct_format_exists(publish_date2):
+                            articels = self._parse_data_to_dataframe(
+                                articels, link, publish_date2, url, categories[i]
+                            )
                         else:
-                            print(f"error - {url} - {publish_date}")
+                            error_urls.append(url)
                         break
                 except Exception as e:
                     print(f"Error {str(e)}")
                     print("retrying in a few seconds")
                     time.sleep(5)
+            if len(articels["release_date"]) == 2:
+                break
+
+        if len(error_urls) == 0:
+            print("\nNo URL caused an error on this page\n")
+        else:
+            print(f"\n{len(error_urls)} caused an error on this page\n")
+            self.append_list_to_text_file(error_urls, "error_urls.txt")
+
         return articels
 
-    def _parse_data_to_dataframe(self, articels, link, publish_date, url):
+    def append_list_to_text_file(self, list, file_name):
+        with open(file_name, "a") as file:
+            for item in list:
+                file.write("%s\n" % item)
+
+    def _parse_data_to_dataframe(self, articels, link, publish_date, url, category):
         headline = link.a.get_text()
         date = self._get_date(publish_date)
 
@@ -96,10 +118,12 @@ class Boersen:
 
         target_headline = self.translator.translate_sentence(headline)
 
+        category = category.get_text()
+
         score = self.analyzer.analyze_sentense(target_headline)
 
         return self._add_row(
-            articels, date, headline, url, companies, target_headline, score
+            articels, date, headline, url, companies, target_headline, score, category
         )
 
     def _get_headers(self):
@@ -119,15 +143,15 @@ class Boersen:
             .replace("    ", " ")
             .replace("  ", " ")
         )
-        return self._parse_date(date)
+        return self._parse_date(date.lstrip())
 
     def _date_with_correct_format_exists(self, mydivs):
         return len(mydivs) > 0 and re.findall(
-            "[0-9]*\. [a-z]+ [0-9]* KL. [0-9]*:[0-9]*", mydivs[0].get_text()
+            "[0-9]*\. [a-z]+[\.]* [0-9]* KL.[ ]*[0-9]*:[0-9]*", mydivs[0].get_text()
         )
 
     def _add_row(
-        self, articels, date, headline, url, companies, target_headline, score
+        self, articels, date, headline, url, companies, target_headline, score, category
     ):
         row = pd.DataFrame(
             {
@@ -142,6 +166,7 @@ class Boersen:
                 "pos": [score["pos"]],
                 "compound": [score["compound"]],
                 "neu": [score["neu"]],
+                "category": [category],
             }
         )
         return pd.concat([articels, row], ignore_index=True, axis=0)
@@ -160,6 +185,7 @@ class Boersen:
                 "compound",
                 "url",
                 "companies",
+                "category",
             ]
         )
 
