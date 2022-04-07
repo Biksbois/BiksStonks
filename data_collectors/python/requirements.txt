@@ -1,0 +1,8 @@
+beautifulsoup4==4.10.0
+deep_translator==1.8.3
+EasySettings==4.0.1
+nltk==3.7
+pandas==1.4.2
+psycopg2==2.9.3
+requests==2.27.1
+tqdm==4.63.1

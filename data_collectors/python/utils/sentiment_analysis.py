@@ -8,6 +8,7 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 class SentimentAnalysis:
     def __init__(self):
         self.sid = SentimentIntensityAnalyzer()
+        self.name = "vader"
 
     def analyze_sentense(self, sentence):
         return self.sid.polarity_scores(sentence)

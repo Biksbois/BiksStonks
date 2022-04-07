@@ -1,3 +1,4 @@
+from fnmatch import translate
 from utils.sentiment_analysis import SentimentAnalysis
 from utils.translator import Translator
 from utils.scraper import call_url_get_bs4
@@ -8,10 +9,14 @@ import time
 import re
 from datetime import datetime, timedelta
 from tqdm import tqdm
+from tqdm import trange
 import requests
+import logging
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+logging.basicConfig(filename="log.log", level=logging.DEBUG)
 
 
 class Boersen:
@@ -34,7 +39,7 @@ class Boersen:
         while True:
             articels = self._get_article_dataframe()
             try:
-                print(f"about to fetch for page {i} from {self.name}")
+                print(f"\n---\nabout to fetch for page {i} from {self.name}")
                 soup = call_url_get_bs4(
                     f"{self.base_url}/{i}",
                     cookies=self._get_cookies(),
@@ -46,20 +51,38 @@ class Boersen:
                     break
                 else:
                     articels = self._parse_articels_in_page(page, categories)
-                    self.db.dataframe_to_db(articels, "upsert_sentiment")
+                    self.db.dataframe_to_db(
+                        articels,
+                        "upsert_sentiment",
+                        "upsert_sentiment_dataset",
+                        self.translator.name,
+                        self.base_url,
+                        self.name,
+                        self._get_description(),
+                    )
                     i += 1
-                    break
             except Exception as e:
-                print(f"exception at {i} - {str(e)}")
+                logging.info(str(e))
+                print("----")
+                print(str(e))
                 time.sleep(5)
+
+    def _get_description(self):
+        return (
+            f"{self.name} headlines, translated from {self.translator.source_langeuage} to {self.translator.target_language} using {self.translator.name}, and analyzed using {self.analyzer.name}",
+        )
 
     def _parse_articels_in_page(self, page, categories):
         articels = self._get_article_dataframe()
         error_urls = []
-        for i in tqdm(range(len(page))):
+        t = trange(len(page), desc="running", leave=True)
+        for i in t:
             link = page[i]
             while True:
                 try:
+                    t.set_description("running")
+                    t.refresh()
+
                     if not link.a == None:
                         url = link.a.get("href")
                         inner_soup = call_url_get_bs4(
@@ -89,13 +112,14 @@ class Boersen:
                             )
                         else:
                             error_urls.append(url)
-                        break
+                    break
                 except Exception as e:
-                    print(f"Error {str(e)}")
-                    print("retrying in a few seconds")
+                    t.set_description("sleeping...")
+                    t.refresh()
+                    logging.info(str(e))
+                    print("---")
+                    print(str(e))
                     time.sleep(5)
-            if len(articels["release_date"]) == 2:
-                break
 
         if len(error_urls) == 0:
             print("\nNo URL caused an error on this page\n")
