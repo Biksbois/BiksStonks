@@ -51,7 +51,7 @@ class Attention(nn.Module):
         score = self.attn(enc_output)
         return score
 
-def LSTM(train,target,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learningRate=0.001,Output_size=10,num_layers=1):
+def LSTM(train,target,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learningRate=0.001,Output_size=10,num_layers=1,criterion=nn.MSELoss()):
 
     # train = np.array([np.array(d[:PointSize-Output_size]) for d in data])
     # target = np.array([np.array(d[PointSize-Output_size:]) for d in data])
@@ -63,7 +63,6 @@ def LSTM(train,target,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learningRate
 
     hidden = torch.zeros(num_layers, batch_size, n_hidden)
     model = Attention(Output_size,n_class,n_hidden)
-    criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learningRate)
     # Train
     model.train()
