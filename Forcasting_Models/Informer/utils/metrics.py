@@ -3,6 +3,10 @@ import numpy as np
 def RSE(pred, true):
     return np.sqrt(np.sum((true-pred)**2)) / np.sqrt(np.sum((true-true.mean())**2))
 
+def R_Squared(pred, true):
+    # Determination of coefficent R^2
+    return 1 - (np.sum((true-pred)**2) / np.sum((true-true.mean()**2)))
+
 def CORR(pred, true):
     u = ((true-true.mean(0))*(pred-pred.mean(0))).sum(0) 
     d = np.sqrt(((true-true.mean(0))**2*(pred-pred.mean(0))**2).sum(0))
@@ -29,5 +33,6 @@ def metric(pred, true):
     rmse = RMSE(pred, true)
     mape = MAPE(pred, true)
     mspe = MSPE(pred, true)
+    r_squared = R_Squared(pred, true)
     
-    return mae,mse,rmse,mape,mspe
+    return mae,mse,rmse,mape,mspe,r_squared

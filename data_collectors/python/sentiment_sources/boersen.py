@@ -35,7 +35,7 @@ class Boersen:
         self.base_url = "https://api.borsen.dk/nyheder/side"
 
     def start(self):
-        i = 1
+        i = 16
         while True:
             articels = self._get_article_dataframe()
             try:
@@ -65,9 +65,9 @@ class Boersen:
                     i += 1
             except Exception as e:
                 logging.info(str(e))
-                print("----")
-                print(str(e))
-                time.sleep(5)
+                # print("----")
+                # print(str(e))
+                time.sleep(10)
 
     def _get_description(self):
         return (
@@ -119,9 +119,9 @@ class Boersen:
                     t.set_description("sleeping...")
                     t.refresh()
                     logging.info(str(e))
-                    print("---")
-                    print(str(e))
-                    time.sleep(5)
+                    # print("---")
+                    # print(str(e))
+                    time.sleep(10)
 
         if len(error_urls) == 0:
             print("\nNo URL caused an error on this page\n")

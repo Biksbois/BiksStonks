@@ -2,6 +2,8 @@ import utils.secrets as settings
 import psycopg2 as pg
 import pandas as pd
 from objects.dataset import SentimentDataset
+from tqdm import tqdm
+from tqdm import trange
 
 
 class DatabaseAccess:
@@ -17,15 +19,20 @@ class DatabaseAccess:
     def dataframe_to_db(
         self, df, function, dataset_function, translator, url, source, description
     ):
+        succs = []
         try:
             with self._connect() as conn:
                 cur = conn.cursor()
-                for _, row in df.iterrows():
+                # for _, row in df.iterrows():
+                for i in tqdm(range(len(df))):
+                    row = df.iloc[i]
+
                     datasetid = self._get_dataset_id(
                         translator, row, source, url, cur, description, dataset_function
                     )
-                    self._insert_article(datasetid, row, cur, function)
-
+                    succ = self._insert_article(datasetid, row, cur, function)
+                    succs.append(succ)
+                print(len(succs) == len(df))
                 cur.close()
                 print(f"dataset and rows successfully inserted")
 
@@ -33,7 +40,7 @@ class DatabaseAccess:
             raise Exception(str(e))
 
     def _insert_article(self, datasetid, row, cur, function):
-        cur.callproc(
+        return cur.callproc(
             function,
             (
                 datasetid,
