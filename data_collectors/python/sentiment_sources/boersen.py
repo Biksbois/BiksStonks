@@ -45,9 +45,11 @@ class Boersen:
                     cookies=self._get_cookies(),
                     headers=self._get_headers(),
                 )
+
                 page = soup.find_all("div", {"class": "col offset-md-2 body"})
                 categories = soup.find_all("div", {"class": "d-none d-md-block"})
-                if len(page) == 0 or i == 10:
+
+                if len(page) == 0:
                     break
                 else:
                     articels = self._parse_articels_in_page(page, categories)
