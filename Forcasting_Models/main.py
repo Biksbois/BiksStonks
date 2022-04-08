@@ -18,6 +18,12 @@ def ensure_valid_values(input_values, actual_values, value_type):
             raise Exception(f"Value '{value}' is not a valid {value_type}")
     return True
 
+def r2_loss(output, target):
+    target_mean = torch.mean(target)
+    ss_tot = torch.sum((target - target_mean) ** 2)
+    ss_res = torch.sum((target - output) ** 2)
+    r2 = 1 - ss_res / ss_tot
+    return r2
 
 if __name__ == "__main__":
     arguments = arg.get_arguments()
@@ -163,13 +169,7 @@ if __name__ == "__main__":
         target = np.array([np.array(d[window_size-Output_size:]) for d in data])#(number of windows, points, n_class)
         print("train: {} target: {}".format(train.shape, target.shape))
         print("Initializing the model")
-        #criterion = nn.r2_loss()
-        criterion=nn.MSELoss()
+        criterion = r2_loss
+        # criterion=nn.MSELoss()
         model = LSTM(train,target,batch_size, Epoch,n_hidden,n_class,learning_rate,Output_size,num_layers,criterion)
 
-        def r2_loss(output, target):
-            target_mean = torch.mean(target)
-            ss_tot = torch.sum((target - target_mean) ** 2)
-            ss_res = torch.sum((target - output) ** 2)
-            r2 = 1 - ss_res / ss_tot
-            return r2
