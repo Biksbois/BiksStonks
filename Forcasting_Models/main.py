@@ -18,7 +18,7 @@ def ensure_valid_values(input_values, actual_values, value_type):
             raise Exception(f"Value '{value}' is not a valid {value_type}")
     return True
 
-def r2_loss(output, target):
+def r2_score(output, target):
     target_mean = torch.mean(target)
     ss_tot = torch.sum((target - target_mean) ** 2)
     ss_res = torch.sum((target - output) ** 2)
@@ -30,36 +30,36 @@ if __name__ == "__main__":
 
     connection = db_access.get_connection()
 
-    primary_category = db_access.get_primay_category(connection)
-    secondary_category = db_access.get_secondary_category(connection)
-    company_id = db_access.get_companyid(connection)
+    # primary_category = db_access.get_primay_category(connection)
+    # secondary_category = db_access.get_secondary_category(connection)
+    # company_id = db_access.get_companyid(connection)
 
-    if arguments.primarycategory:
-        if ensure_valid_values(
-            arguments.primarycategory, primary_category, "primary category"
-        ):
-            print(
-                f"Models will be trained on companies with primary category in {arguments.primarycategory}"
-            )
-    elif arguments.secondarycategory:
-        if ensure_valid_values(
-            arguments.secondarycategory, secondary_category, "secondary category"
-        ):
-            print(
-                f"Models will be trained on companies with secondary category in {arguments.secondarycategory}"
-            )
+    # if arguments.primarycategory:
+    #     if ensure_valid_values(
+    #         arguments.primarycategory, primary_category, "primary category"
+    #     ):
+    #         print(
+    #             f"Models will be trained on companies with primary category in {arguments.primarycategory}"
+    #         )
+    # elif arguments.secondarycategory:
+    #     if ensure_valid_values(
+    #         arguments.secondarycategory, secondary_category, "secondary category"
+    #     ):
+    #         print(
+    #             f"Models will be trained on companies with secondary category in {arguments.secondarycategory}"
+    #         )
 
-    elif arguments.companyid:
-        if ensure_valid_values(arguments.companyid, company_id, "companyid"):
-            print(
-                f"Models will be trained on companies with company id in {arguments.companyid}"
-            )
+    # elif arguments.companyid:
+    #     if ensure_valid_values(arguments.companyid, company_id, "companyid"):
+    #         print(
+    #             f"Models will be trained on companies with company id in {arguments.companyid}"
+    #         )
 
-    else:
-        print("No information was provided. No models will be trained.")
+    # else:
+    #     print("No information was provided. No models will be trained.")
 
-    print('Args in experiment:')
-    print(arguments)
+    # print('Args in experiment:')
+    # print(arguments)
 
     if arguments.model == 'fb':
         from cv2 import triangulatePoints
@@ -169,7 +169,8 @@ if __name__ == "__main__":
         target = np.array([np.array(d[window_size-Output_size:]) for d in data])#(number of windows, points, n_class)
         print("train: {} target: {}".format(train.shape, target.shape))
         print("Initializing the model")
-        criterion = r2_loss
-        # criterion=nn.MSELoss()
-        model = LSTM(train,target,batch_size, Epoch,n_hidden,n_class,learning_rate,Output_size,num_layers,criterion)
+        criterion=nn.MSELoss()
+        training = (train[:len(train)//2], target[:len(target)//2])
+        testing = (train[len(train)//2:], target[len(target)//2:])
+        model = LSTM(training,testing, batch_size, Epoch,n_hidden,n_class,learning_rate,Output_size,num_layers,criterion)
 
