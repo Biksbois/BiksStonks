@@ -86,7 +86,16 @@ namespace DatasetConstructor.Saxotrader
             request.AddHeader("Authorization", $"Bearer {token}");
             request.AddHeader("Cookie", "oa-V4_ENT_DMZ_SIM_OA_CORE_8080=DJCEHEAK");
             RestResponse response = await client.ExecuteAsync(request);
-            return JsonConvert.DeserializeObject<DataPoints>(response.Content).Data;
+
+            if (String.IsNullOrEmpty(response.Content))
+            {
+                Console.WriteLine($"company '{id}' did not have daat for time {time}");
+                return new List<PriceValues>();
+            }
+            else
+            {
+                return JsonConvert.DeserializeObject<DataPoints>(response.Content).Data;
+            }
         }
 
     }

@@ -56,6 +56,7 @@ DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'dataset_type') THEN
         CREATE TYPE dataset_type AS (
+
             AssetType VARCHAR(100),
             CurrencyCode VARCHAR(100),
             Description VARCHAR(100),
@@ -72,6 +73,52 @@ BEGIN
     END IF;
 END
 $$;
+
+-- DO $$
+-- BEGIN
+--     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'sentiment_type') THEN
+--         CREATE TYPE sentiment_type AS (
+--             release_date TIMESTAMP,
+--             source_headline VARCHAR(300),
+--             target_headline VARCHAR(300),
+--             source_language VARCHAR(10),
+--             target_language VARCHAR(10),
+--             neg DECIMAL,
+--             pos DECIMAL,
+--             neu DECIMAL,
+--             compound DECIMAL,
+--             url VARCHAR(300),
+--             companies VARCHAR(100),
+--             category VARCHAR(30)
+--         ); 
+--     END IF;
+-- END
+-- $$;
+
+CREATE TABLE IF NOT EXISTS sentiment_dataset(
+    id SERIAL PRIMARY KEY,
+    translator VARCHAR(100),
+    source_language VARCHAR(10),
+    target_language VARCHAR(10),
+    source VARCHAR(20),
+    url VARCHAR(40),
+    description VARCHAR(200),
+    category VARCHAR(30)
+);
+
+CREATE TABLE IF NOT EXISTS sentiment(
+    id SERIAL PRIMARY KEY,
+    datasetid INT,
+    release_date TIMESTAMP,
+    source_headline VARCHAR(300),
+    target_headline VARCHAR(300),
+    neg DECIMAL,
+    pos DECIMAL,
+    neu DECIMAL,
+    compound DECIMAL,
+    url VARCHAR(300),
+    companies VARCHAR(100)
+);
 
 CREATE TABLE IF NOT EXISTS model(
     id SERIAL PRIMARY KEY,
@@ -198,6 +245,60 @@ CREATE TABLE IF NOT EXISTS stock(
 );
 
 CREATE INDEX IF NOT EXISTS stock_id_index ON stock(Identifier, Time);
+CREATE INDEX IF NOT EXISTS sentiment_index ON sentiment(datasetid, companies, release_date);
+CREATE INDEX IF NOT EXISTS sentiment_headline_index ON sentiment(source_headline);
+
+
+
+CREATE OR REPLACE FUNCTION upsert_sentiment_dataset
+(
+    in_translator VARCHAR(100),
+    in_source_language VARCHAR(10),
+    in_target_language VARCHAR(10),
+    in_source VARCHAR(20),
+    in_url VARCHAR(40),
+    in_description VARCHAR(200),
+    in_category VARCHAR(30)
+
+)
+RETURNS INT
+as $$
+DECLARE
+    datasetid INT;
+BEGIN
+    UPDATE sentiment_dataset SET url = in_url, description = in_description  WHERE translator = in_translator AND source_language = in_source_language AND target_language = in_target_language AND source = in_source AND category = in_category;
+    IF NOT FOUND THEN
+    INSERT INTO sentiment_dataset(translator, source_language, target_language, source, url, description, category)
+    VALUES (in_translator, in_source_language, in_target_language, in_source, in_url, in_description, in_category);
+    END IF; 
+    SELECT id INTO datasetid FROM sentiment_dataset WHERE translator = in_translator AND source_language = in_source_language AND target_language = in_target_language AND source = in_source AND category = in_category LIMIT 1;
+    RETURN datasetid;
+end; $$
+language plpgsql;
+
+CREATE OR REPLACE FUNCTION upsert_sentiment
+(
+    in_datasetid INT,
+    in_release_date TIMESTAMP,
+    in_source_headline VARCHAR(300),
+    in_target_headline VARCHAR(300),
+    in_neg DECIMAL,
+    in_pos DECIMAL,
+    in_neu DECIMAL,
+    in_compound DECIMAL,
+    in_url VARCHAR(300),
+    in_companies VARCHAR(100)
+)
+RETURNS VOID
+as $$
+BEGIN
+    UPDATE sentiment SET release_date = in_release_date, target_headline = in_target_headline, neg = in_neg, pos = in_pos, neu = in_neu, compound = in_compound, url = in_url, companies = in_companies WHERE source_headline = in_source_headline AND datasetid = in_datasetid;
+    IF NOT FOUND THEN
+    INSERT INTO sentiment(datasetid, release_date, source_headline, target_headline, neg, pos, neu, compound, url, companies) 
+    VALUES (in_datasetid, in_release_date, in_source_headline, in_target_headline, in_neg, in_pos, in_neu, in_compound, in_url, in_companies);
+    END IF;
+end; $$
+language plpgsql;
 
 CREATE OR REPLACE FUNCTION upsert_stock
 (

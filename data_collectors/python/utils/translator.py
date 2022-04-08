@@ -6,6 +6,7 @@ class Translator:
         self.gt = GoogleTranslator(source=source_language, target=target_language)
         self.source_langeuage = source_language
         self.target_language = target_language
+        self.name = "google translate"
 
     def translate_sentence(self, sentence):
         return self.gt.translate(sentence)

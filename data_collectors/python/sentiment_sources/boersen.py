@@ -1,17 +1,22 @@
+from fnmatch import translate
 from utils.sentiment_analysis import SentimentAnalysis
 from utils.translator import Translator
 from utils.scraper import call_url_get_bs4
 from utils.companines import CompaniesInHeadline
 from bs4 import BeautifulSoup
-import logging
 import pandas as pd
 import time
 import re
 from datetime import datetime, timedelta
+from tqdm import tqdm
+from tqdm import trange
 import requests
+import logging
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+logging.basicConfig(filename="log.log", level=logging.DEBUG)
 
 
 class Boersen:
@@ -20,48 +25,66 @@ class Boersen:
         analyzer: SentimentAnalysis,
         translator: Translator,
         company_headline: CompaniesInHeadline,
-        logger,
+        db,
     ):
         self.analyzer = analyzer
         self.translator = translator
         self.company_headline = company_headline
-        self.logger = logger
+        self.db = db
         self.name = "boersen"
         self.base_url = "https://api.borsen.dk/nyheder/side"
 
     def start(self):
-        articels = self._get_article_dataframe()
-        i = 1
+        i = 16
         while True:
+            articels = self._get_article_dataframe()
             try:
-                self.logger.info(
-                    "about to fetch for page {page} from {source}",
-                    page=i,
-                    source=self.name,
-                )
-                print(f"page {i}")
+                print(f"\n---\nabout to fetch for page {i} from {self.name}")
                 soup = call_url_get_bs4(
                     f"{self.base_url}/{i}",
                     cookies=self._get_cookies(),
                     headers=self._get_headers(),
                 )
+
                 page = soup.find_all("div", {"class": "col offset-md-2 body"})
-                if len(page) == 0 or i == 10:
+                categories = soup.find_all("div", {"class": "d-none d-md-block"})
+
+                if len(page) == 0:
                     break
                 else:
-                    articels = self._parse_articels_in_page(page)
+                    articels = self._parse_articels_in_page(page, categories)
+                    self.db.dataframe_to_db(
+                        articels,
+                        "upsert_sentiment",
+                        "upsert_sentiment_dataset",
+                        self.translator.name,
+                        self.base_url,
+                        self.name,
+                        self._get_description(),
+                    )
                     i += 1
-                    break
             except Exception as e:
-                print(f"exception at {i} - {str(e)}")
-                time.sleep(5)
-        articels.to_csv("this.csv")
+                logging.info(str(e))
+                # print("----")
+                # print(str(e))
+                time.sleep(10)
 
-    def _parse_articels_in_page(self, page):
+    def _get_description(self):
+        return (
+            f"{self.name} headlines, translated from {self.translator.source_langeuage} to {self.translator.target_language} using {self.translator.name}, and analyzed using {self.analyzer.name}",
+        )
+
+    def _parse_articels_in_page(self, page, categories):
         articels = self._get_article_dataframe()
-        for link in page:
+        error_urls = []
+        t = trange(len(page), desc="running", leave=True)
+        for i in t:
+            link = page[i]
             while True:
                 try:
+                    t.set_description("running")
+                    t.refresh()
+
                     if not link.a == None:
                         url = link.a.get("href")
                         inner_soup = call_url_get_bs4(
@@ -70,25 +93,50 @@ class Boersen:
                             headers=self._get_headers(),
                         )
 
-                        publish_date = inner_soup.find_all(
+                        publish_date1 = inner_soup.find_all(
                             "span", {"class": "published"}
                         )
 
-                        if self._date_with_correct_format_exists(publish_date):
-                            articels = self._parse_data_to_dataframe(
-                                articels, link, publish_date, url
-                            )
+                        publish_date2 = inner_soup.find_all(
+                            "div",
+                            {
+                                "class": "label label-M font__gtamerica_condensed--medium"
+                            },
+                        )
 
+                        if self._date_with_correct_format_exists(publish_date1):
+                            articels = self._parse_data_to_dataframe(
+                                articels, link, publish_date1, url, categories[i]
+                            )
+                        elif self._date_with_correct_format_exists(publish_date2):
+                            articels = self._parse_data_to_dataframe(
+                                articels, link, publish_date2, url, categories[i]
+                            )
                         else:
-                            print(f"error - {url} - {publish_date}")
-                        break
+                            error_urls.append(url)
+                    break
                 except Exception as e:
-                    print(f"Error {str(e)}")
-                    print("retrying in a few seconds")
-                    time.sleep(5)
+                    t.set_description("sleeping...")
+                    t.refresh()
+                    logging.info(str(e))
+                    # print("---")
+                    # print(str(e))
+                    time.sleep(10)
+
+        if len(error_urls) == 0:
+            print("\nNo URL caused an error on this page\n")
+        else:
+            print(f"\n{len(error_urls)} caused an error on this page\n")
+            self.append_list_to_text_file(error_urls, "error_urls.txt")
+
         return articels
 
-    def _parse_data_to_dataframe(self, articels, link, publish_date, url):
+    def append_list_to_text_file(self, list, file_name):
+        with open(file_name, "a") as file:
+            for item in list:
+                file.write("%s\n" % item)
+
+    def _parse_data_to_dataframe(self, articels, link, publish_date, url, category):
         headline = link.a.get_text()
         date = self._get_date(publish_date)
 
@@ -96,10 +144,12 @@ class Boersen:
 
         target_headline = self.translator.translate_sentence(headline)
 
+        category = category.get_text()
+
         score = self.analyzer.analyze_sentense(target_headline)
 
         return self._add_row(
-            articels, date, headline, url, companies, target_headline, score
+            articels, date, headline, url, companies, target_headline, score, category
         )
 
     def _get_headers(self):
@@ -119,15 +169,15 @@ class Boersen:
             .replace("    ", " ")
             .replace("  ", " ")
         )
-        return self._parse_date(date)
+        return self._parse_date(date.lstrip())
 
     def _date_with_correct_format_exists(self, mydivs):
         return len(mydivs) > 0 and re.findall(
-            "[0-9]*\. [a-z]+ [0-9]* KL. [0-9]*:[0-9]*", mydivs[0].get_text()
+            "[0-9]*\. [a-z]+[\.]* [0-9]* KL.[ ]*[0-9]*:[0-9]*", mydivs[0].get_text()
         )
 
     def _add_row(
-        self, articels, date, headline, url, companies, target_headline, score
+        self, articels, date, headline, url, companies, target_headline, score, category
     ):
         row = pd.DataFrame(
             {
@@ -142,6 +192,7 @@ class Boersen:
                 "pos": [score["pos"]],
                 "compound": [score["compound"]],
                 "neu": [score["neu"]],
+                "category": [category],
             }
         )
         return pd.concat([articels, row], ignore_index=True, axis=0)
@@ -160,6 +211,7 @@ class Boersen:
                 "compound",
                 "url",
                 "companies",
+                "category",
             ]
         )
 
