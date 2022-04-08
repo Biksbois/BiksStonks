@@ -4,6 +4,9 @@ from utils.DatabaseConnection import DatabaseConnection
 import utils.preprocess as preprocess
 import utils.settings_utils as settings
 import pandas as pd
+import numpy as np
+from itertools import islice
+
 
 
 class DatasetAccess:
@@ -13,6 +16,9 @@ class DatasetAccess:
     def getAllcompanies(self):
         AllCompanies = self.conn.query("SELECT * FROM dataset")
         return AllCompanies
+
+    def GetNumberOfCompanies(self):
+        return self.conn.query("SELECT count(*) FROM dataset")
 
     def getNcompanies(self, N):
         AllCompanies = self.conn.query("SELECT * FROM dataset limit " + str(N) + "")
@@ -62,6 +68,33 @@ class DatasetAccess:
         PandaStock = pd.read_sql("SELECT * FROM stock", self.conn.GetConnector())
         print(PandaStock)
 
+def GetNumberOfCompanies():
+    dbAccess = DatasetAccess()
+    return dbAccess.GetNumberOfCompanies()
+
+
+def GetDF():
+    dbaccess = DatasetAccess()
+    vestas = pd.read_sql("select * from stock where identifier = 15611 ", dbaccess.conn.GetConnector())
+    return vestas
+
+def GetSingleStockDF():
+    dbAccess = DatasetAccess()
+    comp = dbAccess.getNcompanies(2)
+    return dbAccess.getStockDFFromCompany(comp, column="close")
+
+def GetStocks(n):
+    dbAccess = DatasetAccess()
+    comp = dbAccess.getNcompanies(n)
+    return dbAccess.getStockDFFromCompany(comp, column="close")
+
+def GetStocksHourly(n, column="close"):
+    dbAccess = DatasetAccess()
+    comps = dbAccess.getNcompanies(n)
+    result = []
+    for comp in comps:
+        result.append(get_data_for_datasetid(str(comp[0]),dbAccess.conn.GetConnector(),"h")[column])
+    return result
 
 def extractNumbers(numbers):
     result = []
@@ -149,6 +182,35 @@ def get_connection():
         password=settings.get_pasword(),
     )
 
+def window1(seq, n=2):
+    it = iter(seq)
+    result = tuple(islice(it, n))
+    if len(result) == n:
+        yield result
+    for elem in it:
+        result = result[1:] + (elem,)
+        yield result
+
+def getBigData(colum,n_company,n_datapoints,window_size):
+    stocks = []
+    NumberOfCompanies = GetNumberOfCompanies()[0][0]
+    if NumberOfCompanies >= n_company:
+        for stock in GetStocksHourly(n_company,colum):
+            stocks.append(np.array(stock[:n_datapoints]).flatten())
+    
+        WindowedStocks = []
+        for stock in stocks:
+            WindowedStocks.append(window1(stock, window_size))
+
+        result = []
+        for window in WindowedStocks:
+            for i in window:
+                result.append(i)
+    else:
+        result = []
+        print("There are only {NumberOfCompanies} not {n_company} as requested".format(NumberOfCompanies=NumberOfCompanies, n_company=n_company))
+
+    return result
 
 if __name__ == "__main__":
     print(GetSingleStockDF())

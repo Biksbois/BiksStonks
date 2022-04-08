@@ -12,14 +12,14 @@ import os
 class Attention(nn.Module):
     def __init__(self,Output_size,n_class,hidden_size):
         super(Attention, self).__init__()
+        self.Output_size = Output_size
+        self.n_hidden = hidden_size
+        self.n_class = n_class
         self.enc_cell = nn.RNN(input_size=self.n_class, hidden_size=self.n_hidden, dropout=0.5)
         self.dec_cell = nn.RNN(input_size=self.n_class, hidden_size=self.n_hidden, dropout=0.5)
         self.attn = nn.Linear(self.n_hidden, self.n_hidden)
-        self.Output_size = Output_size
-        self.hidden_size = hidden_size
-        self.n_class = n_class
         self.pls = None
-        
+
     def forward(self, enc_inputs, hidden, dec_inputs):
         dec_inputs = dec_inputs.transpose(0, 1) 
         enc_inputs = enc_inputs.transpose(0, 1) 
@@ -45,54 +45,41 @@ class Attention(nn.Module):
 
         for i in range(n_step):
             attn_scores[i] = self.get_att_score(dec_output, enc_outputs[i])
-
         return F.softmax(attn_scores).view(1, 1, -1)
 
     def get_att_score(self, dec_output, enc_output): 
         score = self.attn(enc_output)
-    
         return score
 
-def LSTM(data):
-    n_hidden = 128 
-    n_class = 2
-    PointSize = 200
-    Epoch = 32
-    batch_size = 32
-    num_layers = 1
-    Output_size = 10
-    learningRate = 0.001
+def LSTM(train,target,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learningRate=0.001,Output_size=10,num_layers=1):
 
-    train = np.array([np.array(d[:PointSize-Output_size]) for d in data])
-    target = np.array([np.array(d[PointSize-Output_size:]) for d in data])
+    # train = np.array([np.array(d[:PointSize-Output_size]) for d in data])
+    # target = np.array([np.array(d[PointSize-Output_size:]) for d in data])
     trainer = torch.from_numpy(train).float()
     targeter = torch.from_numpy(target).float()
+
     dataset = torch.utils.data.TensorDataset(trainer,targeter)
     dtloader = torch.utils.data.DataLoader(dataset,batch_size=batch_size, shuffle=True, drop_last=True)
+
     hidden = torch.zeros(num_layers, batch_size, n_hidden)
     model = Attention(Output_size,n_class,n_hidden)
     criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), learningRate=0.001)   
+    optimizer = torch.optim.Adam(model.parameters(), lr=learningRate)
     # Train
     model.train()
     for epoch in range(Epoch):
         for x, y in dtloader:
             optimizer.zero_grad()
-            x = x.squeeze(-1)
-            y = y.squeeze(-1)
+            if(n_class != 1):
+                x = x.squeeze(-1)
+                y = y.squeeze(-1)
+            else:
+                x = x.unsqueeze(-1)
+                y = y.unsqueeze(-1)
             output, _ = model(x, hidden, x)
             loss = criterion(output, y.squeeze(0))
         if (epoch + 1) % 5 == 0:
             print('Epoch:', '%04d' % (epoch + 1), 'MSE =', '{:.6f}'.format(loss))
         loss.backward()
         optimizer.step()
-from itertools import islice
-
-def window1(seq, n=2):
-    it = iter(seq)
-    result = tuple(islice(it, n))
-    if len(result) == n:
-        yield result
-    for elem in it:
-        result = result[1:] + (elem,)
-        yield result
+    return model
