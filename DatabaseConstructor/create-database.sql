@@ -117,9 +117,7 @@ CREATE TABLE IF NOT EXISTS sentiment(
     neu DECIMAL,
     compound DECIMAL,
     url VARCHAR(300),
-    companies VARCHAR(100),
-
-    CONSTRAINT source_headline_unique UNIQUE(source_headline)
+    companies VARCHAR(100)
 );
 
 CREATE TABLE IF NOT EXISTS model(
