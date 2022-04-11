@@ -32,11 +32,6 @@ if __name__ == "__main__":
             print(
                 f"Models will be trained on companies with primary category in {arguments.primarycategory}"
             )
-<<<<<<< HEAD
-
-=======
-                    
->>>>>>> 8fddc93715d00afe0a64a4e0b3b2023e98670512
     elif arguments.secondarycategory:
         if ensure_valid_values(
             arguments.secondarycategory, secondary_category, "secondary category"

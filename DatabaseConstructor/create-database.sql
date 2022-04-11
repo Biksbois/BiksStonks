@@ -110,13 +110,13 @@ CREATE TABLE IF NOT EXISTS sentiment(
     id SERIAL PRIMARY KEY,
     datasetid INT,
     release_date TIMESTAMP,
-    source_headline VARCHAR(300),
-    target_headline VARCHAR(300),
+    source_headline VARCHAR(500),
+    target_headline VARCHAR(500),
     neg DECIMAL,
     pos DECIMAL,
     neu DECIMAL,
     compound DECIMAL,
-    url VARCHAR(300),
+    url VARCHAR(500),
     companies VARCHAR(100)
 );
 
@@ -280,13 +280,13 @@ CREATE OR REPLACE FUNCTION upsert_sentiment
 (
     in_datasetid INT,
     in_release_date TIMESTAMP,
-    in_source_headline VARCHAR(300),
-    in_target_headline VARCHAR(300),
+    in_source_headline VARCHAR(500),
+    in_target_headline VARCHAR(500),
     in_neg DECIMAL,
     in_pos DECIMAL,
     in_neu DECIMAL,
     in_compound DECIMAL,
-    in_url VARCHAR(300),
+    in_url VARCHAR(500),
     in_companies VARCHAR(100)
 )
 RETURNS VOID
