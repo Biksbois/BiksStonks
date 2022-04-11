@@ -35,7 +35,7 @@ class Boersen:
         self.base_url = "https://api.borsen.dk/nyheder/side"
 
     def start(self):
-        i = 16
+        i = 197
         while True:
             articels = self._get_article_dataframe()
             try:
@@ -77,10 +77,15 @@ class Boersen:
     def _parse_articels_in_page(self, page, categories):
         articels = self._get_article_dataframe()
         error_urls = []
+        max_tries = 3
         t = trange(len(page), desc="running", leave=True)
         for i in t:
             link = page[i]
+            error_count = 0
             while True:
+                if error_count > max_tries:
+                    break
+
                 try:
                     t.set_description("running")
                     t.refresh()
@@ -116,7 +121,9 @@ class Boersen:
                             error_urls.append(url)
                     break
                 except Exception as e:
-                    t.set_description("sleeping...")
+                    error_count += 1
+                    desc = "sleeping..." if error_count == 0 else f"Trying last time ({error_count})" if error_count == max_tries else f"try no {error_count}"
+                    t.set_description(desc)
                     t.refresh()
                     logging.info(str(e))
                     # print("---")
