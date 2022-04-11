@@ -1,4 +1,5 @@
 
+from zmq import device
 import numpy as np
 import torch
 import torch.nn as nn
@@ -8,18 +9,23 @@ import psycopg2 as pg
 import pandas as pd
 import sys
 import os
-
+def r2_score(output, target):
+    target_mean = torch.mean(target)
+    ss_tot = torch.sum((target - target_mean) ** 2)
+    ss_res = torch.sum((target - output) ** 2)
+    r2 = 1 - ss_res / ss_tot
+    return r2
 class Attention(nn.Module):
     def __init__(self,Output_size,n_class,hidden_size):
         super(Attention, self).__init__()
+        self.Output_size = Output_size
+        self.n_hidden = hidden_size
+        self.n_class = n_class
         self.enc_cell = nn.RNN(input_size=self.n_class, hidden_size=self.n_hidden, dropout=0.5)
         self.dec_cell = nn.RNN(input_size=self.n_class, hidden_size=self.n_hidden, dropout=0.5)
         self.attn = nn.Linear(self.n_hidden, self.n_hidden)
-        self.Output_size = Output_size
-        self.hidden_size = hidden_size
-        self.n_class = n_class
         self.pls = None
-        
+
     def forward(self, enc_inputs, hidden, dec_inputs):
         dec_inputs = dec_inputs.transpose(0, 1) 
         enc_inputs = enc_inputs.transpose(0, 1) 
@@ -45,54 +51,72 @@ class Attention(nn.Module):
 
         for i in range(n_step):
             attn_scores[i] = self.get_att_score(dec_output, enc_outputs[i])
-
         return F.softmax(attn_scores).view(1, 1, -1)
 
     def get_att_score(self, dec_output, enc_output): 
         score = self.attn(enc_output)
-    
         return score
 
-def LSTM(data):
-    n_hidden = 128 
-    n_class = 2
-    PointSize = 200
-    Epoch = 32
-    batch_size = 32
-    num_layers = 1
-    Output_size = 10
-    learningRate = 0.001
-
-    train = np.array([np.array(d[:PointSize-Output_size]) for d in data])
-    target = np.array([np.array(d[PointSize-Output_size:]) for d in data])
+def LSTM(training, testing,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learningRate=0.001,Output_size=10,num_layers=1,criterion=nn.MSELoss()):
+    train, target = training
+    test, target_test = testing
+    # train = np.array([np.array(d[:PointSize-Output_size]) for d in data])
+    # target = np.array([np.array(d[PointSize-Output_size:]) for d in data])
     trainer = torch.from_numpy(train).float()
     targeter = torch.from_numpy(target).float()
+    trainer_test = torch.from_numpy(test).float()
+    targeter_test = torch.from_numpy(target_test).float()
+
     dataset = torch.utils.data.TensorDataset(trainer,targeter)
     dtloader = torch.utils.data.DataLoader(dataset,batch_size=batch_size, shuffle=True, drop_last=True)
+
+    dataset_test = torch.utils.data.TensorDataset(trainer_test,targeter_test)
+    dtloader_test = torch.utils.data.DataLoader(dataset_test,batch_size=batch_size, shuffle=True, drop_last=True)
+
     hidden = torch.zeros(num_layers, batch_size, n_hidden)
     model = Attention(Output_size,n_class,n_hidden)
-    criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), learningRate=0.001)   
+    optimizer = torch.optim.Adam(model.parameters(), lr=learningRate)
     # Train
     model.train()
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model.to(device)
     for epoch in range(Epoch):
         for x, y in dtloader:
+            x = x.to(device)
+            y = y.to(device)
             optimizer.zero_grad()
-            x = x.squeeze(-1)
-            y = y.squeeze(-1)
+            if(n_class != 1):
+                x = x.squeeze(-1)
+                y = y.squeeze(-1)
+            else:
+                x = x.unsqueeze(-1)
+                y = y.unsqueeze(-1)
             output, _ = model(x, hidden, x)
             loss = criterion(output, y.squeeze(0))
+            loss.backward()
+            optimizer.step()
+            r2score = r2_score(output, y.squeeze(0))
+
         if (epoch + 1) % 5 == 0:
             print('Epoch:', '%04d' % (epoch + 1), 'MSE =', '{:.6f}'.format(loss))
-        loss.backward()
-        optimizer.step()
-from itertools import islice
-
-def window1(seq, n=2):
-    it = iter(seq)
-    result = tuple(islice(it, n))
-    if len(result) == n:
-        yield result
-    for elem in it:
-        result = result[1:] + (elem,)
-        yield result
+            print('Epoch:', '%04d' % (epoch + 1), 'R2 =', '{:.6f}'.format(r2score))
+    print("Model has finished training")
+    print("Testing...")
+    # test the mode using the test set
+    model.eval()
+    scores = []
+    for x,y in dtloader_test:
+        x = x.to(device)
+        y = y.to(device)
+        if(n_class != 1):
+            x = x.squeeze(-1)
+            y = y.squeeze(-1)
+        else:
+            x = x.unsqueeze(-1)
+            y = y.unsqueeze(-1)
+        output, _ = model(x, hidden, x)
+        loss = criterion(output, y.squeeze(0))
+        scores.append(r2_score(output, y.squeeze(0)))
+    print("Testing finished")
+    print("R2 score:", np.mean(scores))
+    return model

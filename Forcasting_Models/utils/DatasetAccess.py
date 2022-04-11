@@ -1,9 +1,12 @@
+from pydoc import describe
 from unittest import result
 import psycopg2 as pg
 from utils.DatabaseConnection import DatabaseConnection
 import utils.preprocess as preprocess
 import utils.settings_utils as settings
 import pandas as pd
+import numpy as np
+from itertools import islice
 
 
 class DatasetAccess:
@@ -13,6 +16,9 @@ class DatasetAccess:
     def getAllcompanies(self):
         AllCompanies = self.conn.query("SELECT * FROM dataset")
         return AllCompanies
+
+    def GetNumberOfCompanies(self):
+        return self.conn.query("SELECT count(*) FROM dataset")
 
     def getNcompanies(self, N):
         AllCompanies = self.conn.query("SELECT * FROM dataset limit " + str(N) + "")
@@ -63,6 +69,44 @@ class DatasetAccess:
         print(PandaStock)
 
 
+def GetNumberOfCompanies():
+    dbAccess = DatasetAccess()
+    return dbAccess.GetNumberOfCompanies()
+
+
+def GetDF():
+    dbaccess = DatasetAccess()
+    vestas = pd.read_sql(
+        "select * from stock where identifier = 15611 ", dbaccess.conn.GetConnector()
+    )
+    return vestas
+
+
+def GetSingleStockDF():
+    dbAccess = DatasetAccess()
+    comp = dbAccess.getNcompanies(2)
+    return dbAccess.getStockDFFromCompany(comp, column="close")
+
+
+def GetStocks(n):
+    dbAccess = DatasetAccess()
+    comp = dbAccess.getNcompanies(n)
+    return dbAccess.getStockDFFromCompany(comp, column="close")
+
+
+def GetStocksHourly(n, column="close"):
+    dbAccess = DatasetAccess()
+    comps = dbAccess.getNcompanies(n)
+    result = []
+    for comp in comps:
+        result.append(
+            get_data_for_datasetid(str(comp[0]), dbAccess.conn.GetConnector(), "h")[
+                column
+            ]
+        )
+    return result
+
+
 def extractNumbers(numbers):
     result = []
     for number in numbers:
@@ -97,10 +141,56 @@ def GetNStockDFs(N):
     return dbAccess.getStockDFFromCompany(comp)
 
 
-def get_data_for_datasetid(datasetid, conn, interval, time="0001-01-01 00:00:00"):
+def _get_dataset_ids(conn, where_clause):
+    df = pd.read_sql_query(
+        f"SELECT identifier, description from dataset WHERE {where_clause}",
+        conn,
+    )
+
+    return df
+
+
+def get_data_for_attribute(
+    attribute_name,
+    attribute_value,
+    conn,
+    interval,
+    from_time="0001-01-01 00:00:00",
+    to_time="9999-01-01 00:00:00",
+):
+    if isinstance(attribute_value, list):
+        datasetids = _get_dataset_ids(
+            conn, f"{attribute_name} in ({','.join(attribute_value)})"
+        )
+    else:
+        raise Exception(
+            f"{attribute_name} must be a list, not a {type(attribute_value)}"
+        )
+
+    dfs = []
+
+    for i in range(len(datasetids)):
+        datasetid = datasetids.iloc[i]["identifier"]
+        description = datasetids.iloc[i]["description"]
+        print(f"{i}/{len(datasetids)} - {description}")
+
+        dfs.append(
+            get_data_for_datasetid(datasetid, conn, interval, from_time, to_time)
+        )
+
+    return dfs
+
+
+def get_data_for_datasetid(
+    datasetid,
+    conn,
+    interval,
+    from_time="0001-01-01 00:00:00",
+    to_time="9999-01-01 00:00:00",
+):
     df = pd.read_sql_query(
         f"SELECT time AS date, open, high, low, close, volume \
-                            FROM stock WHERE identifier = {datasetid} AND time > '{time}' \
+                            FROM stock WHERE identifier = {datasetid} AND time BETWEEN '{from_time}' AND '{to_time}' \
                             ORDER BY time ASC;",
         conn,
     )
@@ -131,9 +221,11 @@ def get_secondary_category(conn):
 
     return df_list
 
-def get_company_name(identifier,conn):
-    return pd.read_sql_query(f"SELECT description from dataset where identifier = {identifier}", conn)
 
+def get_company_name(identifier, conn):
+    return pd.read_sql_query(
+        f"SELECT description from dataset where identifier = {identifier}", conn
+    )
 
 
 def get_companyid(conn):
@@ -148,6 +240,42 @@ def get_connection():
         user=settings.get_user(),
         password=settings.get_pasword(),
     )
+
+
+def window1(seq, n=2):
+    it = iter(seq)
+    result = tuple(islice(it, n))
+    if len(result) == n:
+        yield result
+    for elem in it:
+        result = result[1:] + (elem,)
+        yield result
+
+
+def getBigData(colum, n_company, n_datapoints, window_size):
+    stocks = []
+    NumberOfCompanies = GetNumberOfCompanies()[0][0]
+    if NumberOfCompanies >= n_company:
+        for stock in GetStocksHourly(n_company, colum):
+            stocks.append(np.array(stock[:n_datapoints]).flatten())
+
+        WindowedStocks = []
+        for stock in stocks:
+            WindowedStocks.append(window1(stock, window_size))
+
+        result = []
+        for window in WindowedStocks:
+            for i in window:
+                result.append(i)
+    else:
+        result = []
+        print(
+            "There are only {NumberOfCompanies} not {n_company} as requested".format(
+                NumberOfCompanies=NumberOfCompanies, n_company=n_company
+            )
+        )
+
+    return result
 
 
 if __name__ == "__main__":

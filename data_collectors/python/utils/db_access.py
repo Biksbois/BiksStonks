@@ -23,19 +23,18 @@ class DatabaseAccess:
         try:
             with self._connect() as conn:
                 cur = conn.cursor()
-                # for _, row in df.iterrows():
                 for i in tqdm(range(len(df))):
                     row = df.iloc[i]
 
                     datasetid = self._get_dataset_id(
                         translator, row, source, url, cur, description, dataset_function
                     )
+
                     succ = self._insert_article(datasetid, row, cur, function)
                     succs.append(succ)
                 print(len(succs) == len(df))
                 cur.close()
                 print(f"dataset and rows successfully inserted")
-
         except Exception as e:
             raise Exception(str(e))
 
