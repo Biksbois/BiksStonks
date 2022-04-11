@@ -169,15 +169,21 @@ def get_data_for_attribute(
 
     dfs = []
 
+    print("\n-----------------------")
+    print("--- presenting data ---")
+    print("-----------------------\n")
+    print(f"{len(datasetids)} compaines were found. Including:")
+
     for i in range(len(datasetids)):
         datasetid = datasetids.iloc[i]["identifier"]
         description = datasetids.iloc[i]["description"]
-        print(f"{i}/{len(datasetids)} - {description}")
 
         dfs.append(
             get_data_for_datasetid(datasetid, conn, interval, from_time, to_time)
         )
+        print(f"  - {description} - shape: {dfs[-1].shape}")
 
+    print("\n")
     return dfs
 
 

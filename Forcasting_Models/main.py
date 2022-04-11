@@ -1,4 +1,4 @@
-# from curses import window
+import pandas as pd  # from curses import window
 from überLSTM import LSTM
 import numpy as np
 import torch
@@ -65,6 +65,7 @@ def get_data(arguments, connection, from_date, to_date):
 
     else:
         print("No information was provided. No models will be trained.")
+        return pd.Dataframe()
 
     return db_access.get_data_for_attribute(
         attribute_name,
@@ -148,26 +149,13 @@ def train_lstma(data):
 
 
 def train_informer(data):
-    pass
+    print("training informer")
 
 
 def train_prophet(arguments, data):
     from cv2 import triangulatePoints
     import utils.prophet_experiment as exp
     import FbProphet.fbprophet as fb
-
-    company_name = db_access.get_company_name(company_id[0], connection)
-
-    print("Forecast will run for :" + company_name)
-    data = db_access.get_data_for_datasetid(
-        datasetid=arguments.companyid[0],
-        conn=connection,
-        interval=arguments.timeunit,
-        time=arguments.time,
-    )
-
-    print("Successfully retrived data")
-    data.head(4)
 
     data = preprocess.rename_dataset_columns(data)
     training, testing = preprocess.get_split_data(data)
@@ -234,10 +222,12 @@ if __name__ == "__main__":
         if arguments.model == "fb" or arguments.model == "all":
             print("about to train the fb prophet model")
             train_prophet(arguments, data)
-        elif arguments.model == "informer" or arguments.model == "all":
+
+        if arguments.model == "informer" or arguments.model == "all":
             print("about to train the informer")
             train_informer(data)
-        elif arguments.model == "lstm" or arguments.model == "all":
+
+        if arguments.model == "lstm" or arguments.model == "all":
             print("about to train the lstma model")
             train_lstma(data)
     else:
