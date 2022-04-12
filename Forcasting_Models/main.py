@@ -1,4 +1,4 @@
-import pandas as pd  # from curses import window
+import pandas as pd # from curses import window
 from überLSTM import LSTM
 import numpy as np
 import torch
@@ -90,46 +90,27 @@ def train_lstma(data):
     num_layers = 1
     learning_rate = 0.001
 
-    # number of companies, number of datapoints fromeach company, window size
-    print("Fetching closing prices")
-    closingData = np.array(
-        db_access.getBigData("close", n_companies, n_datapoints, window_size)
-    )
-    # Normalize the data
-    closingData = (closingData - closingData.mean()) / closingData.std()
+    # print(data)
+    # cp1 = data[0]
+    # cp2 = data[1]
+    # print(cp1)
+    # print("___________")
+    # print(cp2)
+    companies = [db_access.SingleCompany([x],window_size,Output_size) for x in data]
+    train1,target1 = companies[0] 
+    train2,target2 = companies[1]
+    train = np.concatenate((train1,train2), axis=0)
+    target = np.concatenate((target1,target2), axis=0)
 
-    print("Fetching opening prices")
-    openData = np.array(
-        db_access.getBigData("open", n_companies, n_datapoints, window_size)
-    )
-    openData = (openData - openData.mean()) / openData.std()
-    print("Data has been fetched")
+    train_set = (train,target)
+    print(companies)
+    #Company1 = db_access.SingleCompany(data,100,10)
 
-    print("Reshaping the data")
-    closing = closingData.reshape(closingData.shape[0], closingData.shape[1], 1)
-    opens = openData.reshape(openData.shape[0], openData.shape[1], 1)
 
-    print("Concatenating the data")
-    data = torch.concat((torch.FloatTensor(closing), torch.FloatTensor(opens)), 2)
-
-    print(
-        "Creating the training and target data, training: {} target: {}".format(
-            data.shape[0] - window_size, window_size
-        )
-    )
-    train = np.array(
-        [np.array(d[: window_size - Output_size]) for d in data]
-    )  # (number of windows, points, n_class)
-    target = np.array(
-        [np.array(d[window_size - Output_size :]) for d in data]
-    )  # (number of windows, points, n_class)
-    print("train: {} target: {}".format(train.shape, target.shape))
-    print("Initializing the model")
-    # criterion = nn.r2_loss()
     criterion = nn.MSELoss()
     model = LSTM(
-        train,
-        target,
+        train_set, #(training, target)
+        train_set, #(Test, test_target)) 
         batch_size,
         Epoch,
         n_hidden,
@@ -209,8 +190,8 @@ if __name__ == "__main__":
 
     connection = db_access.get_connection()
 
-    primary_category = db_access.get_primay_category(connection)
-    secondary_category = db_access.get_secondary_category(connection)
+    # primary_category = db_access.get_primay_category(connection)
+    # secondary_category = db_access.get_secondary_category(connection)
     company_id = db_access.get_companyid(connection)
 
     from_date = "2021-10-01 00:00:00"

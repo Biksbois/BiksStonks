@@ -66,7 +66,10 @@ def LSTM(training, testing,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learnin
     targeter = torch.from_numpy(target).float()
     trainer_test = torch.from_numpy(test).float()
     targeter_test = torch.from_numpy(target_test).float()
-
+    print("trainer",trainer.shape)
+    print("targeter",targeter.shape)
+    print("trainer_test",trainer)
+    print("targeter_test",targeter)
     dataset = torch.utils.data.TensorDataset(trainer,targeter)
     dtloader = torch.utils.data.DataLoader(dataset,batch_size=batch_size, shuffle=True, drop_last=True)
 
@@ -118,5 +121,5 @@ def LSTM(training, testing,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learnin
         loss = criterion(output, y.squeeze(0))
         scores.append(r2_score(output, y.squeeze(0)))
     print("Testing finished")
-    print("R2 score:", np.mean(scores))
+    print("R2 score:", np.mean([x.item() for x in scores]))
     return model
