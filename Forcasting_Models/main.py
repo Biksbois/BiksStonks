@@ -213,33 +213,10 @@ if __name__ == "__main__":
     secondary_category = db_access.get_secondary_category(connection)
     company_id = db_access.get_companyid(connection)
 
-<<<<<<< HEAD
-    if arguments.primarycategory:
-        if ensure_valid_values(
-            arguments.primarycategory, primary_category, "primary category"
-        ):
-            print(
-                f"Models will be trained on companies with primary category in {arguments.primarycategory}"
-            )
-    elif arguments.secondarycategory:
-        if ensure_valid_values(
-            arguments.secondarycategory, secondary_category, "secondary category"
-        ):
-            print(
-                f"Models will be trained on companies with secondary category in {arguments.secondarycategory}"
-            )
-
-    elif arguments.companyid:
-        if ensure_valid_values(arguments.companyid, company_id, "companyid"):
-            print(
-                f"Models will be trained on companies with company id in {arguments.companyid}"
-            )
-=======
     from_date = "2021-10-01 00:00:00"
     to_date = "2021-12-31 23:59:59"
 
     data = get_data(arguments, connection, from_date, to_date)
->>>>>>> 33b14de24428aeabc05747be269eb1a0ca60c440
 
     if len(data) > 0:
         if arguments.model == "fb" or arguments.model == "all":
