@@ -8,7 +8,7 @@ from fbprophet import Prophet
 from fbprophet.diagnostics import cross_validation, performance_metrics
 from fbprophet.plot import plot_cross_validation_metric
 import time
-# from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, r2_score
 from matplotlib import dates as mdates
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -23,6 +23,7 @@ import utils.settings_utils as settings
 import utils.DatasetAccess as db_access
 import utils.preprocess as preprocess
 import utils.prophet_experiment as exp
+
 
 
 def model_fit(training_set, mcmc_samples=300, yearly_seasonality=False, weekly_seasonality=False, daily_seasonality=False, seasonality_mode='multiplicative'):
@@ -59,3 +60,6 @@ def plot_forecast(model, forecast, test_data):
     plt.plot(test_data.ds, test_data.y, '.', color='#ff3333', alpha=0.6)
     model.plot_components(forecast)
     plt.show()
+
+def get_rsquared(predicted, actual):
+    return r2_score(actual, predicted)
