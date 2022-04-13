@@ -85,32 +85,18 @@ def train_lstma(data):
     n_step = 90
     n_hidden = 128
     n_class = 2
-    Epoch = 32
+    Epoch = 200
     batch_size = 32
     num_layers = 1
     learning_rate = 0.001
 
-    # print(data)
-    # cp1 = data[0]
-    # cp2 = data[1]
-    # print(cp1)
-    # print("___________")
-    # print(cp2)
     companies = [db_access.SingleCompany([x],window_size,Output_size) for x in data]
-    train1,target1 = companies[0] 
-    train2,target2 = companies[1]
-    train = np.concatenate((train1,train2), axis=0)
-    target = np.concatenate((target1,target2), axis=0)
-
-    train_set = (train,target)
-    print(companies)
-    #Company1 = db_access.SingleCompany(data,100,10)
-
+    train_set = db_access.GenerateDataset(companies)
 
     criterion = nn.MSELoss()
     model = LSTM(
-        train_set, #(training, target)
-        train_set, #(Test, test_target)) 
+        train_set,
+        train_set,
         batch_size,
         Epoch,
         n_hidden,
