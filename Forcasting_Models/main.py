@@ -127,7 +127,7 @@ def train_lstma(data):
     )
     print("Model trained")
     print("Saving model...")
-    pickle.dump( model, open(f"LSTM_Models/model_LayerN_{num_layers}_BatchSize_{batch_size}_Epoch_{Epoch}_NHidden_{n_hidden}_NClass_{n_class}_LR_{learning_rate}_Winodws_S_{window_size}_Output_Size_{Output_size}.p", "wb" ) )
+    pickle.dump( model, open(f"LSTM_Models/model_LayerN_{num_layers}_BatchSize_{batch_size}_Epoch_{Epoch}_NHidden_{n_hidden}_NClass_{n_class}_LR_{learning_rate}_WinodwSize_{window_size}_OutputSize_{Output_size}.p", "wb" ) )
     #torch.save(model,"model_LayerN_{num_layers}_BatchSize_{batch_size}_Epoch_{Epoch}_NHidden_{n_hidden}_NClass_{n_class}_LR_{learning_rate}_Winodws_S_{window_size}_Output_Size_{Output_size}.pt")
     print("Model saved")
     def r2_loss(output, target):
