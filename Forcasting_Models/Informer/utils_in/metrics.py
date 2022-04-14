@@ -5,7 +5,11 @@ def RSE(pred, true):
 
 def R_Squared(pred, true):
     # Determination of coefficent R^2
-    return 1 - (np.sum((true-pred)**2) / np.sum((true-true.mean()**2)))
+    true_mean = np.mean(true)
+    ss_tot = np.sum((true - true_mean) ** 2)
+    ss_res = np.sum((true - pred) ** 2)
+    r2 = 1 - ss_res / ss_tot
+    return r2
 
 def CORR(pred, true):
     u = ((true-true.mean(0))*(pred-pred.mean(0))).sum(0) 
