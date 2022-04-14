@@ -272,16 +272,16 @@ def FormatDataForLSTM(stocks, window_size):
     return result
 
 def GenerateDataset(companies):
-    training,Testing = None,None
+    training,targeting = None,None
     for company in companies:
-        train,test = company
+        train,target = company
         if training is None:
             training = train
-            Testing = test
+            targetign = target
         else:
             training = np.concatenate((training,train))
-            Testing = np.concatenate((Testing,test))
-    return (training,Testing)
+            targeting = np.concatenate((targetign,target))
+    return (training,targeting)
 
 def SingleCompany(Company, window_size, Output_size):
     closing_prices = [ x["close"].values for x in Company]

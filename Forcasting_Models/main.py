@@ -1,3 +1,4 @@
+import random
 import pandas as pd
 from überLSTM import LSTM
 import numpy as np
@@ -8,6 +9,8 @@ import utils.DatasetAccess as db_access
 import utils.preprocess as preprocess
 import utils.arguments as arg
 import warnings
+import pickle
+
 
 warnings.simplefilter(action="ignore", category=UserWarning)
 warnings.simplefilter(action="ignore", category=FutureWarning)
@@ -85,16 +88,31 @@ def train_lstma(data):
     n_step = 90
     n_hidden = 128
     n_class = 2
-    Epoch = 200
+    Epoch = 50
     batch_size = 32
     num_layers = 1
     learning_rate = 0.001
 
+    print("Retriving data from database...")
     companies = [db_access.SingleCompany([x],window_size,Output_size) for x in data]
+    print("Data retrieved")
+    print("Generating training data...")
     train_set = db_access.GenerateDataset(companies)
-    print("Train",train_set[0].shape)
+    print("Training data generated")
+    print("Shuffeling data...")
+    train, target = train_set 
+    zipped = list(zip(train, target))
+    random.shuffle(zipped)
+    train, target = zip(*zipped)
+    train = np.array(train)
+    target = np.array(target)
+    train_set = (train, target)
+    print("Data shuffeled")
+    print("splitting data...")
     train_set,test_set = db_access.SplitData(train_set,0.8)
+    print("Data splitted")
     criterion = nn.MSELoss()
+    print("training model...")
     model = LSTM(
         train_set,
         test_set,
@@ -107,7 +125,11 @@ def train_lstma(data):
         num_layers,
         criterion,
     )
-
+    print("Model trained")
+    print("Saving model...")
+    pickle.dump( model, open(f"LSTM_Models/model_LayerN_{num_layers}_BatchSize_{batch_size}_Epoch_{Epoch}_NHidden_{n_hidden}_NClass_{n_class}_LR_{learning_rate}_Winodws_S_{window_size}_Output_Size_{Output_size}.p", "wb" ) )
+    #torch.save(model,"model_LayerN_{num_layers}_BatchSize_{batch_size}_Epoch_{Epoch}_NHidden_{n_hidden}_NClass_{n_class}_LR_{learning_rate}_Winodws_S_{window_size}_Output_Size_{Output_size}.pt")
+    print("Model saved")
     def r2_loss(output, target):
         target_mean = torch.mean(target)
         ss_tot = torch.sum((target - target_mean) ** 2)
