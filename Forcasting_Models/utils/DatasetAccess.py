@@ -343,9 +343,13 @@ def getBigData(colum, n_company, n_datapoints, window_size):
                 NumberOfCompanies=NumberOfCompanies, n_company=n_company
             )
         )
-
     return result
-
+def SplitData(data, train_size):
+    train = data[0][:int(data[0].shape[0]*train_size)]
+    test = data[0][int(data[0].shape[0]*train_size):]
+    target = data[1][:int(data[0].shape[0]*train_size)]
+    test_target = data[1][int(data[0].shape[0]*train_size):]
+    return ((train,target)), ((test,test_target))
 
 if __name__ == "__main__":
     print(GetSingleStockDF())

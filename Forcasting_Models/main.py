@@ -1,4 +1,4 @@
-import pandas as pd # from curses import window
+import pandas as pd
 from überLSTM import LSTM
 import numpy as np
 import torch
@@ -92,11 +92,12 @@ def train_lstma(data):
 
     companies = [db_access.SingleCompany([x],window_size,Output_size) for x in data]
     train_set = db_access.GenerateDataset(companies)
-
+    print("Train",train_set[0].shape)
+    train_set,test_set = db_access.SplitData(train_set,0.8)
     criterion = nn.MSELoss()
     model = LSTM(
         train_set,
-        train_set,
+        test_set,
         batch_size,
         Epoch,
         n_hidden,

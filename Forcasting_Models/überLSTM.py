@@ -60,16 +60,10 @@ class Attention(nn.Module):
 def LSTM(training, testing,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learningRate=0.001,Output_size=10,num_layers=1,criterion=nn.MSELoss()):
     train, target = training
     test, target_test = testing
-    # train = np.array([np.array(d[:PointSize-Output_size]) for d in data])
-    # target = np.array([np.array(d[PointSize-Output_size:]) for d in data])
     trainer = torch.from_numpy(train).float()
     targeter = torch.from_numpy(target).float()
     trainer_test = torch.from_numpy(test).float()
     targeter_test = torch.from_numpy(target_test).float()
-    print("trainer",trainer.shape)
-    print("targeter",targeter.shape)
-    print("trainer_test",trainer)
-    print("targeter_test",targeter)
     dataset = torch.utils.data.TensorDataset(trainer,targeter)
     dtloader = torch.utils.data.DataLoader(dataset,batch_size=batch_size, shuffle=True, drop_last=True)
 
