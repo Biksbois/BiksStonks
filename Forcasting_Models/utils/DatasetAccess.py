@@ -277,10 +277,10 @@ def GenerateDataset(companies):
         train,target = company
         if training is None:
             training = train
-            targetign = target
+            targeting = target
         else:
             training = np.concatenate((training,train))
-            targeting = np.concatenate((targetign,target))
+            targeting = np.concatenate((targeting,target))
     return (training,targeting)
 
 def SingleCompany(Company, window_size, Output_size):
