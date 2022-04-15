@@ -44,39 +44,39 @@ def get_data(arguments, connection, from_date, to_date):
     attribute_name = ""
     attribute_value = ""
 
-    if arguments.primarycategory:
-        if ensure_valid_values(
-            arguments.primarycategory, primary_category, "primary category"
-        ):
-            print(
-                f"Models will be trained on companies with primary category in {arguments.primarycategory}"
-            )
-            attribute_name = "primarycategory"
-            attribute_value = [f"'{x}'" for x in arguments.primarycategory]
+    # if arguments.primarycategory:
+    #     if ensure_valid_values(
+    #         arguments.primarycategory, primary_category, "primary category"
+    #     ):
+    #         print(
+    #             f"Models will be trained on companies with primary category in {arguments.primarycategory}"
+    #         )
+    #         attribute_name = "primarycategory"
+    #         attribute_value = [f"'{x}'" for x in arguments.primarycategory]
 
-    elif arguments.secondarycategory:
-        if ensure_valid_values(
-            arguments.secondarycategory, secondary_category, "secondary category"
-        ):
-            print(
-                f"Models will be trained on companies with secondary category in {arguments.secondarycategory}"
-            )
-            attribute_name = "secondarycategory"
-            attribute_value = [f"'{x}'" for x in arguments.secondarycategory]
+    # elif arguments.secondarycategory:
+    #     if ensure_valid_values(
+    #         arguments.secondarycategory, secondary_category, "secondary category"
+    #     ):
+    #         print(
+    #             f"Models will be trained on companies with secondary category in {arguments.secondarycategory}"
+    #         )
+    #         attribute_name = "secondarycategory"
+    #         attribute_value = [f"'{x}'" for x in arguments.secondarycategory]
 
-    elif arguments.companyid:
-        if ensure_valid_values(
-            [int(x) for x in arguments.companyid], company_id, "companyid"
-        ):
-            print(
-                f"Models will be trained on companies with company id in {arguments.companyid}"
-            )
-            attribute_name = "identifier"
-            attribute_value = arguments.companyid
+    # elif arguments.companyid:
+    #     if ensure_valid_values(
+    #         [int(x) for x in arguments.companyid], company_id, "companyid"
+    #     ):
+    #         print(
+    #             f"Models will be trained on companies with company id in {arguments.companyid}"
+    #         )
+    #         attribute_name = "identifier"
+    #         attribute_value = arguments.companyid
 
-    else:
-        print("No information was provided. No models will be trained.")
-        return pd.DataFrame()
+    # else:
+    #     print("No information was provided. No models will be trained.")
+    #     return pd.DataFrame()
 
     return db_access.get_data_for_attribute(
         attribute_name,
@@ -121,7 +121,7 @@ def train_lstma(data):
     print("Data splitted")
     criterion = nn.MSELoss()
     print("training model...")
-    model = LSTM(
+    model,r2,mse,mae = LSTM(
         train_set,
         test_set,
         batch_size,
@@ -135,7 +135,7 @@ def train_lstma(data):
     )
     print("Model trained")
     print("Saving model...")
-    pickle.dump( model, open(f"LSTM_Models/model_LayerN_{num_layers}_BatchSize_{batch_size}_Epoch_{Epoch}_NHidden_{n_hidden}_NClass_{n_class}_LR_{learning_rate}_WinodwSize_{window_size}_OutputSize_{Output_size}.p", "wb" ) )
+    pickle.dump( model, open(f"LSTM_Models/R2_{r2}_MSE_{mse}_MAE_{mae}_model_LayerN_{num_layers}_BatchSize_{batch_size}_Epoch_{Epoch}_NHidden_{n_hidden}_NClass_{n_class}_LR_{learning_rate}_WinodwSize_{window_size}_OutputSize_{Output_size}.p", "wb" ) )
     #torch.save(model,"model_LayerN_{num_layers}_BatchSize_{batch_size}_Epoch_{Epoch}_NHidden_{n_hidden}_NClass_{n_class}_LR_{learning_rate}_Winodws_S_{window_size}_Output_Size_{Output_size}.pt")
     print("Model saved")
     def r2_loss(output, target):
@@ -279,8 +279,8 @@ if __name__ == "__main__":
 
     connection = db_access.get_connection()
 
-    primary_category = db_access.get_primay_category(connection)
-    secondary_category = db_access.get_secondary_category(connection)
+    # primary_category = db_access.get_primay_category(connection)
+    # secondary_category = db_access.get_secondary_category(connection)
     company_id = db_access.get_companyid(connection)
 
     from_date = "2021-10-01 00:00:00"

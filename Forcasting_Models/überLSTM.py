@@ -101,7 +101,9 @@ def LSTM(training, testing,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learnin
     print("Testing...")
     # test the mode using the test set
     model.eval()
-    scores = []
+    R2_Scores = []
+    MAE_Scores = []
+    MSE_Scores = []
     for x,y in dtloader_test:
         x = x.to(device)
         y = y.to(device)
@@ -112,12 +114,14 @@ def LSTM(training, testing,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learnin
             x = x.unsqueeze(-1)
             y = y.unsqueeze(-1)
         output, _ = model(x, hidden, x)
-        lossMSE = criterion(output, y.squeeze(0))
-        lossMAE = MAE(output.detach().cpu().numpy(), y.squeeze(0).detach().cpu().numpy())
-        scores.append(r2_score(output, y.squeeze(0)))
+        MSE_Scores.append(criterion(output, y.squeeze(0)))
+        MAE_Scores.append(MAE(output.detach().cpu().numpy(), y.squeeze(0).detach().cpu().numpy()))
+        R2_Scores.append(r2_score(output, y.squeeze(0)))
     print("Testing finished")
-    print("R2 score:", np.mean([x.item() for x in scores]))
-    return model
+    print("R2 score:", np.mean([x.item() for x in R2_Scores]))
+    print("MSE score:", np.mean([x.item() for x in MSE_Scores]))
+    print("MAE score:", np.mean([x.item() for x in MAE_Scores]))
+    return (model,(np.mean([x.item() for x in R2_Scores]),np.mean([x.item() for x in MSE_Scores]),np.mean([x.item() for x in MAE_Scores])))
 
 def MAE(pred, true):
     return np.mean(np.abs(pred-true))
