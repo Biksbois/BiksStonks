@@ -44,39 +44,39 @@ def get_data(arguments, connection, from_date, to_date):
     attribute_name = ""
     attribute_value = ""
 
-    # if arguments.primarycategory:
-    #     if ensure_valid_values(
-    #         arguments.primarycategory, primary_category, "primary category"
-    #     ):
-    #         print(
-    #             f"Models will be trained on companies with primary category in {arguments.primarycategory}"
-    #         )
-    #         attribute_name = "primarycategory"
-    #         attribute_value = [f"'{x}'" for x in arguments.primarycategory]
+    if arguments.primarycategory:
+        if ensure_valid_values(
+            arguments.primarycategory, primary_category, "primary category"
+        ):
+            print(
+                f"Models will be trained on companies with primary category in {arguments.primarycategory}"
+            )
+            attribute_name = "primarycategory"
+            attribute_value = [f"'{x}'" for x in arguments.primarycategory]
 
-    # elif arguments.secondarycategory:
-    #     if ensure_valid_values(
-    #         arguments.secondarycategory, secondary_category, "secondary category"
-    #     ):
-    #         print(
-    #             f"Models will be trained on companies with secondary category in {arguments.secondarycategory}"
-    #         )
-    #         attribute_name = "secondarycategory"
-    #         attribute_value = [f"'{x}'" for x in arguments.secondarycategory]
+    elif arguments.secondarycategory:
+        if ensure_valid_values(
+            arguments.secondarycategory, secondary_category, "secondary category"
+        ):
+            print(
+                f"Models will be trained on companies with secondary category in {arguments.secondarycategory}"
+            )
+            attribute_name = "secondarycategory"
+            attribute_value = [f"'{x}'" for x in arguments.secondarycategory]
 
-    # elif arguments.companyid:
-    #     if ensure_valid_values(
-    #         [int(x) for x in arguments.companyid], company_id, "companyid"
-    #     ):
-    #         print(
-    #             f"Models will be trained on companies with company id in {arguments.companyid}"
-    #         )
-    #         attribute_name = "identifier"
-    #         attribute_value = arguments.companyid
+    elif arguments.companyid:
+        if ensure_valid_values(
+            [int(x) for x in arguments.companyid], company_id, "companyid"
+        ):
+            print(
+                f"Models will be trained on companies with company id in {arguments.companyid}"
+            )
+            attribute_name = "identifier"
+            attribute_value = arguments.companyid
 
-    # else:
-    #     print("No information was provided. No models will be trained.")
-    #     return pd.DataFrame()
+    else:
+        print("No information was provided. No models will be trained.")
+        return pd.DataFrame()
 
     return db_access.get_data_for_attribute(
         attribute_name,
