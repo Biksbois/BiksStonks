@@ -112,8 +112,12 @@ def LSTM(training, testing,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learnin
             x = x.unsqueeze(-1)
             y = y.unsqueeze(-1)
         output, _ = model(x, hidden, x)
-        loss = criterion(output, y.squeeze(0))
+        lossMSE = criterion(output, y.squeeze(0))
+        lossMAE = MAE(output.detach().cpu().numpy(), y.squeeze(0).detach().cpu().numpy())
         scores.append(r2_score(output, y.squeeze(0)))
     print("Testing finished")
     print("R2 score:", np.mean([x.item() for x in scores]))
     return model
+
+def MAE(pred, true):
+    return np.mean(np.abs(pred-true))
