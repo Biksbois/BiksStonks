@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from utils.masking import TriangularCausalMask, ProbMask
+from utils_in.masking import TriangularCausalMask, ProbMask
 from models.encoder import Encoder, EncoderLayer, ConvLayer, EncoderStack
 from models.decoder import Decoder, DecoderLayer
 from models.attn import FullAttention, ProbAttention, AttentionLayer
@@ -41,7 +41,7 @@ class Informer(nn.Module):
                     d_model
                 ) for l in range(e_layers-1)
             ] if distil else None,
-            norm_layer=torch.nn.LayerNorm(d_model)
+            norm_layer=torch.nn.LayerNorm(d_model)  
         )
         # Decoder
         self.decoder = Decoder(
