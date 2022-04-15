@@ -152,7 +152,7 @@ def train_informer(arguments, data):
     epochs = informer_params.train_epochs
     informer_params.train_epochs = 1 # iterate over each df once per epoch
     num_of_stocks = len(data)
-    for epoch in range(1):
+    for epoch in range(epochs):
             for i, df in enumerate(data):
                     informer_params.df = df
                     # args.df = args.df[len(args.df)//2:]
