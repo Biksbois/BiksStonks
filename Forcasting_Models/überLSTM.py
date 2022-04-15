@@ -121,7 +121,7 @@ def LSTM(training, testing,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learnin
     print("R2 score:", np.mean([x.item() for x in R2_Scores]))
     print("MSE score:", np.mean([x.item() for x in MSE_Scores]))
     print("MAE score:", np.mean([x.item() for x in MAE_Scores]))
-    return (model,np.mean([x.item() for x in R2_Scores]),np.mean([x.item() for x in MSE_Scores]),np.mean([x.item() for x in MAE_Scores]))
+    return (model,np.mean([x.item() for x in R2_Scores]),np.mean([x.item() for x in MSE_Scores]),np.mean([x.item() for x in MAE_Scores])
 
 def MAE(pred, true):
     return np.mean(np.abs(pred-true))
