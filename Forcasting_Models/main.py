@@ -225,23 +225,32 @@ def train_prophet(arguments, data):
     from cv2 import triangulatePoints
     import utils.prophet_experiment as exp
     import FbProphet.fbprophet as fb
-
-    data = preprocess.rename_dataset_columns(data)
+    import datetime
+    
+    data = preprocess.rename_dataset_columns(data[0])
     training, testing = preprocess.get_split_data(data)
-
+    result_path = './FbProphet/Iteration/'
+    if not os.path.exists(result_path):
+        os.makedirs(result_path)
+    date_time = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    iteration = result_path + date_time + '/'
+    if not os.path.exists(iteration):
+        os.makedirs(iteration)
+        
+    
     model = fb.model_fit(
         training,
         yearly_seasonality=arguments.yearly_seasonality,
-        weekly_seasonality=arguments.weekly_seasonality,
+        weekly_seasonality=arguments.weekly_seasonality,    
         daily_seasonality=arguments.daily_seasonality,
         seasonality_mode=arguments.seasonality_mode,
     )
-
+    fb.save_model(model, iteration + 'model'+ arguments)
     print("model has been trained, now predicting..")
 
     future = fb.get_future_df(
         model,
-        period=arguments.predict_periods,
+        period=len(testing),
         freq=arguments.timeunit,
         include_history=arguments.include_history,
     )
@@ -251,12 +260,16 @@ def train_prophet(arguments, data):
         future,
     )
 
-    e = exp.Experiment(arguments.timeunit, arguments.predict_periods)
-    cross_validation = fb.get_cross_validation(model, e.get_horizon())
+    forecast.to_csv(iteration + 'forecast.csv')
+
+    # e = exp.Experiment(arguments.timeunit, arguments.predict_periods)
+    cross_validation = fb.get_cross_validation(model, horizon=arguments.horizon)
 
     metrics = fb.get_performance_metrics(
         cross_validation,
     )
+    # save metrics to csv
+    metrics.to_csv(iteration + 'metrics.csv')
 
     print("Performance \n")
     metrics.head(10)

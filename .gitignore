@@ -7,6 +7,7 @@ __pycache__/
 *.so
 
 Forcasting_Models/utils/appsettings.secrets.json
+Forcasting_Models/FbProphet/Iteration
 
 # Distribution / packaging
 .Python
