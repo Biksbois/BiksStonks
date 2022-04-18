@@ -1,4 +1,5 @@
 # from curses import window
+from utils.data_obj import DataObj
 import random
 import pandas as pd
 from psycopg2 import paramstyle
@@ -102,7 +103,7 @@ def get_data(arguments, connection, from_date, to_date):
         to_time=to_date,
     )
 
-    data = [d for d in data if len(d) > 1000]
+    data = [d for d in data if len(d).data > 1000]
 
     if arguments.limit and len(data) > arguments.limit:
         print(
@@ -110,10 +111,18 @@ def get_data(arguments, connection, from_date, to_date):
                 arguments.limit
             )
         )
-        return data[: arguments.limit]
+        data = data[: arguments.limit]
     else:
         print(f"Data is {len(data)} rows long.")
-        return data
+
+    print(f"-----------------------------------------------")
+    print(f"------ Introducint {len(data)} companies ------")
+    print(f"-----------------------------------------------")
+
+    for company in data:
+        print(f"  - {company.name}, ({company.id}, {company.data.shape})")
+
+    return data
 
 
 def train_lstma(
@@ -426,74 +435,137 @@ if __name__ == "__main__":
 
     data = get_data(arguments, connection, from_date, to_date)
 
-    db_access.upsert_exp_data(
-        "ARIMA",  # model name
-        "ARIMA DESC",  # model description
-        1.22,  # mae
-        1.33,  # mse
-        1.44,  # r^2
-        from_date,  # data from
-        to_date,  # data to
-        "H",  # time unit
-        "IKEA",  # company name
-        {"a": 1, "b": 2},  # model parameters
-        False,  # use sentiment
-        ["IKEA", "Arla"],  # used companies
-        ["Open", "Close"],  # used columns
-        pd.DataFrame(  # forecasts
-            data={
-                "time": ["2020-12-31 00:00:00", "2021-12-31 23:59:59"],
-                "y": [3.1, 4.1],
-                "y_hat": [5.1, 6.1],
-            }
-        ),
-        connection,
-    )
+    # db_access.upsert_exp_data(
+    #     "ARIMA",  # model name
+    #     "ARIMA DESC",  # model description
+    #     1.22,  # mae
+    #     1.33,  # mse
+    #     1.44,  # r^2
+    #     from_date,  # data from
+    #     to_date,  # data to
+    #     "H",  # time unit
+    #     "IKEA",  # company name
+    #     {"a": 1, "b": 2},  # model parameters
+    #     False,  # use sentiment
+    #     ["IKEA", "Arla"],  # used companies
+    #     ["Open", "Close"],  # used columns
+    #     pd.DataFrame(  # forecasts
+    #         data={
+    #             "time": ["2020-12-31 00:00:00", "2021-12-31 23:59:59"],
+    #             "y": [3.1, 4.1],
+    #             "y_hat": [5.1, 6.1],
+    #         }
+    #     ),
+    #     connection,
+    # )
 
     if len(data) > 0:
         if arguments.model == "fb" or arguments.model == "all":
             print("about to train the fb prophet model")
-            mae, mse, r_squared, parameters = train_prophet(arguments, data)
-            db_access.upsert_exp_data(
-                "prophet",  # model name
-                "prophet desc",  # model description
-                mae,  # mae
-                mse,  # mse
-                r_squared,  # r^2
-                from_date,  # data from
-                to_date,  # data to
-                arguments.timeunit,  # time unit
-                "IKEA",  # company name
-                parameters,  # model parameters
-                arguments.use_sentimen,  # use sentiment
-                ["IKEA", "Arla"],  # used companies
-                ["Open", "Close"],  # used columns
-                pd.DataFrame(  # forecasts
-                    data={
-                        "time": ["2020-12-31 00:00:00", "2021-12-31 23:59:59"],
-                        "y": [3.1, 4.1],
-                        "y_hat": [5.1, 6.1],
-                    }
-                ),
-                connection,
-            )
+            train_prophet(arguments, data.data)
+            # mae, mse, r_squared, parameters, forecasts = train_prophet(
+            #     arguments, data.data
+            # )
+            # db_access.upsert_exp_data(
+            #     "prophet",  # model name
+            #     "prophet desc",  # model description
+            #     mae,  # mae
+            #     mse,  # mse
+            #     r_squared,  # r^2
+            #     from_date,  # data from
+            #     to_date,  # data to
+            #     arguments.timeunit,  # time unit
+            #     data[0].id,  # company name
+            #     parameters,  # model parameters
+            #     arguments.use_sentimen,  # use sentiment
+            #     [d.id for d in data],  # used companies
+            #     arguments.columns,  # used columns
+            #     forecasts,
+            #     connection,
+            # )
 
         if arguments.model == "informer" or arguments.model == "all":
             print("about to train the informer")
             for WS in [60, 120]:
                 for OS in [10, 30]:
-                    in_seq, first_pred, first_true = train_informer(
-                        arguments, data, seq_len=WS, pred_len=OS, epoch=25
+                    train_informer(
+                        arguments, data.data, seq_len=WS, pred_len=OS, epoch=25
                     )
+                    # mae, mse, r_squared, parameters, forecasts = train_informer(
+                    #     arguments, data.data, seq_len=WS, pred_len=OS, epoch=25
+                    # )
+                    # parameters["WS"] = WS
+                    # parameters["OS"] = OS
+
+                    # db_access.upsert_exp_data(
+                    #     "informer",  # model name
+                    #     "informer desc",  # model description
+                    #     mae,  # mae
+                    #     mse,  # mse
+                    #     r_squared,  # r^2
+                    #     from_date,  # data from
+                    #     to_date,  # data to
+                    #     arguments.timeunit,  # time unit
+                    #     data[0].id,  # company name
+                    #     parameters,  # model parameters
+                    #     arguments.use_sentimen,  # use sentiment
+                    #     [d.id for d in data],  # used companies
+                    #     arguments.columns,  # used columns
+                    #     forecasts,
+                    #     connection,
+                    # )
 
         if arguments.model == "lstm" or arguments.model == "all":
             print("about to train the lstma model")
             for WS in [60, 120]:
                 for OS in [10, 30]:
-                    train_lstma(data, window_size=WS + OS, Output_size=OS, Epoch=25)
+                    train_lstma(
+                        data.data, window_size=WS + OS, Output_size=OS, Epoch=25
+                    )
+                    # mae, mse, r_squared, parameters, forecasts = train_lstma(
+                    #     data.data, window_size=WS + OS, Output_size=OS, Epoch=25
+                    # )
+                    # parameters["WS"] = WS
+                    # parameters["OS"] = OS
+
+                    # db_access.upsert_exp_data(
+                    #     "lstm",  # model name
+                    #     "lstm desc",  # model description
+                    #     mae,  # mae
+                    #     mse,  # mse
+                    #     r_squared,  # r^2
+                    #     from_date,  # data from
+                    #     to_date,  # data to
+                    #     arguments.timeunit,  # time unit
+                    #     data[0].id,  # company name
+                    #     parameters,  # model parameters
+                    #     arguments.use_sentimen,  # use sentiment
+                    #     [d.id for d in data],  # used companies
+                    #     arguments.columns,  # used columns
+                    #     forecasts,
+                    #     connection,
+                    # )
 
         if arguments.model == "arima" or arguments.model == "all":
             print("about to train the arima model")
-            train_arima(data)
+            train_arima(data.data)
+            # mae, mse, r_squared, parameters, forecasts = train_arima(data.data)
+            # db_access.upsert_exp_data(
+            #     "arima",  # model name
+            #     "arima desc",  # model description
+            #     mae,  # mae
+            #     mse,  # mse
+            #     r_squared,  # r^2
+            #     from_date,  # data from
+            #     to_date,  # data to
+            #     arguments.timeunit,  # time unit
+            #     data[0].id,  # company name
+            #     parameters,  # model parameters
+            #     arguments.use_sentimen,  # use sentiment
+            #     [d.id for d in data],  # used companies
+            #     arguments.columns,  # used columns
+            #     forecasts,
+            #     connection,
+            # )
     else:
         print("No data was found. Exiting...")

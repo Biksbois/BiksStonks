@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import json
+from utils.data_obj import DataObj
 
 from itertools import islice
 
@@ -271,24 +272,16 @@ def get_data_for_attribute(
             f"{attribute_name} must be a list, not a {type(attribute_value)}"
         )
 
-    dfs = []
-
-    print("\n-----------------------")
-    print("--- presenting data ---")
-    print("-----------------------\n")
-    print(f"{len(datasetids)} compaines were found. Including:")
+    company_data = []
 
     for i in range(len(datasetids)):
         datasetid = datasetids.iloc[i]["identifier"]
         description = datasetids.iloc[i]["description"]
 
-        dfs.append(
-            get_data_for_datasetid(datasetid, conn, interval, from_time, to_time)
-        )
-        print(f"  - {description} - shape: {dfs[-1].shape}")
+        data = get_data_for_datasetid(datasetid, conn, interval, from_time, to_time)
+        company_data.append(DataObj(data, datasetid, description))
 
-    print("\n")
-    return dfs
+    return company_data
 
 
 def get_data_for_datasetid(
