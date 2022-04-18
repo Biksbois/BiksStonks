@@ -24,10 +24,10 @@ def rename_dataset_columns(df_d):
     df_d.drop(['index'], axis=1, inplace=True)
     return df_d
 
-def get_split_data(df):
-    split_date = df["ds"].iloc[-1] - ((df["ds"].iloc[-1] - df["ds"].iloc[0]) * 0.3)
-    training = df[df['ds'] <= split_date]# data[:split_date].iloc[:-1]
-    testing = df[df['ds'] > split_date]
+def get_split_data(df, col_name="ds"):
+    split_date = df[col_name].iloc[-1] - ((df[col_name].iloc[-1] - df[col_name].iloc[0]) * 0.3)
+    training = df[df[col_name] <= split_date]# data[:split_date].iloc[:-1]
+    testing = df[df[col_name] > split_date]
     return training, testing
 
 def std_on_column(df, col_name):
