@@ -116,22 +116,8 @@ def train_lstma(data,
     columns = ['close','open','high','low','volume']
     print("Retriving data from database...")
     companies = [db_access.SingleCompany([x],window_size,Output_size,columns) for x in data]
-    print("Data retrieved")
-    print("Generating training data...")
-    train_set = db_access.GenerateDataset(companies)
-    print("Training data generated")
-    print("Shuffeling data...")
-    train, target = train_set 
-    zipped = list(zip(train, target))
-    random.shuffle(zipped)
-    train, target = zip(*zipped)
-    train = np.array(train)
-    target = np.array(target)
-    train_set = (train, target)
-    print("Data shuffeled")
-    print("splitting data...")
-    train_set,test_set = db_access.SplitData(train_set,0.8)
-    print("Data splitted")
+    train_set, test_set = db_access.GenerateDatasets(companies)
+
     criterion = nn.MSELoss()
     print("training model...")
     model,r2,mse,mae = LSTM(
@@ -159,7 +145,6 @@ def train_lstma(data,
     del model
     del companies
     print("Memory freed")
-
 
 def train_informer(arguments, data, seq_len = None, pred_len = None, epoch = None):
     print("training informer")
