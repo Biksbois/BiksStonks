@@ -367,7 +367,7 @@ if __name__ == "__main__":
             print("about to train the lstma model")
             for WS in [60,120]:
                 for OS in [10,30]:
-                    train_lstma(data, window_size=WS+OS, Output_size=OS, Epoch = 25)
+                    train_lstma(data, window_size=WS+OS, Output_size=OS, Epoch = 5)
             train_lstma(data)
  
         if arguments.model == "arima" or arguments.model == "all":
