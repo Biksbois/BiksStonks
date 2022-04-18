@@ -382,6 +382,25 @@ def GenerateDataset(companies):
     return (training, targeting)
 
 
+def GenerateDatasets(companies):
+    # train_list,target_list,test_list,test_targetlist = [],[],[],[]
+    training,targeting,testing,test_targeting = None,None,None,None
+    for company in companies:
+        tr,te = SplitData(company,0.8)
+        train,target = tr
+        test,test_target = te
+        if training is None:
+            training = train
+            targeting = target
+            testing = test
+            test_targeting = test_target
+        else:
+            training = np.concatenate((training,train))
+            targeting = np.concatenate((targeting,target))
+            testing = np.concatenate((testing,test))
+            test_targeting = np.concatenate((test_targeting,test_target))
+    return ((training,targeting),(testing,test_targeting))
+
 def SingleCompany(Company, window_size, Output_size, columns):
     column_data = []
     for column in columns:

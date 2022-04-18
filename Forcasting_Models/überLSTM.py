@@ -71,7 +71,7 @@ def LSTM(training, testing,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learnin
 
     dataset_test = torch.utils.data.TensorDataset(trainer_test,targeter_test)
     dtloader_test = torch.utils.data.DataLoader(dataset_test,batch_size=batch_size, shuffle=True, drop_last=True)
-
+    print("Gpu status",torch.cuda.is_available())
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     hidden = torch.zeros(num_layers, batch_size, n_hidden)
     hidden = hidden.to(device)
@@ -97,33 +97,34 @@ def LSTM(training, testing,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learnin
             optimizer.step()
             r2score = r2_score(output, y.squeeze(0))
 
-        if (epoch + 1) % 5 == 0:
+        if (epoch + 1) % 1 == 0:
             print('Epoch:', '%04d' % (epoch + 1), 'MSE =', '{:.6f}'.format(loss))
             print('Epoch:', '%04d' % (epoch + 1), 'R2 =', '{:.6f}'.format(r2score))
             print('Memory Usage:', '{:.2f}'.format(torch.cuda.memory_allocated(device=device) / 1024 ** 3), 'GB')
             print('Memory of max', '{:.2f}'.format(torch.cuda.max_memory_allocated(device=device) / 1024 ** 3), 'GB')
+            print("________________________________________________________________________________________________")
     print("Model has finished training")
     print("Testing...")
     # test the mode using the test set
     model.eval()
-    R2_Scores = []
-    MAE_Scores = []
-    MSE_Scores = []
-    for x,y in dtloader_test:
-        x = x.to(device)
-        y = y.to(device)
-        if(n_class != 1):
-            x = x.squeeze(-1)
-            y = y.squeeze(-1)
-        else:
-            x = x.unsqueeze(-1)
-            y = y.unsqueeze(-1)
-        output, _ = model(x, hidden, x)
-        MSE_Scores.append(criterion(output, y.squeeze(0)))
-        MAE_Scores.append(MAE(output.detach().cpu().numpy(), y.squeeze(0).detach().cpu().numpy()))
-        R2_Scores.append(r2_score(output, y.squeeze(0)))
-        print('Memory Usage:', '{:.2f}'.format(torch.cuda.memory_allocated(device=device) / 1024 ** 3), 'GB')
-        print('Memory of max', '{:.2f}'.format(torch.cuda.max_memory_allocated(device=device) / 1024 ** 3), 'GB')
+    #model.no_grad()
+    with torch.no_grad():
+        R2_Scores = []
+        MAE_Scores = []
+        MSE_Scores = []
+        for x,y in dtloader_test:
+            x = x.to(device)
+            y = y.to(device)
+            if(n_class != 1):
+                x = x.squeeze(-1)
+                y = y.squeeze(-1)
+            else:
+                x = x.unsqueeze(-1)
+                y = y.unsqueeze(-1)
+            output, _ = model(x, hidden, x)
+            MSE_Scores.append(criterion(output.cpu(), y.squeeze(0).cpu()))
+            MAE_Scores.append(MAE(output.detach().cpu().numpy(), y.squeeze(0).detach().cpu().numpy()))
+            R2_Scores.append(r2_score(output.cpu(), y.squeeze(0).cpu()))
     print("Testing finished")
     print("R2 score:", np.mean([x.item() for x in R2_Scores]))
     print("MSE score:", np.mean([x.item() for x in MSE_Scores]))

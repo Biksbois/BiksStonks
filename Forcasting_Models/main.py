@@ -130,22 +130,8 @@ def train_lstma(
     companies = [
         db_access.SingleCompany([x], window_size, Output_size, columns) for x in data
     ]
-    print("Data retrieved")
-    print("Generating training data...")
-    train_set = db_access.GenerateDataset(companies)
-    print("Training data generated")
-    print("Shuffeling data...")
-    train, target = train_set
-    zipped = list(zip(train, target))
-    random.shuffle(zipped)
-    train, target = zip(*zipped)
-    train = np.array(train)
-    target = np.array(target)
-    train_set = (train, target)
-    print("Data shuffeled")
-    print("splitting data...")
-    train_set, test_set = db_access.SplitData(train_set, 0.8)
-    print("Data splitted")
+    train_set, test_set = db_access.GenerateDatasets(companies)
+
     criterion = nn.MSELoss()
     print("training model...")
     model, r2, mse, mae = LSTM(
@@ -173,9 +159,6 @@ def train_lstma(
     print("Freeing memory...")
     del train_set
     del test_set
-    del train
-    del target
-    del zipped
     del model
     del companies
     print("Memory freed")
@@ -367,12 +350,7 @@ def train_prophet(arguments, data):
 
 
 def train_arima(data):
-    import statsmodels.api as sm
-    from statsmodels.tsa.stattools import acf, pacf
-    from statsmodels.tsa.stattools import adfuller
-    from statsmodels.tsa.arima.model import ARIMA
-
-    training, testing = preprocess.get_split_data(data)
+    training, testing = preprocess.get_split_data(data[0], col_name="close")
     mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l = [], [], [], [], [], []
     p = d = q = range(0, 2)
     pdq = list(itertools.product(p, d, q))
@@ -393,18 +371,14 @@ def train_arima(data):
 
                 output = mod.fit()
                 ans.append([comb, combs, output.aic])
-            except:
+            except Exception as e:
+                print(f"ERROR: {str(e)}")
                 continue
-
     # Find the parameters with minimal AIC value
     ans_df = pd.DataFrame(ans, columns=["pdq", "pdqs", "aic"])
     min_order = ans_df.loc[ans_df["aic"].idxmin()][0]
 
-    arima_model = ARIMA(training.close, order=min_order)
-
-    model = arima_model.fit()
-
-    history = [x for x in training]
+    history = [x for x in training.close]
     model_predictions = []
     N_test_observations = len(testing)
     for time_point in range(N_test_observations):
@@ -413,10 +387,10 @@ def train_arima(data):
         output = model_fit.forecast()
         yhat = output[0]
         model_predictions.append(yhat)
-        true_test_value = testing[time_point]
+        true_test_value = testing.close.iloc[time_point]
         history.append(true_test_value)
 
-    mae, mse, rmse, mape, mspe, r_squared = metric(model_predictions, testing)
+    mae, mse, rmse, mape, mspe, r_squared = metric(model_predictions, testing.close)
     mae_l.append(mae)
     mse_l.append(mse)
     rmse_l.append(rmse)
@@ -459,6 +433,6 @@ if __name__ == "__main__":
 
         if arguments.model == "arima" or arguments.model == "all":
             print("about to train the arima model")
-            train_lstma(data)
+            train_arima(data)
     else:
         print("No data was found. Exiting...")
