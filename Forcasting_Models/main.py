@@ -108,14 +108,14 @@ def train_lstma(data,
     Output_size = 10,
     n_step = 90,
     n_hidden = 128,
-    n_class = 2,
+    n_class = 5,
     Epoch = 50,
     batch_size = 32,
     num_layers = 1,
     learning_rate = 0.001):
-
+    columns = ['close','open','high','low','volume']
     print("Retriving data from database...")
-    companies = [db_access.SingleCompany([x],window_size,Output_size) for x in data]
+    companies = [db_access.SingleCompany([x],window_size,Output_size,columns) for x in data]
     print("Data retrieved")
     print("Generating training data...")
     train_set = db_access.GenerateDataset(companies)
@@ -159,13 +159,6 @@ def train_lstma(data,
     del model
     del companies
     print("Memory freed")
-    
-    def r2_loss(output, target):
-        target_mean = torch.mean(target)
-        ss_tot = torch.sum((target - target_mean) ** 2)
-        ss_res = torch.sum((target - output) ** 2)
-        r2 = 1 - ss_res / ss_tot
-        return r2
 
 
 def train_informer(arguments, data, seq_len = None, pred_len = None, epoch = None):
