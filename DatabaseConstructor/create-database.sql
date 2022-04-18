@@ -74,27 +74,6 @@ BEGIN
 END
 $$;
 
--- DO $$
--- BEGIN
---     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'sentiment_type') THEN
---         CREATE TYPE sentiment_type AS (
---             release_date TIMESTAMP,
---             source_headline VARCHAR(300),
---             target_headline VARCHAR(300),
---             source_language VARCHAR(10),
---             target_language VARCHAR(10),
---             neg DECIMAL,
---             pos DECIMAL,
---             neu DECIMAL,
---             compound DECIMAL,
---             url VARCHAR(300),
---             companies VARCHAR(100),
---             category VARCHAR(30)
---         ); 
---     END IF;
--- END
--- $$;
-
 CREATE TABLE IF NOT EXISTS sentiment_dataset(
     id SERIAL PRIMARY KEY,
     translator VARCHAR(100),
@@ -110,45 +89,107 @@ CREATE TABLE IF NOT EXISTS sentiment(
     id SERIAL PRIMARY KEY,
     datasetid INT,
     release_date TIMESTAMP,
-    source_headline VARCHAR(500),
-    target_headline VARCHAR(500),
+    source_headline VARCHAR(2000),
+    target_headline VARCHAR(2001),
     neg DECIMAL,
     pos DECIMAL,
     neu DECIMAL,
     compound DECIMAL,
-    url VARCHAR(500),
+    url VARCHAR(2002),
     companies VARCHAR(100)
 );
 
 CREATE TABLE IF NOT EXISTS model(
     id SERIAL PRIMARY KEY,
     name VARCHAR(100),
-    description VARCHAR(150),
-    
+    description VARCHAR(300),
     CONSTRAINT name_unique UNIQUE (name)
 );
 
-CREATE TABLE IF NOT EXISTS metadata_metric(
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100),
-    CONSTRAINT metadata_name_unique UNIQUE (name)
-);
+CREATE OR REPLACE FUNCTION upsert_model
+(
+    in_model_name VARCHAR(100),
+    in_description VARCHAR(300)
+)
+RETURNS INT
+as $$
+DECLARE
+    datasetid INT;
+BEGIN
+    UPDATE model SET description = in_description WHERE name = in_model_name;
+    IF NOT FOUND THEN
+        INSERT INTO model (name, description) VALUES (in_model_name, in_description);
+    END IF;
+    SELECT id INTO datasetid FROM model WHERE name = in_model_name;
+    RETURN datasetid;
+end; $$
+language plpgsql;
 
 CREATE TABLE IF NOT EXISTS score(
     id SERIAL PRIMARY KEY,
-    metric VARCHAR(100),
-    model VARCHAR(100),
-    value DECIMAL,
+    model_id INT,
     time TIMESTAMP DEFAULT Now(),
-
-    CONSTRAINT fk_metric
-        FOREIGN KEY (metric)
-            REFERENCES metadata_metric(name),
-    
-    CONSTRAINT fk_model
-        FOREIGN KEY (model)
-            REFERENCES model(name)
+    mae DECIMAL,
+    mse DECIMAL,
+    r_squared DECIMAL,
+    data_from TIMESTAMP,
+    data_to TIMESTAMP,
+    time_unit CHARACTER,
+    forecasted_company VARCHAR(100),
+    metadata JSON NOT NULL,
+    use_sentiment BOOLEAN,
+    used_companies VARCHAR(100)[],
+    columns VARCHAR(100)[]
 );
+
+CREATE OR REPLACE FUNCTION upsert_score
+(
+    in_model_id INT,
+    in_time TIMESTAMP,
+    in_mae DECIMAL,
+    in_mse DECIMAL,
+    in_r_squared DECIMAL,
+    in_data_from TIMESTAMP,
+    in_data_to TIMESTAMP,
+    in_time_unit CHARACTER,
+    in_forecasted_company VARCHAR(100),
+    in_metadata json,
+    in_use_sentiment BOOLEAN,
+    in_used_companies VARCHAR(100)[],
+    in_columns VARCHAR(100)[]
+)
+RETURNS INT
+as $$
+DECLARE
+    datasetid INT;
+BEGIN
+    INSERT INTO score (model_id, time, mae, mse, r_squared, data_from, data_to, time_unit, forecasted_company, metadata, use_sentiment, used_companies, columns) VALUES (in_model_id, in_time, in_mae, in_mse, in_r_squared, in_data_from, in_data_to, in_time_unit, in_forecasted_company, in_metadata, in_use_sentiment, in_used_companies, in_columns);
+    SELECT id INTO datasetid FROM score WHERE model_id = in_model_id AND time = in_time;
+    RETURN datasetid;
+end; $$
+language plpgsql;
+
+CREATE TABLE IF NOT EXISTS graph(
+    id SERIAL PRIMARY KEY,
+    score_id INT,
+    y DECIMAL,
+    y_hat DECIMAL,
+    time TIMESTAMP
+);
+
+CREATE OR REPLACE FUNCTION upsert_graph
+(
+    in_score_id INT,
+    in_y DECIMAL,
+    in_y_hat DECIMAL,
+    in_time TIMESTAMP
+)
+RETURNS VOID
+as $$
+BEGIN
+    INSERT INTO graph (score_id, y, y_hat, time) VALUES (in_score_id, in_y, in_y_hat, in_time);
+end; $$
+language plpgsql;
 
 CREATE TABLE IF NOT EXISTS token(
     id SERIAL PRIMARY KEY,
@@ -392,7 +433,6 @@ VALUES
     ('FR'),
     ('GL'),
     ('FI') ON CONFLICT (country) DO NOTHING;
-
 
 INSERT INTO 
     metadata_currency(currency)

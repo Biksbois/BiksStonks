@@ -13,6 +13,7 @@ def get_arguments():
     )
     parser.add_argument("--primarycategory", nargs="+", required=False)
     parser.add_argument("--secondarycategory", nargs="+", required=False)
+    parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--companyid", nargs="+", required=False, default=[15515])
     parser.add_argument("--timeunit", required=False, default="H")
     parser.add_argument("--time", required=False, default="0001-01-01 00:00:00")

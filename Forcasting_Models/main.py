@@ -1,4 +1,4 @@
-#from curses import window
+# from curses import window
 import random
 import pandas as pd
 from überLSTM import LSTM
@@ -13,13 +13,14 @@ import warnings
 import pickle
 
 import itertools
-import statsmodels.api as sm  
+import statsmodels.api as sm
 from statsmodels.tsa.stattools import acf, pacf
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.arima.model import ARIMA
 
 import os
 import sys
+
 sys.path += ["Informer"]
 from Informer.exp.exp_informer import Exp_Informer
 from Informer.utils_in.tools import dotdict
@@ -53,8 +54,6 @@ def get_data(arguments, connection, from_date, to_date):
 
     primary_category = db_access.get_primay_category(connection)
     secondary_category = db_access.get_secondary_category(connection)
-    # primary_category = db_access.get_primay_category(connection)
-    # secondary_category = db_access.get_secondary_category(connection)
     company_id = db_access.get_companyid(connection)
 
     if arguments.primarycategory:
@@ -91,7 +90,7 @@ def get_data(arguments, connection, from_date, to_date):
         print("No information was provided. No models will be trained.")
         return pd.DataFrame()
 
-    return db_access.get_data_for_attribute(
+    data = db_access.get_data_for_attribute(
         attribute_name,
         attribute_value,
         connection,
@@ -100,28 +99,43 @@ def get_data(arguments, connection, from_date, to_date):
         to_time=to_date,
     )
 
+    if arguments.limit and len(data) > arguments.limit:
+        print(
+            "Data is too large. Only the first {} rows will be used.".format(
+                arguments.limit
+            )
+        )
+        return data[: arguments.limit]
+    else:
+        print(f"Data is {len(data)} rows long.")
+        return data
 
-def train_lstma(data,
-    window_size = 100,
-    n_companies = 10,
-    n_datapoints = 5000,
-    Output_size = 10,
-    n_step = 90,
-    n_hidden = 128,
-    n_class = 5,
-    Epoch = 50,
-    batch_size = 32,
-    num_layers = 1,
-    learning_rate = 0.001):
-    columns = ['close','open','high','low','volume']
+
+def train_lstma(
+    data,
+    window_size=100,
+    n_companies=10,
+    n_datapoints=5000,
+    Output_size=10,
+    n_step=90,
+    n_hidden=128,
+    n_class=5,
+    Epoch=50,
+    batch_size=32,
+    num_layers=1,
+    learning_rate=0.001,
+):
+    columns = ["close", "open", "high", "low", "volume"]
     print("Retriving data from database...")
-    companies = [db_access.SingleCompany([x],window_size,Output_size,columns) for x in data]
+    companies = [
+        db_access.SingleCompany([x], window_size, Output_size, columns) for x in data
+    ]
     print("Data retrieved")
     print("Generating training data...")
     train_set = db_access.GenerateDataset(companies)
     print("Training data generated")
     print("Shuffeling data...")
-    train, target = train_set 
+    train, target = train_set
     zipped = list(zip(train, target))
     random.shuffle(zipped)
     train, target = zip(*zipped)
@@ -130,11 +144,11 @@ def train_lstma(data,
     train_set = (train, target)
     print("Data shuffeled")
     print("splitting data...")
-    train_set,test_set = db_access.SplitData(train_set,0.8)
+    train_set, test_set = db_access.SplitData(train_set, 0.8)
     print("Data splitted")
     criterion = nn.MSELoss()
     print("training model...")
-    model,r2,mse,mae = LSTM(
+    model, r2, mse, mae = LSTM(
         train_set,
         test_set,
         batch_size,
@@ -148,7 +162,13 @@ def train_lstma(data,
     )
     print("Model trained")
     print("Saving model...")
-    pickle.dump( model, open(f"LSTM_Models/R2_{r2}_MSE_{mse}_MAE_{mae}_model_LayerN_{num_layers}_BatchSize_{batch_size}_Epoch_{Epoch}_NHidden_{n_hidden}_NClass_{n_class}_LR_{learning_rate}_WinodwSize_{window_size}_OutputSize_{Output_size}.p", "wb" ) )
+    pickle.dump(
+        model,
+        open(
+            f"LSTM_Models/R2_{r2}_MSE_{mse}_MAE_{mae}_model_LayerN_{num_layers}_BatchSize_{batch_size}_Epoch_{Epoch}_NHidden_{n_hidden}_NClass_{n_class}_LR_{learning_rate}_WinodwSize_{window_size}_OutputSize_{Output_size}.p",
+            "wb",
+        ),
+    )
     print("Model saved")
     print("Freeing memory...")
     del train_set
@@ -161,88 +181,125 @@ def train_lstma(data,
     print("Memory freed")
 
 
-def train_informer(arguments, data, seq_len = None, pred_len = None, epoch = None):
+def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
     print("training informer")
     epochs = epoch
-    informer_params.train_epochs = 1 # iterate over each df once per epoch
-    informer_params.seq_len =seq_len
+    informer_params.train_epochs = 1  # iterate over each df once per epoch
+    informer_params.seq_len = seq_len
     informer_params.label_len = seq_len
     informer_params.pred_len = pred_len
     informer_params.train_epochs = 1
-    exp = Exp_Informer(informer_params) # here we can change the parameters
+    exp = Exp_Informer(informer_params)  # here we can change the parameters
     num_of_stocks = len(data)
     for epoch in range(epochs):
-            for i, df in enumerate(data):
-                    informer_params.df = df
-                    # args.df = args.df[len(args.df)//2:]
+        for i, df in enumerate(data):
+            informer_params.df = df
+            # args.df = args.df[len(args.df)//2:]
 
-                    print('>>>>> Training on stock {}/{} | epoch {}'.format(i, num_of_stocks, epoch+1))
-                    
-                    name = ''
-                    if arguments.primarycategory:
-                            name = 'primarycategory'
-                    elif arguments.secondarycategory:
-                            name = 'secondarycategory'
-                    elif arguments.companyid:
-                            name = 'companyid'
+            print(
+                ">>>>> Training on stock {}/{} | epoch {}".format(
+                    i, num_of_stocks, epoch + 1
+                )
+            )
 
-                    # setting record of experiments
-                    args = informer_params
-                    setting = '{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_at{}_fc{}_eb{}_dt{}_mx{}_{}'.format(name, args.model, args.data, args.features, 
-                            args.seq_len, args.label_len, args.pred_len,
-                            args.d_model, args.n_heads, args.e_layers, args.d_layers, args.d_ff, args.attn, args.factor, args.embed, args.distil, args.mix, args.des)
-                    
-                    # train
-                    print('>>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
-                    exp.train(setting)
+            name = ""
+            if arguments.primarycategory:
+                name = "primarycategory"
+            elif arguments.secondarycategory:
+                name = "secondarycategory"
+            elif arguments.companyid:
+                name = "companyid"
+
+            # setting record of experiments
+            args = informer_params
+            setting = "{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_at{}_fc{}_eb{}_dt{}_mx{}_{}".format(
+                name,
+                args.model,
+                args.data,
+                args.features,
+                args.seq_len,
+                args.label_len,
+                args.pred_len,
+                args.d_model,
+                args.n_heads,
+                args.e_layers,
+                args.d_layers,
+                args.d_ff,
+                args.attn,
+                args.factor,
+                args.embed,
+                args.distil,
+                args.mix,
+                args.des,
+            )
+
+            # train
+            print(
+                ">>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>".format(setting)
+            )
+            exp.train(setting)
     torch.cuda.empty_cache()
 
     # test
-    print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
-    mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l, rs2_intermed_l = [], [], [], [], [], [], []
+    print(">>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<".format(setting))
+    mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l, rs2_intermed_l = (
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+    )
     for i, df in enumerate(data):
-            informer_params.df = df
-            test_data, test_loader = exp._get_data(flag='test')
-            exp.model.eval()
-            preds = []
-            trues = []
-            
-            for i, (batch_x,batch_y,batch_x_mark,batch_y_mark) in enumerate(test_loader):
-                pred, true = exp._process_one_batch(
-                    test_data, batch_x, batch_y, batch_x_mark, batch_y_mark)
-                pred = pred.detach().cpu().numpy()
-                true = true.detach().cpu().numpy()
-                preds.append(pred)
-                trues.append(true)
-                rs2_intermed_l.append(r2_score(torch.tensor(pred.reshape(-1)), torch.tensor(true.reshape(-1))))
+        informer_params.df = df
+        test_data, test_loader = exp._get_data(flag="test")
+        exp.model.eval()
+        preds = []
+        trues = []
 
+        for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(test_loader):
+            pred, true = exp._process_one_batch(
+                test_data, batch_x, batch_y, batch_x_mark, batch_y_mark
+            )
+            pred = pred.detach().cpu().numpy()
+            true = true.detach().cpu().numpy()
+            preds.append(pred)
+            trues.append(true)
+            rs2_intermed_l.append(
+                r2_score(torch.tensor(pred.reshape(-1)), torch.tensor(true.reshape(-1)))
+            )
 
-            preds = np.array(preds)
-            trues = np.array(trues)
-            preds = preds.reshape(-1)
-            trues = trues.reshape(-1)
-            
-            mae, mse, rmse, mape, mspe, r_squared = metric(preds, trues)
-            mae_l.append(mae)
-            mse_l.append(mse)
-            rmse_l.append(rmse)
-            mape_l.append(mape)
-            mspe_l.append(mspe)
-            rs2_l.append(r_squared)
+        preds = np.array(preds)
+        trues = np.array(trues)
+        preds = preds.reshape(-1)
+        trues = trues.reshape(-1)
+
+        mae, mse, rmse, mape, mspe, r_squared = metric(preds, trues)
+        mae_l.append(mae)
+        mse_l.append(mse)
+        rmse_l.append(rmse)
+        mape_l.append(mape)
+        mspe_l.append(mspe)
+        rs2_l.append(r_squared)
 
     torch.cuda.empty_cache()
-            
-    folder_path = './results/' + setting +'/'
+
+    folder_path = "./results/" + setting + "/"
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
 
     metrics_per_stock = np.array([mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l])
-    np.save(folder_path+'metrics_per_stock.npy', metrics_per_stock)
-    np.save(folder_path+'metrics_agg.npy', np.mean(metrics_per_stock+[np.mean(rs2_intermed_l)], axis=1))    
-    print('>>>>> Done!')
-    print(f'Metrics: MSE {np.mean(mse_l):.2f}, RMSE {np.mean(rmse_l):.2f}, MAE {np.mean(mae_l):.2f},\
-        MAPE {np.mean(mape_l):.2f}, MSPE {np.mean(mspe_l):.2f}, R2 {np.mean(rs2_l):.2f}, R2 IM {np.mean(rs2_intermed_l)}')
-
+    np.save(folder_path + "metrics_per_stock.npy", metrics_per_stock)
+    np.save(
+        folder_path + "metrics_agg.npy",
+        np.mean(metrics_per_stock + [np.mean(rs2_intermed_l)], axis=1),
+    )
+    print(">>>>> Done!")
+    print(
+        f"Metrics: MSE {np.mean(mse_l):.2f}, RMSE {np.mean(rmse_l):.2f}, MAE {np.mean(mae_l):.2f},\
+        MAPE {np.mean(mape_l):.2f}, MSPE {np.mean(mspe_l):.2f}, R2 {np.mean(rs2_l):.2f}, R2 IM {np.mean(rs2_intermed_l)}"
+    )
 
 
 def train_prophet(arguments, data):
@@ -250,26 +307,25 @@ def train_prophet(arguments, data):
     import utils.prophet_experiment as exp
     import FbProphet.fbprophet as fb
     import datetime
-    
+
     data = preprocess.rename_dataset_columns(data[0])
     training, testing = preprocess.get_split_data(data)
-    result_path = './FbProphet/Iteration/'
+    result_path = "./FbProphet/Iteration/"
     if not os.path.exists(result_path):
         os.makedirs(result_path)
     date_time = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
-    iteration = result_path + date_time + '/'
+    iteration = result_path + date_time + "/"
     if not os.path.exists(iteration):
         os.makedirs(iteration)
-        
-    
+
     model = fb.model_fit(
         training,
         yearly_seasonality=arguments.yearly_seasonality,
-        weekly_seasonality=arguments.weekly_seasonality,    
+        weekly_seasonality=arguments.weekly_seasonality,
         daily_seasonality=arguments.daily_seasonality,
         seasonality_mode=arguments.seasonality_mode,
     )
-    fb.save_model(model, iteration + 'model'+ arguments)
+    fb.save_model(model, iteration + "model" + arguments)
     print("model has been trained, now predicting..")
 
     future = fb.get_future_df(
@@ -284,7 +340,7 @@ def train_prophet(arguments, data):
         future,
     )
 
-    forecast.to_csv(iteration + 'forecast.csv')
+    forecast.to_csv(iteration + "forecast.csv")
 
     # e = exp.Experiment(arguments.timeunit, arguments.predict_periods)
     cross_validation = fb.get_cross_validation(model, horizon=arguments.horizon)
@@ -293,7 +349,7 @@ def train_prophet(arguments, data):
         cross_validation,
     )
     # save metrics to csv
-    metrics.to_csv(iteration + 'metrics.csv')
+    metrics.to_csv(iteration + "metrics.csv")
 
     print("Performance \n")
     metrics.head(10)
@@ -309,11 +365,13 @@ def train_prophet(arguments, data):
     )
     print("done!")
 
+
 def train_arima(data):
-    import statsmodels.api as sm  
+    import statsmodels.api as sm
     from statsmodels.tsa.stattools import acf, pacf
     from statsmodels.tsa.stattools import adfuller
     from statsmodels.tsa.arima.model import ARIMA
+
     training, testing = preprocess.get_split_data(data)
     mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l = [], [], [], [], [], []
     p = d = q = range(0, 2)
@@ -325,20 +383,22 @@ def train_arima(data):
     for comb in pdq:
         for combs in pdqs:
             try:
-                mod = sm.tsa.statespace.SARIMAX(training.close,
-                                            order=comb,
-                                            seasonal_order=combs,
-                                            enforce_stationarity=False,
-                                            enforce_invertibility=False)
+                mod = sm.tsa.statespace.SARIMAX(
+                    training.close,
+                    order=comb,
+                    seasonal_order=combs,
+                    enforce_stationarity=False,
+                    enforce_invertibility=False,
+                )
 
                 output = mod.fit()
                 ans.append([comb, combs, output.aic])
             except:
                 continue
-            
+
     # Find the parameters with minimal AIC value
-    ans_df = pd.DataFrame(ans, columns=['pdq', 'pdqs', 'aic'])
-    min_order = ans_df.loc[ans_df['aic'].idxmin()][0]
+    ans_df = pd.DataFrame(ans, columns=["pdq", "pdqs", "aic"])
+    min_order = ans_df.loc[ans_df["aic"].idxmin()][0]
 
     arima_model = ARIMA(training.close, order=min_order)
 
@@ -365,15 +425,13 @@ def train_arima(data):
     rs2_l.append(r_squared)
 
 
-
-
 if __name__ == "__main__":
     arguments = arg.get_arguments()
 
     connection = db_access.get_connection()
 
-    # primary_category = db_access.get_primay_category(connection)
-    # secondary_category = db_access.get_secondary_category(connection)
+    primary_category = db_access.get_primay_category(connection)
+    secondary_category = db_access.get_secondary_category(connection)
     company_id = db_access.get_companyid(connection)
 
     from_date = "2020-12-31 00:00:00"
@@ -388,17 +446,17 @@ if __name__ == "__main__":
 
         if arguments.model == "informer" or arguments.model == "all":
             print("about to train the informer")
-            for WS in [60,120]:
-                for OS in [10,30]: 
-                    train_informer(arguments, data, seq_len = WS, pred_len = OS, epoch = 25)
+            for WS in [60, 120]:
+                for OS in [10, 30]:
+                    train_informer(arguments, data, seq_len=WS, pred_len=OS, epoch=25)
 
         if arguments.model == "lstm" or arguments.model == "all":
             print("about to train the lstma model")
-            for WS in [60,120]:
-                for OS in [10,30]:
-                    train_lstma(data, window_size=WS+OS, Output_size=OS, Epoch = 25)
+            for WS in [60, 120]:
+                for OS in [10, 30]:
+                    train_lstma(data, window_size=WS + OS, Output_size=OS, Epoch=25)
             train_lstma(data)
-            
+
         if arguments.model == "arima" or arguments.model == "all":
             print("about to train the arima model")
             train_lstma(data)
