@@ -118,7 +118,7 @@ DECLARE
 BEGIN
     UPDATE model SET description = in_description WHERE name = in_model_name;
     IF NOT FOUND THEN
-        INSERT INTO model (name, description) VALUES (in_model_name, in_description);
+        INSERT INTO model(name, description) VALUES (in_model_name, in_description);
     END IF;
     SELECT id INTO datasetid FROM model WHERE name = in_model_name;
     RETURN datasetid;

@@ -10,6 +10,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import json
 
 from itertools import islice
 
@@ -155,17 +156,18 @@ def _get_dataset_ids(conn, where_clause):
     return df
 
 
-def upsert_model(model_name, model_desc, cur):
+def _upsert_model(model_name, model_desc, cur):
     cur.callproc(
         "upsert_model",
         (model_name, model_desc),
     )
+
     model_id = cur.fetchone()[0]
 
     return model_id
 
 
-def upsert_score(
+def _upsert_score(
     model_id,
     executed_time,
     mae,
@@ -193,7 +195,7 @@ def upsert_score(
             data_to,
             time_unit,
             forecasted_company,
-            metadata,
+            json.dumps(metadata),
             used_sentiment,
             used_companies,
             columns,
@@ -205,7 +207,7 @@ def upsert_score(
     return score_id
 
 
-def upsert_graph(score_id, forecasts, cur):
+def _upsert_graph(score_id, forecasts, cur):
     for _, row in forecasts.iterrows():
         cur.callproc("upsert_graph", (score_id, row["y"], row["y_hat"], row["time"]))
 
@@ -225,29 +227,32 @@ def upsert_exp_data(
     used_companies,
     columns,
     forecasts,
-    conn,
+    connection,
 ):
-    cur = conn.cursor()
-    executed_time = datetime.now
-    model_id = upsert_model(model_name, model_desc, cur)
-    score_id = upsert_score(
-        model_id,
-        executed_time,
-        mae,
-        mse,
-        r_squared,
-        data_from,
-        data_to,
-        time_unit,
-        forecasted_company,
-        metadata,
-        used_sentiment,
-        used_companies,
-        columns,
-        cur,
-    )
-    upsert_graph(score_id, forecasts, cur)
-    cur.close()
+    with connection as conn:
+        cur = conn.cursor()
+        executed_time = datetime.now()
+        print("upserting company")
+        model_id = _upsert_model(model_name, model_desc, cur)
+        print(f"model id: {model_id}")
+        score_id = _upsert_score(
+            model_id,
+            executed_time,
+            mae,
+            mse,
+            r_squared,
+            data_from,
+            data_to,
+            time_unit,
+            forecasted_company,
+            metadata,
+            used_sentiment,
+            used_companies,
+            columns,
+            cur,
+        )
+        _upsert_graph(score_id, forecasts, cur)
+        cur.close()
 
 
 def get_data_for_attribute(
@@ -384,22 +389,23 @@ def GenerateDataset(companies):
 
 def GenerateDatasets(companies):
     # train_list,target_list,test_list,test_targetlist = [],[],[],[]
-    training,targeting,testing,test_targeting = None,None,None,None
+    training, targeting, testing, test_targeting = None, None, None, None
     for company in companies:
-        tr,te = SplitData(company,0.8)
-        train,target = tr
-        test,test_target = te
+        tr, te = SplitData(company, 0.8)
+        train, target = tr
+        test, test_target = te
         if training is None:
             training = train
             targeting = target
             testing = test
             test_targeting = test_target
         else:
-            training = np.concatenate((training,train))
-            targeting = np.concatenate((targeting,target))
-            testing = np.concatenate((testing,test))
-            test_targeting = np.concatenate((test_targeting,test_target))
-    return ((training,targeting),(testing,test_targeting))
+            training = np.concatenate((training, train))
+            targeting = np.concatenate((targeting, target))
+            testing = np.concatenate((testing, test))
+            test_targeting = np.concatenate((test_targeting, test_target))
+    return ((training, targeting), (testing, test_targeting))
+
 
 def SingleCompany(Company, window_size, Output_size, columns):
     column_data = []

@@ -24,6 +24,7 @@ def get_arguments():
     parser.add_argument("--include_history", required=False, default=False)
     # parser.add_argument("--predict_periods", required=False, default=1000)
     parser.add_argument("--horizon", required=False, default=1)
+    parser.add_argument("--use_sentiment", required=False, default=False)
 
     args = parser.parse_args()
 

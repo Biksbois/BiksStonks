@@ -1,6 +1,7 @@
 # from curses import window
 import random
 import pandas as pd
+from psycopg2 import paramstyle
 from überLSTM import LSTM
 import numpy as np
 import torch
@@ -20,6 +21,8 @@ from statsmodels.tsa.arima.model import ARIMA
 
 import os
 import sys
+
+import utils.DatasetAccess as db_access
 
 sys.path += ["Informer"]
 from Informer.exp.exp_informer import Exp_Informer
@@ -134,7 +137,7 @@ def train_lstma(
 
     criterion = nn.MSELoss()
     print("training model...")
-    model, r2, mse, mae = LSTM(
+    model, r2, mse, mae, plots = LSTM(
         train_set,
         test_set,
         batch_size,
@@ -241,10 +244,12 @@ def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
         preds = []
         trues = []
 
-        for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(test_loader):
+        for j, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(test_loader):
             pred, true = exp._process_one_batch(
                 test_data, batch_x, batch_y, batch_x_mark, batch_y_mark
             )
+            if i == 0 and j == 0:
+                in_seq = batch_x[0][-1]
             pred = pred.detach().cpu().numpy()
             true = true.detach().cpu().numpy()
             preds.append(pred)
@@ -252,6 +257,10 @@ def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
             rs2_intermed_l.append(
                 r2_score(torch.tensor(pred.reshape(-1)), torch.tensor(true.reshape(-1)))
             )
+
+        if i == 0:
+            first_pred = preds[0]
+            first_true = trues[0]
 
         preds = np.array(preds)
         trues = np.array(trues)
@@ -283,6 +292,8 @@ def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
         f"Metrics: MSE {np.mean(mse_l):.2f}, RMSE {np.mean(rmse_l):.2f}, MAE {np.mean(mae_l):.2f},\
         MAPE {np.mean(mape_l):.2f}, MSPE {np.mean(mspe_l):.2f}, R2 {np.mean(rs2_l):.2f}, R2 IM {np.mean(rs2_intermed_l)}"
     )
+
+    return in_seq, first_pred, first_true
 
 
 def train_prophet(arguments, data):
@@ -413,23 +424,71 @@ if __name__ == "__main__":
 
     data = get_data(arguments, connection, from_date, to_date)
 
+    db_access.upsert_exp_data(
+        "ARIMA",  # model name
+        "ARIMA DESC",  # model description
+        1.22,  # mae
+        1.33,  # mse
+        1.44,  # r^2
+        from_date,  # data from
+        to_date,  # data to
+        "H",  # time unit
+        "IKEA",  # company name
+        {"a": 1, "b": 2},  # model parameters
+        False,  # use sentiment
+        ["IKEA", "Arla"],  # used companies
+        ["Open", "Close"],  # used columns
+        pd.DataFrame(  # forecasts
+            data={
+                "time": ["2020-12-31 00:00:00", "2021-12-31 23:59:59"],
+                "y": [3.1, 4.1],
+                "y_hat": [5.1, 6.1],
+            }
+        ),
+        connection,
+    )
+
     if len(data) > 0:
         if arguments.model == "fb" or arguments.model == "all":
             print("about to train the fb prophet model")
-            train_prophet(arguments, data)
+            mae, mse, r_squared, parameters = train_prophet(arguments, data)
+            db_access.upsert_exp_data(
+                "prophet",  # model name
+                "prophet desc",  # model description
+                mae,  # mae
+                mse,  # mse
+                r_squared,  # r^2
+                from_date,  # data from
+                to_date,  # data to
+                arguments.timeunit,  # time unit
+                "IKEA",  # company name
+                parameters,  # model parameters
+                arguments.use_sentimen,  # use sentiment
+                ["IKEA", "Arla"],  # used companies
+                ["Open", "Close"],  # used columns
+                pd.DataFrame(  # forecasts
+                    data={
+                        "time": ["2020-12-31 00:00:00", "2021-12-31 23:59:59"],
+                        "y": [3.1, 4.1],
+                        "y_hat": [5.1, 6.1],
+                    }
+                ),
+                connection,
+            )
 
         if arguments.model == "informer" or arguments.model == "all":
             print("about to train the informer")
             for WS in [60, 120]:
                 for OS in [10, 30]:
-                    train_informer(arguments, data, seq_len=WS, pred_len=OS, epoch=25)
+                    in_seq, first_pred, first_true = train_informer(
+                        arguments, data, seq_len=WS, pred_len=OS, epoch=25
+                    )
 
         if arguments.model == "lstm" or arguments.model == "all":
             print("about to train the lstma model")
             for WS in [60, 120]:
                 for OS in [10, 30]:
                     train_lstma(data, window_size=WS + OS, Output_size=OS, Epoch=25)
-            train_lstma(data)
 
         if arguments.model == "arima" or arguments.model == "all":
             print("about to train the arima model")
