@@ -1,4 +1,3 @@
-from datetime import datetime
 from pydoc import describe
 from unittest import result
 import psycopg2 as pg
@@ -155,101 +154,6 @@ def _get_dataset_ids(conn, where_clause):
     return df
 
 
-def upsert_model(model_name, model_desc, cur):
-    cur.callproc(
-        "upsert_model",
-        (model_name, model_desc),
-    )
-    model_id = cur.fetchone()[0]
-
-    return model_id
-
-
-def upsert_score(
-    model_id,
-    executed_time,
-    mae,
-    mse,
-    r_squared,
-    data_from,
-    data_to,
-    time_unit,
-    forecasted_company,
-    metadata,
-    used_sentiment,
-    used_companies,
-    columns,
-    cur,
-):
-    cur.callproc(
-        "upsert_score",
-        (
-            model_id,
-            executed_time,
-            mae,
-            mse,
-            r_squared,
-            data_from,
-            data_to,
-            time_unit,
-            forecasted_company,
-            metadata,
-            used_sentiment,
-            used_companies,
-            columns,
-        ),
-    )
-
-    score_id = cur.fetchone()[0]
-
-    return score_id
-
-
-def upsert_graph(score_id, forecasts, cur):
-    for _, row in forecasts.iterrows():
-        cur.callproc("upsert_graph", (score_id, row["y"], row["y_hat"], row["time"]))
-
-
-def upsert_exp_data(
-    model_name,
-    model_desc,
-    mae,
-    mse,
-    r_squared,
-    data_from,
-    data_to,
-    time_unit,
-    forecasted_company,
-    metadata,
-    used_sentiment,
-    used_companies,
-    columns,
-    forecasts,
-    conn,
-):
-    cur = conn.cursor()
-    executed_time = datetime.now
-    model_id = upsert_model(model_name, model_desc, cur)
-    score_id = upsert_score(
-        model_id,
-        executed_time,
-        mae,
-        mse,
-        r_squared,
-        data_from,
-        data_to,
-        time_unit,
-        forecasted_company,
-        metadata,
-        used_sentiment,
-        used_companies,
-        columns,
-        cur,
-    )
-    upsert_graph(score_id, forecasts, cur)
-    cur.close()
-
-
 def get_data_for_attribute(
     attribute_name,
     attribute_value,
@@ -357,7 +261,6 @@ def window1(seq, n=2):
         result = result[1:] + (elem,)
         yield result
 
-
 def FormatDataForLSTM(stocks, window_size):
     WindowedStocks = []
     for stock in stocks:
@@ -368,22 +271,19 @@ def FormatDataForLSTM(stocks, window_size):
             result.append(i)
     return result
 
-
 def GenerateDataset(companies):
-    training, targeting = None, None
+    training,targeting = None,None
     for company in companies:
-        train, target = company
+        train,target = company
         if training is None:
             training = train
             targeting = target
         else:
-            training = np.concatenate((training, train))
-            targeting = np.concatenate((targeting, target))
-    return (training, targeting)
-
+            training = np.concatenate((training,train))
+            targeting = np.concatenate((targeting,target))
+    return (training,targeting)
 
 def GenerateDatasets(companies):
-    # train_list,target_list,test_list,test_targetlist = [],[],[],[]
     training,targeting,testing,test_targeting = None,None,None,None
     for company in companies:
         tr,te = SplitData(company,0.8)
@@ -404,9 +304,7 @@ def GenerateDatasets(companies):
 def SingleCompany(Company, window_size, Output_size, columns):
     column_data = []
     for column in columns:
-        column_data.append(
-            ProccessData([x[column].values for x in Company], window_size)
-        )
+        column_data.append(ProccessData([ x[column].values for x in Company],window_size))
     data = None
     for d in column_data:
         if data is None:
@@ -419,16 +317,14 @@ def SingleCompany(Company, window_size, Output_size, columns):
     target = np.array(
         [np.array(d[window_size - Output_size :]) for d in data]
     )  # (number of windows, points, n_class)
-    return (train, target)
-
+    return (train,target)
 
 def ProccessData(values, window_size):
-    valuesFormated = FormatDataForLSTM(values, window_size)
+    valuesFormated = FormatDataForLSTM(values,window_size)
     valuesFormated = [np.array(x) for x in valuesFormated]
     ValuesData = np.array(valuesFormated)
     ValuesData = (ValuesData - ValuesData.mean()) / ValuesData.std()
     return ValuesData.reshape(ValuesData.shape[0], ValuesData.shape[1], 1)
-
 
 def getBigData(colum, n_company, n_datapoints, window_size):
     stocks = []
@@ -453,15 +349,12 @@ def getBigData(colum, n_company, n_datapoints, window_size):
             )
         )
     return result
-
-
 def SplitData(data, train_size):
-    train = data[0][: int(data[0].shape[0] * train_size)]
-    test = data[0][int(data[0].shape[0] * train_size) :]
-    target = data[1][: int(data[0].shape[0] * train_size)]
-    test_target = data[1][int(data[0].shape[0] * train_size) :]
-    return ((train, target)), ((test, test_target))
-
+    train = data[0][:int(data[0].shape[0]*train_size)]
+    test = data[0][int(data[0].shape[0]*train_size):]
+    target = data[1][:int(data[0].shape[0]*train_size)]
+    test_target = data[1][int(data[0].shape[0]*train_size):]
+    return ((train,target)), ((test,test_target))
 
 if __name__ == "__main__":
     print(GetSingleStockDF())
