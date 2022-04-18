@@ -100,6 +100,8 @@ def LSTM(training, testing,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learnin
         if (epoch + 1) % 5 == 0:
             print('Epoch:', '%04d' % (epoch + 1), 'MSE =', '{:.6f}'.format(loss))
             print('Epoch:', '%04d' % (epoch + 1), 'R2 =', '{:.6f}'.format(r2score))
+            print('Memory Usage:', '{:.2f}'.format(torch.cuda.memory_allocated(device=device) / 1024 ** 3), 'GB')
+            print('Memory of max', '{:.2f}'.format(torch.cuda.max_memory_allocated(device=device) / 1024 ** 3), 'GB')
     print("Model has finished training")
     print("Testing...")
     # test the mode using the test set
@@ -120,6 +122,8 @@ def LSTM(training, testing,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learnin
         MSE_Scores.append(criterion(output, y.squeeze(0)))
         MAE_Scores.append(MAE(output.detach().cpu().numpy(), y.squeeze(0).detach().cpu().numpy()))
         R2_Scores.append(r2_score(output, y.squeeze(0)))
+        print('Memory Usage:', '{:.2f}'.format(torch.cuda.memory_allocated(device=device) / 1024 ** 3), 'GB')
+        print('Memory of max', '{:.2f}'.format(torch.cuda.max_memory_allocated(device=device) / 1024 ** 3), 'GB')
     print("Testing finished")
     print("R2 score:", np.mean([x.item() for x in R2_Scores]))
     print("MSE score:", np.mean([x.item() for x in MSE_Scores]))

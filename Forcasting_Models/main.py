@@ -53,6 +53,8 @@ def get_data(arguments, connection, from_date, to_date):
 
     primary_category = db_access.get_primay_category(connection)
     secondary_category = db_access.get_secondary_category(connection)
+    # primary_category = db_access.get_primay_category(connection)
+    # secondary_category = db_access.get_secondary_category(connection)
     company_id = db_access.get_companyid(connection)
 
     if arguments.primarycategory:
@@ -106,30 +108,16 @@ def train_lstma(data,
     Output_size = 10,
     n_step = 90,
     n_hidden = 128,
-    n_class = 2,
+    n_class = 5,
     Epoch = 50,
     batch_size = 32,
     num_layers = 1,
     learning_rate = 0.001):
-
+    columns = ['close','open','high','low','volume']
     print("Retriving data from database...")
-    companies = [db_access.SingleCompany([x],window_size,Output_size) for x in data]
-    print("Data retrieved")
-    print("Generating training data...")
-    train_set = db_access.GenerateDataset(companies)
-    print("Training data generated")
-    print("Shuffeling data...")
-    train, target = train_set 
-    zipped = list(zip(train, target))
-    random.shuffle(zipped)
-    train, target = zip(*zipped)
-    train = np.array(train)
-    target = np.array(target)
-    train_set = (train, target)
-    print("Data shuffeled")
-    print("splitting data...")
-    train_set,test_set = db_access.SplitData(train_set,0.8)
-    print("Data splitted")
+    companies = [db_access.SingleCompany([x],window_size,Output_size,columns) for x in data]
+    train_set, test_set = db_access.GenerateDatasets(companies)
+
     criterion = nn.MSELoss()
     print("training model...")
     model,r2,mse,mae = LSTM(
@@ -148,13 +136,12 @@ def train_lstma(data,
     print("Saving model...")
     pickle.dump( model, open(f"LSTM_Models/R2_{r2}_MSE_{mse}_MAE_{mae}_model_LayerN_{num_layers}_BatchSize_{batch_size}_Epoch_{Epoch}_NHidden_{n_hidden}_NClass_{n_class}_LR_{learning_rate}_WinodwSize_{window_size}_OutputSize_{Output_size}.p", "wb" ) )
     print("Model saved")
-    def r2_loss(output, target):
-        target_mean = torch.mean(target)
-        ss_tot = torch.sum((target - target_mean) ** 2)
-        ss_res = torch.sum((target - output) ** 2)
-        r2 = 1 - ss_res / ss_tot
-        return r2
-
+    print("Freeing memory...")
+    del train_set
+    del test_set
+    del model
+    del companies
+    print("Memory freed")
 
 def train_informer(arguments, data, seq_len = None, pred_len = None, epoch = None):
     print("training informer")
