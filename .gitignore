@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+data_collectors/python/error_urls.txt
+
 # C extensions
 *.so
 
