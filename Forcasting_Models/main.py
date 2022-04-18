@@ -139,9 +139,6 @@ def train_lstma(data,
     print("Freeing memory...")
     del train_set
     del test_set
-    del train
-    del target
-    del zipped
     del model
     del companies
     print("Memory freed")
