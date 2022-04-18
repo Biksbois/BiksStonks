@@ -1,3 +1,4 @@
+#from curses import window
 import random
 import pandas as pd
 from überLSTM import LSTM
@@ -44,6 +45,10 @@ def get_data(arguments, connection, from_date, to_date):
     attribute_name = ""
     attribute_value = ""
 
+    primary_category = db_access.get_primay_category(connection)
+    secondary_category = db_access.get_secondary_category(connection)
+    company_id = db_access.get_companyid(connection)
+
     if arguments.primarycategory:
         if ensure_valid_values(
             arguments.primarycategory, primary_category, "primary category"
@@ -88,18 +93,18 @@ def get_data(arguments, connection, from_date, to_date):
     )
 
 
-def train_lstma(data):
-    window_size = 100
-    n_companies = 10
-    n_datapoints = 5000
-    Output_size = 10
-    n_step = 90
-    n_hidden = 128
-    n_class = 2
-    Epoch = 50
-    batch_size = 32
-    num_layers = 1
-    learning_rate = 0.001
+def train_lstma(data,
+    window_size = 100,
+    n_companies = 10,
+    n_datapoints = 5000,
+    Output_size = 10,
+    n_step = 90,
+    n_hidden = 128,
+    n_class = 2,
+    Epoch = 50,
+    batch_size = 32,
+    num_layers = 1,
+    learning_rate = 0.001):
 
     print("Retriving data from database...")
     companies = [db_access.SingleCompany([x],window_size,Output_size) for x in data]
@@ -146,11 +151,15 @@ def train_lstma(data):
         return r2
 
 
-def train_informer(arguments, data):
+def train_informer(arguments, data, seq_len = None, pred_len = None, epoch = None):
     print("training informer")
-    exp = Exp_Informer(informer_params) # here we can change the parameters
-    epochs = informer_params.train_epochs
+    epochs = epoch
     informer_params.train_epochs = 1 # iterate over each df once per epoch
+    informer_params.seq_len =seq_len
+    informer_params.label_len = seq_len
+    informer_params.pred_len = pred_len
+    informer_params.train_epochs = 1
+    exp = Exp_Informer(informer_params) # here we can change the parameters
     num_of_stocks = len(data)
     for epoch in range(epochs):
             for i, df in enumerate(data):
@@ -180,7 +189,7 @@ def train_informer(arguments, data):
 
     # test
     print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
-    mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l = [], [], [], [], [], []
+    mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l, rs2_intermed_l = [], [], [], [], [], [], []
     for i, df in enumerate(data):
             informer_params.df = df
             test_data, test_loader = exp._get_data(flag='test')
@@ -191,8 +200,12 @@ def train_informer(arguments, data):
             for i, (batch_x,batch_y,batch_x_mark,batch_y_mark) in enumerate(test_loader):
                 pred, true = exp._process_one_batch(
                     test_data, batch_x, batch_y, batch_x_mark, batch_y_mark)
-                preds.append(pred.detach().cpu().numpy())
-                trues.append(true.detach().cpu().numpy())
+                pred = pred.detach().cpu().numpy()
+                true = true.detach().cpu().numpy()
+                preds.append(pred)
+                trues.append(true)
+                rs2_intermed_l.append(r2_score(torch.tensor(pred.reshape(-1)), torch.tensor(true.reshape(-1))))
+
 
             preds = np.array(preds)
             trues = np.array(trues)
@@ -215,10 +228,10 @@ def train_informer(arguments, data):
 
     metrics_per_stock = np.array([mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l])
     np.save(folder_path+'metrics_per_stock.npy', metrics_per_stock)
-    np.save(folder_path+'metrics_agg.npy', np.mean(metrics_per_stock, axis=1))    
+    np.save(folder_path+'metrics_agg.npy', np.mean(metrics_per_stock+[np.mean(rs2_intermed_l)], axis=1))    
     print('>>>>> Done!')
     print(f'Metrics: MSE {np.mean(mse_l):.2f}, RMSE {np.mean(rmse_l):.2f}, MAE {np.mean(mae_l):.2f},\
-        MAPE {np.mean(mape_l):.2f}, MSPE {np.mean(mspe_l):.2f}, R2 {np.mean(rs2_l):.2f}')
+        MAPE {np.mean(mape_l):.2f}, MSPE {np.mean(mspe_l):.2f}, R2 {np.mean(rs2_l):.2f}, R2 IM {np.mean(rs2_intermed_l)}')
 
 
 
@@ -283,7 +296,7 @@ if __name__ == "__main__":
     # secondary_category = db_access.get_secondary_category(connection)
     company_id = db_access.get_companyid(connection)
 
-    from_date = "2021-10-01 00:00:00"
+    from_date = "2020-12-31 00:00:00"
     to_date = "2021-12-31 23:59:59"
 
     data = get_data(arguments, connection, from_date, to_date)
@@ -295,10 +308,14 @@ if __name__ == "__main__":
 
         if arguments.model == "informer" or arguments.model == "all":
             print("about to train the informer")
-            train_informer(arguments, data)
+            for WS in [60,120]:
+                for OS in [10,30]: 
+                    train_informer(arguments, data, seq_len = WS, pred_len = OS, epoch = 25)
 
         if arguments.model == "lstm" or arguments.model == "all":
             print("about to train the lstma model")
-            train_lstma(data)
+            for WS in [60,120]:
+                for OS in [10,30]:
+                    train_lstma(data, window_size=WS+OS, Output_size=OS, Epoch = 25)
     else:
         print("No data was found. Exiting...")
