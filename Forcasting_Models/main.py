@@ -12,6 +12,12 @@ import utils.arguments as arg
 import warnings
 import pickle
 
+import itertools
+import statsmodels.api as sm  
+from statsmodels.tsa.stattools import acf, pacf
+from statsmodels.tsa.stattools import adfuller
+from statsmodels.tsa.arima.model import ARIMA
+
 import os
 import sys
 sys.path += ["Informer"]
@@ -141,7 +147,6 @@ def train_lstma(data,
     print("Model trained")
     print("Saving model...")
     pickle.dump( model, open(f"LSTM_Models/R2_{r2}_MSE_{mse}_MAE_{mae}_model_LayerN_{num_layers}_BatchSize_{batch_size}_Epoch_{Epoch}_NHidden_{n_hidden}_NClass_{n_class}_LR_{learning_rate}_WinodwSize_{window_size}_OutputSize_{Output_size}.p", "wb" ) )
-    #torch.save(model,"model_LayerN_{num_layers}_BatchSize_{batch_size}_Epoch_{Epoch}_NHidden_{n_hidden}_NClass_{n_class}_LR_{learning_rate}_Winodws_S_{window_size}_Output_Size_{Output_size}.pt")
     print("Model saved")
     def r2_loss(output, target):
         target_mean = torch.mean(target)
@@ -239,23 +244,32 @@ def train_prophet(arguments, data):
     from cv2 import triangulatePoints
     import utils.prophet_experiment as exp
     import FbProphet.fbprophet as fb
-
-    data = preprocess.rename_dataset_columns(data)
+    import datetime
+    
+    data = preprocess.rename_dataset_columns(data[0])
     training, testing = preprocess.get_split_data(data)
-
+    result_path = './FbProphet/Iteration/'
+    if not os.path.exists(result_path):
+        os.makedirs(result_path)
+    date_time = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    iteration = result_path + date_time + '/'
+    if not os.path.exists(iteration):
+        os.makedirs(iteration)
+        
+    
     model = fb.model_fit(
         training,
         yearly_seasonality=arguments.yearly_seasonality,
-        weekly_seasonality=arguments.weekly_seasonality,
+        weekly_seasonality=arguments.weekly_seasonality,    
         daily_seasonality=arguments.daily_seasonality,
         seasonality_mode=arguments.seasonality_mode,
     )
-
+    fb.save_model(model, iteration + 'model'+ arguments)
     print("model has been trained, now predicting..")
 
     future = fb.get_future_df(
         model,
-        period=arguments.predict_periods,
+        period=len(testing),
         freq=arguments.timeunit,
         include_history=arguments.include_history,
     )
@@ -265,12 +279,16 @@ def train_prophet(arguments, data):
         future,
     )
 
-    e = exp.Experiment(arguments.timeunit, arguments.predict_periods)
-    cross_validation = fb.get_cross_validation(model, e.get_horizon())
+    forecast.to_csv(iteration + 'forecast.csv')
+
+    # e = exp.Experiment(arguments.timeunit, arguments.predict_periods)
+    cross_validation = fb.get_cross_validation(model, horizon=arguments.horizon)
 
     metrics = fb.get_performance_metrics(
         cross_validation,
     )
+    # save metrics to csv
+    metrics.to_csv(iteration + 'metrics.csv')
 
     print("Performance \n")
     metrics.head(10)
@@ -285,6 +303,59 @@ def train_prophet(arguments, data):
         testing,
     )
     print("done!")
+
+def train_arima(data):
+    training, testing = preprocess.get_split_data(data)
+    mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l = [], [], [], [], [], []
+    p = d = q = range(0, 2)
+    pdq = list(itertools.product(p, d, q))
+
+    pdqs = [(x[0], x[1], x[2], 12) for x in list(itertools.product(p, d, q))]
+
+    ans = []
+    for comb in pdq:
+        for combs in pdqs:
+            try:
+                mod = sm.tsa.statespace.SARIMAX(training.close,
+                                            order=comb,
+                                            seasonal_order=combs,
+                                            enforce_stationarity=False,
+                                            enforce_invertibility=False)
+
+                output = mod.fit()
+                ans.append([comb, combs, output.aic])
+            except:
+                continue
+            
+    # Find the parameters with minimal AIC value
+    ans_df = pd.DataFrame(ans, columns=['pdq', 'pdqs', 'aic'])
+    min_order = ans_df.loc[ans_df['aic'].idxmin()][0]
+
+    arima_model = ARIMA(training.close, order=min_order)
+
+    model = arima_model.fit()
+
+    history = [x for x in training]
+    model_predictions = []
+    N_test_observations = len(testing)
+    for time_point in range(N_test_observations):
+        model = ARIMA(history, order=min_order)
+        model_fit = model.fit()
+        output = model_fit.forecast()
+        yhat = output[0]
+        model_predictions.append(yhat)
+        true_test_value = testing[time_point]
+        history.append(true_test_value)
+
+    mae, mse, rmse, mape, mspe, r_squared = metric(model_predictions, testing)
+    mae_l.append(mae)
+    mse_l.append(mse)
+    rmse_l.append(rmse)
+    mape_l.append(mape)
+    mspe_l.append(mspe)
+    rs2_l.append(r_squared)
+
+
 
 
 if __name__ == "__main__":
@@ -317,5 +388,10 @@ if __name__ == "__main__":
             for WS in [60,120]:
                 for OS in [10,30]:
                     train_lstma(data, window_size=WS+OS, Output_size=OS, Epoch = 25)
+            train_lstma(data)
+            
+        if arguments.model == "arima" or arguments.model == "all":
+            print("about to train the arima model")
+            train_lstma(data)
     else:
         print("No data was found. Exiting...")
