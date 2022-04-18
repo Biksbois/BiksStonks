@@ -53,6 +53,8 @@ def get_data(arguments, connection, from_date, to_date):
 
     primary_category = db_access.get_primay_category(connection)
     secondary_category = db_access.get_secondary_category(connection)
+    # primary_category = db_access.get_primay_category(connection)
+    # secondary_category = db_access.get_secondary_category(connection)
     company_id = db_access.get_companyid(connection)
 
     if arguments.primarycategory:
@@ -148,6 +150,16 @@ def train_lstma(data,
     print("Saving model...")
     pickle.dump( model, open(f"LSTM_Models/R2_{r2}_MSE_{mse}_MAE_{mae}_model_LayerN_{num_layers}_BatchSize_{batch_size}_Epoch_{Epoch}_NHidden_{n_hidden}_NClass_{n_class}_LR_{learning_rate}_WinodwSize_{window_size}_OutputSize_{Output_size}.p", "wb" ) )
     print("Model saved")
+    print("Freeing memory...")
+    del train_set
+    del test_set
+    del train
+    del target
+    del zipped
+    del model
+    del companies
+    print("Memory freed")
+    
     def r2_loss(output, target):
         target_mean = torch.mean(target)
         ss_tot = torch.sum((target - target_mean) ** 2)
@@ -305,6 +317,10 @@ def train_prophet(arguments, data):
     print("done!")
 
 def train_arima(data):
+    import statsmodels.api as sm  
+    from statsmodels.tsa.stattools import acf, pacf
+    from statsmodels.tsa.stattools import adfuller
+    from statsmodels.tsa.arima.model import ARIMA
     training, testing = preprocess.get_split_data(data)
     mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l = [], [], [], [], [], []
     p = d = q = range(0, 2)
