@@ -11,6 +11,8 @@ data_collectors/python/error_urls.txt
 Forcasting_Models/utils/appsettings.secrets.json
 Forcasting_Models/FbProphet/Iteration
 Forcasting_Models/informer_checkpoints/*
+Forcasting_Models/results/*
+Forcasting_Models/figures/*
 
 # Distribution / packaging
 .Python
