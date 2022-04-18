@@ -23,6 +23,7 @@ import utils.settings_utils as settings
 import utils.DatasetAccess as db_access
 import utils.preprocess as preprocess
 import utils.prophet_experiment as exp
+import pickle
 
 
 
@@ -40,6 +41,13 @@ def model_fit(training_set, mcmc_samples=300, yearly_seasonality=False, weekly_s
 
 def get_cross_validation(model, horizon):
     return cross_validation(model, horizon=horizon)
+
+def save_model(model, model_path):
+    with open(model_path  + '.pckl', 'wb') as fout:
+        pickle.dump(model, fout)
+
+def save_metrics(metrics, metrics_path):
+    metrics.to_csv(metrics_path + 'metrics.csv')
 
 
 def get_performance_metrics(df):

@@ -43,6 +43,8 @@ class Attention(nn.Module):
         combine = combine.view(combine.shape[0], self.Output_size, -1)
         if self.pls == None:
             self.pls = nn.Linear(combine.shape[2], 1)
+            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            self.pls = self.pls.to(device)
         return self.pls(combine), trained_attn
 
     def get_att_weight(self, dec_output, enc_outputs):
@@ -70,12 +72,13 @@ def LSTM(training, testing,batch_size=32,Epoch=32,n_hidden=128,n_class=2,learnin
     dataset_test = torch.utils.data.TensorDataset(trainer_test,targeter_test)
     dtloader_test = torch.utils.data.DataLoader(dataset_test,batch_size=batch_size, shuffle=True, drop_last=True)
 
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     hidden = torch.zeros(num_layers, batch_size, n_hidden)
+    hidden = hidden.to(device)
     model = Attention(Output_size,n_class,n_hidden)
     optimizer = torch.optim.Adam(model.parameters(), lr=learningRate)
     # Train
     model.train()
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
     for epoch in range(Epoch):
         for x, y in dtloader:

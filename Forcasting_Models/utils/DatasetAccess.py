@@ -287,27 +287,17 @@ def SingleCompany(Company, window_size, Output_size):
     closing_prices = [ x["close"].values for x in Company]
     open_prices = [ x["open"].values for x in Company]
 
-    #print("closing prices: ", closing_prices)
-    # print("closing prices shape: ", closing_prices[0].shape)
     close_formatedData = FormatDataForLSTM(closing_prices,window_size)
     open_formatedData = FormatDataForLSTM(open_prices,window_size)
 
-    #print("formatedData: ", formatedData)
-    # print("formatedData shape: ", len(close_formatedData[0]))
     close_formatedData = [np.array(x) for x in close_formatedData]
     open_formatedData = [np.array(x) for x in open_formatedData]
-    #print("evenMoreFormated: ", evenMoreFormated)
-    #print("evenMoreFormated shape: ", np.array(evenMoreFormated).shape)
 
     closingData = np.array(close_formatedData)
     openData = np.array(open_formatedData)
 
     closingData = (closingData - closingData.mean()) / closingData.std()
 
-    # print("Fetching opening prices")
-    # openData = np.array(
-    #     db_access.getBigData("open", n_companies, n_datapoints, window_size)
-    # )
     openData = (openData - openData.mean()) / openData.std()
     closing = closingData.reshape(closingData.shape[0], closingData.shape[1], 1)
     opens = openData.reshape(openData.shape[0], openData.shape[1], 1)
