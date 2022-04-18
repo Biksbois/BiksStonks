@@ -286,8 +286,7 @@ def GenerateDataset(companies):
 def SingleCompany(Company, window_size, Output_size, columns):
     column_data = []
     for column in columns:
-        column_data.append(ProccessData([ x["close"].values for x in Company],window_size))
-
+        column_data.append(ProccessData([ x[column].values for x in Company],window_size))
     data = None
     for d in column_data:
         if data is None:
