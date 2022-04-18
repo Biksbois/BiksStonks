@@ -102,6 +102,8 @@ def get_data(arguments, connection, from_date, to_date):
         to_time=to_date,
     )
 
+    data = [d for d in data if len(d) > 1000]
+
     if arguments.limit and len(data) > arguments.limit:
         print(
             "Data is too large. Only the first {} rows will be used.".format(

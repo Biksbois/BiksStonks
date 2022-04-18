@@ -1,4 +1,3 @@
-from datetime import datetime
 from pydoc import describe
 from unittest import result
 import psycopg2 as pg
@@ -388,7 +387,6 @@ def GenerateDataset(companies):
 
 
 def GenerateDatasets(companies):
-    # train_list,target_list,test_list,test_targetlist = [],[],[],[]
     training, targeting, testing, test_targeting = None, None, None, None
     for company in companies:
         tr, te = SplitData(company, 0.8)
