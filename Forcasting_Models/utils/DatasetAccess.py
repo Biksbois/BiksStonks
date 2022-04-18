@@ -283,26 +283,16 @@ def GenerateDataset(companies):
             targeting = np.concatenate((targeting,target))
     return (training,targeting)
 
-def SingleCompany(Company, window_size, Output_size):
-    closing_prices = [ x["close"].values for x in Company]
-    open_prices = [ x["open"].values for x in Company]
-
-    close_formatedData = FormatDataForLSTM(closing_prices,window_size)
-    open_formatedData = FormatDataForLSTM(open_prices,window_size)
-
-    close_formatedData = [np.array(x) for x in close_formatedData]
-    open_formatedData = [np.array(x) for x in open_formatedData]
-
-    closingData = np.array(close_formatedData)
-    openData = np.array(open_formatedData)
-
-    closingData = (closingData - closingData.mean()) / closingData.std()
-
-    openData = (openData - openData.mean()) / openData.std()
-    closing = closingData.reshape(closingData.shape[0], closingData.shape[1], 1)
-    opens = openData.reshape(openData.shape[0], openData.shape[1], 1)
-    data = torch.concat((torch.FloatTensor(closing), torch.FloatTensor(opens)), 2)
-
+def SingleCompany(Company, window_size, Output_size, columns):
+    column_data = []
+    for column in columns:
+        column_data.append(ProccessData([ x[column].values for x in Company],window_size))
+    data = None
+    for d in column_data:
+        if data is None:
+            data = d
+        else:
+            data = torch.concat((torch.FloatTensor(data), torch.FloatTensor(d)), 2)
     train = np.array(
         [np.array(d[: window_size - Output_size]) for d in data]
     )  # (number of windows, points, n_class)
@@ -310,6 +300,13 @@ def SingleCompany(Company, window_size, Output_size):
         [np.array(d[window_size - Output_size :]) for d in data]
     )  # (number of windows, points, n_class)
     return (train,target)
+
+def ProccessData(values, window_size):
+    valuesFormated = FormatDataForLSTM(values,window_size)
+    valuesFormated = [np.array(x) for x in valuesFormated]
+    ValuesData = np.array(valuesFormated)
+    ValuesData = (ValuesData - ValuesData.mean()) / ValuesData.std()
+    return ValuesData.reshape(ValuesData.shape[0], ValuesData.shape[1], 1)
 
 def getBigData(colum, n_company, n_datapoints, window_size):
     stocks = []
