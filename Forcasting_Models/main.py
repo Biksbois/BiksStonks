@@ -11,6 +11,12 @@ import utils.arguments as arg
 import warnings
 import pickle
 
+import itertools
+import statsmodels.api as sm  
+from statsmodels.tsa.stattools import acf, pacf
+from statsmodels.tsa.stattools import adfuller
+from statsmodels.tsa.arima.model import ARIMA
+
 import os
 import sys
 sys.path += ["Informer"]
@@ -285,6 +291,59 @@ def train_prophet(arguments, data):
     )
     print("done!")
 
+def train_arima(data):
+    training, testing = preprocess.get_split_data(data)
+    mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l = [], [], [], [], [], []
+    p = d = q = range(0, 2)
+    pdq = list(itertools.product(p, d, q))
+
+    pdqs = [(x[0], x[1], x[2], 12) for x in list(itertools.product(p, d, q))]
+
+    ans = []
+    for comb in pdq:
+        for combs in pdqs:
+            try:
+                mod = sm.tsa.statespace.SARIMAX(training.close,
+                                            order=comb,
+                                            seasonal_order=combs,
+                                            enforce_stationarity=False,
+                                            enforce_invertibility=False)
+
+                output = mod.fit()
+                ans.append([comb, combs, output.aic])
+            except:
+                continue
+            
+    # Find the parameters with minimal AIC value
+    ans_df = pd.DataFrame(ans, columns=['pdq', 'pdqs', 'aic'])
+    min_order = ans_df.loc[ans_df['aic'].idxmin()][0]
+
+    arima_model = ARIMA(training.close, order=min_order)
+
+    model = arima_model.fit()
+
+    history = [x for x in training]
+    model_predictions = []
+    N_test_observations = len(testing)
+    for time_point in range(N_test_observations):
+        model = ARIMA(history, order=min_order)
+        model_fit = model.fit()
+        output = model_fit.forecast()
+        yhat = output[0]
+        model_predictions.append(yhat)
+        true_test_value = testing[time_point]
+        history.append(true_test_value)
+
+    mae, mse, rmse, mape, mspe, r_squared = metric(model_predictions, testing)
+    mae_l.append(mae)
+    mse_l.append(mse)
+    rmse_l.append(rmse)
+    mape_l.append(mape)
+    mspe_l.append(mspe)
+    rs2_l.append(r_squared)
+
+
+
 
 if __name__ == "__main__":
     arguments = arg.get_arguments()
@@ -311,6 +370,10 @@ if __name__ == "__main__":
 
         if arguments.model == "lstm" or arguments.model == "all":
             print("about to train the lstma model")
+            train_lstma(data)
+            
+        if arguments.model == "arima" or arguments.model == "all":
+            print("about to train the arima model")
             train_lstma(data)
     else:
         print("No data was found. Exiting...")
