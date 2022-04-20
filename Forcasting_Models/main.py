@@ -10,10 +10,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 import utils.DatasetAccess as db_access
 import utils.preprocess as preprocess
+import utils.Pruning as pruning
 import utils.arguments as arg
 import warnings
 import pickle
-
+from datetime import datetime
 import itertools
 import statsmodels.api as sm
 from statsmodels.tsa.stattools import acf, pacf
@@ -434,7 +435,8 @@ if __name__ == "__main__":
     to_date = "2021-12-31 23:59:59"
 
     data = get_data(arguments, connection, from_date, to_date)
-
+    
+    data = [x for x in data if pruning.is_there_enough_points(from_date, to_date ,x.shape[0], 0.7, 60)]
     # db_access.upsert_exp_data(
     #     "ARIMA",  # model name
     #     "ARIMA DESC",  # model description
