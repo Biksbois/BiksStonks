@@ -492,7 +492,7 @@ if __name__ == "__main__":
     secondary_category = db_access.get_secondary_category(connection)
     company_id = db_access.get_companyid(connection)
 
-    from_date = "2021-05-31 00:00:00"
+    from_date = "2021-01-31 00:00:00"
     to_date = "2021-12-31 23:59:59"
 
     data = get_data(arguments, connection, from_date, to_date)
@@ -540,7 +540,7 @@ if __name__ == "__main__":
     #     connection,
     # )
 
-    if len(data) > 0:
+    if len(data_lst) > 0:
         if arguments.model == "fb" or arguments.model == "all":
             print("about to train the fb prophet model")
             # train_prophet(arguments, data.data)
@@ -573,31 +573,27 @@ if __name__ == "__main__":
                     #     arguments, data.data, seq_len=WS, pred_len=OS, epoch=25
                     # )
                     mae, mse, r_squared, parameters, forecasts = train_informer(
-                        arguments, data.data, seq_len=WS, pred_len=OS, epoch=25
+                        arguments, data_lst, seq_len=WS, pred_len=OS, epoch=1
                     )
                     parameters["WS"] = WS
                     parameters["OS"] = OS
-                    print(mae)
-                    print(mse)
-                    print(r_squared)
-                    print(forecasts)
-                    # db_access.upsert_exp_data(
-                    #     "informer",  # model name
-                    #     "informer desc",  # model description
-                    #     mae,  # mae
-                    #     mse,  # mse
-                    #     r_squared,  # r^2
-                    #     from_date,  # data from
-                    #     to_date,  # data to
-                    #     arguments.timeunit,  # time unit
-                    #     data[0].id,  # company name
-                    #     parameters,  # model parameters
-                    #     arguments.use_sentimen,  # use sentiment
-                    #     [d.id for d in data],  # used companies
-                    #     arguments.columns,  # used columns
-                    #     forecasts,
-                    #     connection,
-                    # )
+                    db_access.upsert_exp_data(
+                        "informer",  # model name
+                        "informer desc",  # model description
+                        mae,  # mae
+                        mse,  # mse
+                        r_squared,  # r^2
+                        from_date,  # data from
+                        to_date,  # data to
+                        arguments.timeunit,  # time unit
+                        data[0].id,  # company name
+                        parameters,  # model parameters
+                        arguments.use_sentimen,  # use sentiment
+                        [d.id for d in data],  # used companies
+                        arguments.columns,  # used columns
+                        forecasts,
+                        connection,
+                    )
 
         if arguments.model == "lstm" or arguments.model == "all":
             print("about to train the lstma model")
