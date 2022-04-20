@@ -17,9 +17,9 @@ def resample_data_to_interval(interval, df):
     # df_d["date"] = pd.to_datetime(df_d['date'])
     return df_d
 
-def rename_dataset_columns(df_d):
+def rename_dataset_columns(df_d, column):
     df_d["date"] = pd.to_datetime(df_d['date'])
-    df_d=df_d.rename(columns={"date":"ds", "close":"y"})
+    df_d=df_d.rename(columns={"date":"ds", column:"y"})
     df_d.reset_index(inplace=True)
     df_d.drop(['index'], axis=1, inplace=True)
     return df_d

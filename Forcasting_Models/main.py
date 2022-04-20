@@ -192,14 +192,7 @@ def train_lstma(
     y_hat = [p.item() for p in plots[0][1][1][0]]
 
     result = data_to_pandas(actual, y, y_hat)
-    # print(len(plots))
-    # print("--------------")
-    # print(actual)
-    # print("--------------")
-    # print(y)
-    # print("--------------")
-    # print(y_hat)
-    # exit()
+
     return mae, mse, r2, parameters, result
 
 
@@ -357,7 +350,7 @@ def train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch=
     return mae, mse, r_squared, parameters, forecast
 
 
-def train_prophet(arguments, data):
+def train_prophet(arguments, data, column):
     from cv2 import triangulatePoints
     import utils.prophet_experiment as exp
     import FbProphet.fbprophet as fb
@@ -370,7 +363,7 @@ def train_prophet(arguments, data):
         "include_history" : arguments.include_history,
         "horizon" : arguments.horizon,   
     }
-    data = preprocess.rename_dataset_columns(data[0])
+    data = preprocess.rename_dataset_columns(data[0], column)
     training, testing = preprocess.get_split_data(data)
     result_path = "./FbProphet/Iteration/"
     if not os.path.exists(result_path):
@@ -511,7 +504,7 @@ if __name__ == "__main__":
         if arguments.model == "fb" or arguments.model == "all":
             print("about to train the fb prophet model")
             mae, mse, r_squared, parameters, forecasts = train_prophet(
-                arguments, data_lst
+                arguments, data_lst, arguments.columns[0]
             )
             add_to_parameters(arguments, parameters)
             db_access.upsert_exp_data(
