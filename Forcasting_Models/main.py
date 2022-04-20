@@ -340,7 +340,14 @@ def train_prophet(arguments, data):
     import utils.prophet_experiment as exp
     import FbProphet.fbprophet as fb
     import datetime
-
+    parameters = {
+        "seasonality_mode" : arguments.seasonality_mode,
+        "yearly_seasonality" : arguments.yearly_seasonality,
+        "weekly_seasonality" : arguments.weekly_seasonality,
+        "daily_seasonality" : arguments.daily_seasonality,
+        "include_history" : arguments.include_history,
+        "horizon" : arguments.horizon,   
+    }
     data = preprocess.rename_dataset_columns(data[0])
     training, testing = preprocess.get_split_data(data)
     result_path = "./FbProphet/Iteration/"
@@ -391,16 +398,17 @@ def train_prophet(arguments, data):
     print("Performance \n")
     metrics.head(10)
 
-    print("-------Cross Validation Plot-------")
-    fb.plot_cross_validation(cross_validation)
+    # print("-------Cross Validation Plot-------")
+    # fb.plot_cross_validation(cross_validation)
 
-    print("-------Fututre Forcast Plot-------")
-    fb.plot_forecast(
-        model,
-        forecast,
-        testing,
-    )
+    # print("-------Fututre Forcast Plot-------")
+    # fb.plot_forecast(
+    #     model,
+    #     forecast,
+    #     testing,
+    # )
     print("done!")
+    print(mae, mse, r_squared)
 
     return  mae, mse, r_squared, parameters, forecasts
 
