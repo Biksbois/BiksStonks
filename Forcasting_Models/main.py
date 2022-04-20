@@ -371,7 +371,7 @@ def train_prophet(arguments, data):
     result_path = "./FbProphet/Iteration/"
     if not os.path.exists(result_path):
         os.makedirs(result_path)
-    date_time = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    date_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     iteration = result_path + date_time + "/"
     if not os.path.exists(iteration):
         os.makedirs(iteration)
@@ -383,7 +383,7 @@ def train_prophet(arguments, data):
         daily_seasonality=arguments.daily_seasonality,
         seasonality_mode=arguments.seasonality_mode,
     )
-    fb.save_model(model, iteration + "model" + arguments)
+    fb.save_model(model, iteration + "model")
     print("model has been trained, now predicting..")
 
     future = fb.get_future_df(
@@ -490,56 +490,18 @@ if __name__ == "__main__":
     to_date = "2021-12-31 23:59:59"
 
     data = get_data(arguments, connection, from_date, to_date)
-    # a = {"y": [1, 10, 100]}
-    # b = {"y": [2, 20, 200], "y_hat": [3, 30, 300]}
 
-    # observation_df = pd.DataFrame(data=a)
-    # forecast_df = pd.DataFrame(data=b)
-
-    # print(observation_df)
-    # print(forecast_df)
-
-    # result = observation_df.append(forecast_df)
-
-    # if not "time" in result.columns:
-    #     result = result.append(pd.DataFrame(data={"time": []}))
     data = [
         d for d in data if pruning.is_there_enough_points(from_date, to_date, d.data.shape[0], 0.7, 60)
     ]
     data_lst = [d.data for d in data]
-
-
-    # db_access.upsert_exp_data(
-    #     "ARIMA",  # model name
-    #     "ARIMA DESC",  # model description
-    #     1.22,  # mae
-    #     1.33,  # mse
-    #     1.44,  # r^2
-    #     from_date,  # data from
-    #     to_date,  # data to
-    #     "H",  # time unit
-    #     "IKEA",  # company name
-    #     {"a": 1, "b": 2},  # model parameters
-    #     False,  # use sentiment
-    #     ["IKEA", "Arla"],  # used companies
-    #     ["Open", "Close"],  # used columns
-    #     result,
-    #     # pd.DataFrame(  # forecasts
-    #     #     data={
-    #     #         "time": ["2020-12-31 00:00:00", "2021-12-31 23:59:59"],
-    #     #         "y": [3.1, 4.1],
-    #     #         "y_hat": [5.1, 6.1],
-    #     #     }
-    #     # ),
-    #     connection,
-    # )
 
     if len(data_lst) > 0:
         if arguments.model == "fb" or arguments.model == "all":
             print("about to train the fb prophet model")
             # train_prophet(arguments, data.data)
             mae, mse, r_squared, parameters, forecasts = train_prophet(
-                arguments, data.data
+                arguments, data_lst
             )
             db_access.upsert_exp_data(
                 "prophet",  # model name
@@ -600,9 +562,6 @@ if __name__ == "__main__":
                     parameters["OS"] = OS
 
                     add_to_parameters(arguments, parameters)
-
-
-
 
                     db_access.upsert_exp_data(
                         "lstm",  # model name
