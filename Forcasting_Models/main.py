@@ -273,7 +273,7 @@ def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
             print(
                 ">>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>".format(setting)
             )
-            #exp.train(setting)
+            exp.train(setting)
     torch.cuda.empty_cache()
 
     # test
