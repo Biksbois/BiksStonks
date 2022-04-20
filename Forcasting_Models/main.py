@@ -299,7 +299,7 @@ def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
                 test_data, batch_x, batch_y, batch_x_mark, batch_y_mark
             )
             if i == 0 and j == 0:
-                in_seq = batch_x[0][-1].detach().cpu().numpy()
+                in_seq = batch_x[0,:,-1].detach().cpu().numpy()
             pred = pred.detach().cpu().numpy()
             true = true.detach().cpu().numpy()
             preds.append(pred)
@@ -309,8 +309,8 @@ def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
             )
 
         if i == 0:
-            first_pred = preds[0]
-            first_true = trues[0]
+            first_pred = preds[0][0,:,0]
+            first_true = trues[0][0,:,0]
 
         preds = np.array(preds)
         trues = np.array(trues)
@@ -345,8 +345,8 @@ def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
     mae, mse, r_squared = np.mean(mae_l), np.mean(mse_l), np.mean(rs2_l)
     informer_params.df = None
     parameters = informer_params
-    y_hat = first_pred
-    y = np.concatenate((in_seq, first_true))
+    y_hat = first_pred.reshape(-1)
+    y = np.concatenate((in_seq, first_true.reshape(-1)))
     forecast = pd.DataFrame({'y':y,'y_hat':np.nan})
     forecast['y_hat'][in_seq.shape[0]:] = y_hat
      
@@ -419,7 +419,6 @@ def train_prophet(arguments, data):
 
 def train_arima(data):
     training, testing = preprocess.get_split_data(data[0], col_name="close")
-    mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l = [], [], [], [], [], []
     p = d = q = range(0, 2)
     pdq = list(itertools.product(p, d, q))
 
@@ -448,6 +447,11 @@ def train_arima(data):
 
     history = [x for x in training.close]
     model_predictions = []
+    
+    forecasts = pd.DataFrame(columns=['T', 'Y', 'Y_hat'])
+    forecasts['T'] = training[-100:].time
+    forecasts['Y'] = training[-100:].close
+    
     N_test_observations = len(testing)
     for time_point in range(N_test_observations):
         model = ARIMA(history, order=min_order)
@@ -457,14 +461,17 @@ def train_arima(data):
         model_predictions.append(yhat)
         true_test_value = testing.close.iloc[time_point]
         history.append(true_test_value)
+        forecasts.loc[len(forecasts)] = [testing.time.iloc[time_point], true_test_value, yhat]
+
 
     mae, mse, rmse, mape, mspe, r_squared = metric(model_predictions, testing.close)
-    mae_l.append(mae)
-    mse_l.append(mse)
-    rmse_l.append(rmse)
-    mape_l.append(mape)
-    mspe_l.append(mspe)
-    rs2_l.append(r_squared)
+    parameters = {
+        "p": min_order[0],
+        "d": min_order[1],
+        "q": min_order[2],
+    }
+
+    return mae, mse, r_squared, parameters, forecasts
 
 
 if __name__ == "__main__":
@@ -559,6 +566,7 @@ if __name__ == "__main__":
                     mae, mse, r_squared, parameters, forecasts = train_informer(
                         arguments, data_lst, seq_len=WS, pred_len=OS, epoch=1
                     )
+
                     parameters["WS"] = WS
                     parameters["OS"] = OS
                     db_access.upsert_exp_data(
@@ -614,23 +622,23 @@ if __name__ == "__main__":
         if arguments.model == "arima" or arguments.model == "all":
             print("about to train the arima model")
             train_arima(data_lst)
-            # mae, mse, r_squared, parameters, forecasts = train_arima(data_lst)
-            # db_access.upsert_exp_data(
-            #     "arima",  # model name
-            #     "arima desc",  # model description
-            #     mae,  # mae
-            #     mse,  # mse
-            #     r_squared,  # r^2
-            #     from_date,  # data from
-            #     to_date,  # data to
-            #     arguments.timeunit,  # time unit
-            #     data[0].id,  # company name
-            #     parameters,  # model parameters
-            #     arguments.use_sentimen,  # use sentiment
-            #     [d.id for d in data],  # used companies
-            #     arguments.columns,  # used columns
-            #     forecasts,
-            #     connection,
-            # )
+            mae, mse, r_squared, parameters, forecasts = train_arima(data_lst)
+            db_access.upsert_exp_data(
+                 "arima",  # model name
+                 "arima desc",  # model description
+                 mae,  # mae
+                 mse,  # mse
+                 r_squared,  # r^2
+                 from_date,  # data from
+                 to_date,  # data to
+                 arguments.timeunit,  # time unit
+                 data[0].id,  # company name
+                 parameters,  # model parameters
+                 arguments.use_sentimen,  # use sentiment
+                 [d.id for d in data],  # used companies
+                 arguments.columns,  # used columns
+                 forecasts,
+                 connection,
+            )
     else:
         print("No data was found. Exiting...")
