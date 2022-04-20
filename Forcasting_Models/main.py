@@ -306,8 +306,8 @@ def train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch=
             )
 
         if i == 0:
-            first_pred = preds[0]
-            first_true = trues[0]
+            first_pred = preds[0][0,:,0]
+            first_true = trues[0][0,:,0]
 
         preds = np.array(preds)
         trues = np.array(trues)
@@ -342,8 +342,8 @@ def train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch=
     mae, mse, r_squared = np.mean(mae_l), np.mean(mse_l), np.mean(rs2_l)
     informer_params.df = None
     parameters = informer_params
-    y_hat = first_pred
-    y = np.concatenate((in_seq, first_true))
+    y_hat = first_pred.reshape(-1)
+    y = np.concatenate((in_seq, first_true.reshape(-1)))
     forecast = pd.DataFrame({'y':y,'y_hat':np.nan})
     forecast['y_hat'][in_seq.shape[0]:] = y_hat
      
@@ -532,6 +532,7 @@ if __name__ == "__main__":
                     mae, mse, r_squared, parameters, forecasts = train_informer(
                         arguments, data_lst, arguments.columns, seq_len=WS, pred_len=OS, epoch=1
                     )
+
                     parameters["WS"] = WS
                     parameters["OS"] = OS
                     add_to_parameters(arguments, parameters)
