@@ -85,14 +85,16 @@ def LSTM(
     test, target_test = testing
     trainer = torch.from_numpy(train).float()
     targeter = torch.from_numpy(target).float()
+    targeter_fix = torch.from_numpy(np.array([[i[0] for i in x] for x in targeter])).float()
     trainer_test = torch.from_numpy(test).float()
     targeter_test = torch.from_numpy(target_test).float()
-    dataset = torch.utils.data.TensorDataset(trainer, targeter)
+    targeter_test_fix = torch.from_numpy(np.array([[i[0] for i in x] for x in targeter_test])).float()
+    dataset = torch.utils.data.TensorDataset(trainer, targeter_fix)
     dtloader = torch.utils.data.DataLoader(
         dataset, batch_size=batch_size, shuffle=True, drop_last=True
     )
 
-    dataset_test = torch.utils.data.TensorDataset(trainer_test,targeter_test)
+    dataset_test = torch.utils.data.TensorDataset(trainer_test,targeter_test_fix)
     dtloader_test = torch.utils.data.DataLoader(dataset_test,batch_size=batch_size, shuffle=False, drop_last=True)
     print("Gpu status",torch.cuda.is_available())
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -115,10 +117,10 @@ def LSTM(
                 x = x.unsqueeze(-1)
                 y = y.unsqueeze(-1)
             output, _ = model(x, hidden, x)
-            loss = criterion(output, y.squeeze(0))
+            loss = criterion(output, y.squeeze(-1))
             loss.backward()
             optimizer.step()
-            r2score = r2_score(output, y.squeeze(0))
+            r2score = r2_score(output, y.squeeze(-1))
 
         if (epoch + 1) % 1 == 0:
             print("Epoch:", "%04d" % (epoch + 1), "MSE =", "{:.6f}".format(loss))
