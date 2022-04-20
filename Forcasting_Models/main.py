@@ -204,8 +204,6 @@ def train_lstma(
 
 def data_to_pandas(actual, y, y_hat):
     obsservation = {"y": actual}
-    print(len(y))
-    print(len(y_hat))
     forcast = {"y": y, "y_hat": y_hat}
 
     observation_df = pd.DataFrame(data=obsservation)
