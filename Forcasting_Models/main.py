@@ -518,7 +518,7 @@ if __name__ == "__main__":
                 arguments.timeunit,  # time unit
                 data[0].id,  # company name
                 parameters,  # model parameters
-                arguments.use_sentimen,  # use sentiment
+                arguments.use_sentiment,  # use sentiment
                 [d.id for d in data],  # used companies
                 arguments.columns,  # used columns
                 forecasts,
@@ -547,7 +547,7 @@ if __name__ == "__main__":
                         arguments.timeunit,  # time unit
                         data[0].id,  # company name
                         parameters,  # model parameters
-                        arguments.use_sentimen,  # use sentiment
+                        arguments.use_sentiment,  # use sentiment
                         [d.id for d in data],  # used companies
                         arguments.columns,  # used columns
                         forecasts,
@@ -599,7 +599,7 @@ if __name__ == "__main__":
                  arguments.timeunit,  # time unit
                  data[0].id,  # company name
                  parameters,  # model parameters
-                 arguments.use_sentimen,  # use sentiment
+                 arguments.use_sentiment,  # use sentiment
                  [d.id for d in data],  # used companies
                  arguments.columns,  # used columns
                  forecasts,
