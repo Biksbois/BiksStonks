@@ -501,7 +501,7 @@ if __name__ == "__main__":
     # if not "time" in result.columns:
     #     result = result.append(pd.DataFrame(data={"time": []}))
     data = [
-        d for d in data if pruning.is_there_enough_points(from_date, to_date, d.data.shape[0], 0.7, 60)
+        d for d in data if pruning.is_there_enough_points(from_date, to_date, d.data.shape[0], 0.7, arg.timeunit)
     ]
     data_lst = [d.data for d in data]
 
