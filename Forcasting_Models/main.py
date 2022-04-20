@@ -569,16 +569,8 @@ if __name__ == "__main__":
             print("about to train the informer")
             for WS in [60, 120]:
                 for OS in [10, 30]:
-<<<<<<< HEAD
                     # train_informer(
                     #     arguments, data.data, seq_len=WS, pred_len=OS, epoch=25
-=======
-                    train_informer(
-                        arguments, data_lst, seq_len=WS, pred_len=OS, epoch=25
-                    )
-                    # mae, mse, r_squared, parameters, forecasts = train_informer(
-                    #     arguments, data_lst, seq_len=WS, pred_len=OS, epoch=25
->>>>>>> 7db63906d4128b79a87f348be3e4add42c622395
                     # )
                     mae, mse, r_squared, parameters, forecasts = train_informer(
                         arguments, data.data, seq_len=WS, pred_len=OS, epoch=25
