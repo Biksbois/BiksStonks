@@ -39,8 +39,8 @@ def model_fit(training_set, mcmc_samples=300, yearly_seasonality=False, weekly_s
     return model
 
 
-def get_cross_validation(model, horizon):
-    return cross_validation(model, horizon=horizon)
+def get_cross_validation(model, initial, period, horizon):
+    return cross_validation(model, initial=initial, period=period, horizon=horizon)
 
 def save_model(model, model_path):
     with open(model_path  + '.pckl', 'wb') as fout:

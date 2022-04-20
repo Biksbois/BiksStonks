@@ -23,7 +23,9 @@ def get_arguments():
     parser.add_argument("--daily_seasonality", required=False, default=False)
     parser.add_argument("--include_history", required=False, default=False)
     # parser.add_argument("--predict_periods", required=False, default=1000)
-    parser.add_argument("--horizon", required=False, default=1)
+    parser.add_argument("--horizon", required=False, default='48 hours')
+    parser.add_argument("--period", required=False, default='24 hours')
+    parser.add_argument("--initial", required=False, default='72 hours')
     parser.add_argument("--use_sentiment", required=False, default=False)
     parser.add_argument("--columns", nargs="+", required=False, default=["Close"])
 

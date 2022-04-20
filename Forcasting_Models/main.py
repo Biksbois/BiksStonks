@@ -365,13 +365,15 @@ def train_prophet(arguments, data):
         "daily_seasonality" : arguments.daily_seasonality,
         "include_history" : arguments.include_history,
         "horizon" : arguments.horizon,   
+        "period" : arguments.period,
+        "initial" : arguments.initial,
     }
     data = preprocess.rename_dataset_columns(data[0])
     training, testing = preprocess.get_split_data(data)
     result_path = "./FbProphet/Iteration/"
     if not os.path.exists(result_path):
         os.makedirs(result_path)
-    date_time = datetime.datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+    date_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     iteration = result_path + date_time + "/"
     if not os.path.exists(iteration):
         os.makedirs(iteration)
@@ -383,7 +385,7 @@ def train_prophet(arguments, data):
         daily_seasonality=arguments.daily_seasonality,
         seasonality_mode=arguments.seasonality_mode,
     )
-    fb.save_model(model, iteration + "model" + arguments)
+    fb.save_model(model, iteration + "model")
     print("model has been trained, now predicting..")
 
     future = fb.get_future_df(
@@ -397,10 +399,14 @@ def train_prophet(arguments, data):
         model,
         future,
     )
-
-    cross_validation = fb.get_cross_validation(model, horizon=arguments.horizon)
+    print("prediction has been made, now saving..")
+    fb.save_metrics(forecast, iteration + "forecast.csv")
+    print("metrics have been saved, now performing cross eval..")
+    cross_validation = fb.get_cross_validation(model, initial=arguments.initial, period=arguments.period, horizon=arguments.horizon)
+    print("cross validation has been performed, now saving..")
     forecasts = cross_validation['ds', 'y' 'yhat']
-
+    print(forecasts.head())
+    print("calling metrics..")
     metrics = fb.get_performance_metrics(
         cross_validation,
     )
@@ -494,7 +500,7 @@ if __name__ == "__main__":
     # if not "time" in result.columns:
     #     result = result.append(pd.DataFrame(data={"time": []}))
     data = [
-        d for d in data if pruning.is_there_enough_points(from_date, to_date, d.data.shape[0], 0.7, 60)
+        d for d in data if pruning.is_there_enough_points(from_date, to_date, d.data.shape[0], 0.7, 1)
     ]
     data_lst = [d.data for d in data]
 
@@ -529,7 +535,7 @@ if __name__ == "__main__":
             print("about to train the fb prophet model")
             # train_prophet(arguments, data.data)
             mae, mse, r_squared, parameters, forecasts = train_prophet(
-                arguments, data.data
+                arguments, data_lst
             )
             db_access.upsert_exp_data(
                 "prophet",  # model name
