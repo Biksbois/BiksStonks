@@ -462,7 +462,7 @@ def train_arima(data):
         model_predictions.append(yhat)
         true_test_value = testing.close.iloc[time_point]
         history.append(true_test_value)
-        forecasts.loc[len(forecasts)] = [testing.time.iloc[time_point], true_test_value, yhat]
+        forecasts.loc[len(forecasts)] = [testing.date.iloc[time_point], true_test_value, yhat]
 
 
     mae, mse, rmse, mape, mspe, r_squared = metric(model_predictions, testing.close)
