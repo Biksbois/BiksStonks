@@ -366,6 +366,8 @@ def train_prophet(arguments, data, column):
         "daily_seasonality" : arguments.daily_seasonality,
         "include_history" : arguments.include_history,
         "horizon" : arguments.horizon,   
+        "period" : arguments.period,
+        "initial" : arguments.initial,
     }
     data = preprocess.rename_dataset_columns(data[0], column)
     training, testing = preprocess.get_split_data(data)
@@ -398,10 +400,14 @@ def train_prophet(arguments, data, column):
         model,
         future,
     )
-
-    cross_validation = fb.get_cross_validation(model, horizon=arguments.horizon)
+    print("prediction has been made, now saving..")
+    fb.save_metrics(forecast, iteration + "forecast.csv")
+    print("metrics have been saved, now performing cross eval..")
+    cross_validation = fb.get_cross_validation(model, initial=arguments.initial, period=arguments.period, horizon=arguments.horizon)
+    print("cross validation has been performed, now saving..")
     forecasts = cross_validation['ds', 'y' 'yhat']
-
+    print(forecasts.head())
+    print("calling metrics..")
     metrics = fb.get_performance_metrics(
         cross_validation,
     )
