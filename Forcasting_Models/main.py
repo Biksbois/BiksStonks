@@ -128,6 +128,7 @@ def get_data(arguments, connection, from_date, to_date):
 
 
 def train_lstma(
+    columns,
     data,
     window_size=100,
     n_companies=10,
@@ -141,7 +142,7 @@ def train_lstma(
     num_layers=1,
     learning_rate=0.001,
 ):
-    columns = ["close", "open", "high", "low", "volume"]  # TODO: Use arguments.columns
+    # columns = ["close", "open", "high", "low", "volume"]  # TODO: Use arguments.columns
     print("Retriving data from database...")
     companies = [
         db_access.SingleCompany([x], window_size, Output_size, columns) for x in data
@@ -217,7 +218,7 @@ def data_to_pandas(actual, y, y_hat):
     return result
 
 
-def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
+def train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch=None):
     print("training informer")
     epochs = epoch
     informer_params.train_epochs = 1  # iterate over each df once per epoch
@@ -225,6 +226,9 @@ def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
     informer_params.label_len = seq_len
     informer_params.pred_len = pred_len
     informer_params.train_epochs = 1
+    informer_params.target=columns[0]
+    informer_params.cols = columns
+
     exp = Exp_Informer(informer_params)  # here we can change the parameters
     num_of_stocks = len(data)
     for epoch in range(epochs):
@@ -499,10 +503,10 @@ if __name__ == "__main__":
     if len(data_lst) > 0:
         if arguments.model == "fb" or arguments.model == "all":
             print("about to train the fb prophet model")
-            # train_prophet(arguments, data.data)
             mae, mse, r_squared, parameters, forecasts = train_prophet(
                 arguments, data_lst
             )
+            add_to_parameters(arguments, parameters)
             db_access.upsert_exp_data(
                 "prophet",  # model name
                 "prophet desc",  # model description
@@ -525,14 +529,12 @@ if __name__ == "__main__":
             print("about to train the informer")
             for WS in [60, 120]:
                 for OS in [10, 30]:
-                    # train_informer(
-                    #     arguments, data.data, seq_len=WS, pred_len=OS, epoch=25
-                    # )
                     mae, mse, r_squared, parameters, forecasts = train_informer(
-                        arguments, data_lst, seq_len=WS, pred_len=OS, epoch=1
+                        arguments, data_lst, arguments.columns, seq_len=WS, pred_len=OS, epoch=1
                     )
                     parameters["WS"] = WS
                     parameters["OS"] = OS
+                    add_to_parameters(arguments, parameters)
                     db_access.upsert_exp_data(
                         "informer",  # model name
                         "informer desc",  # model description
@@ -556,7 +558,7 @@ if __name__ == "__main__":
             for WS in [60, 120]:
                 for OS in [10, 30]:
                     mae, mse, r_squared, parameters, forecasts = train_lstma(
-                        data_lst, window_size=WS + OS, Output_size=OS, Epoch=1#25
+                        arguments.columns, data_lst, window_size=WS + OS, Output_size=OS, Epoch=1#25
                     )
                     parameters["WS"] = WS
                     parameters["OS"] = OS
