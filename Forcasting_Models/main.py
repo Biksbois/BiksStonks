@@ -1,4 +1,5 @@
 # from curses import window
+import pandas as pd
 from utils.data_obj import DataObj
 import random
 import pandas as pd
@@ -103,7 +104,7 @@ def get_data(arguments, connection, from_date, to_date):
         to_time=to_date,
     )
 
-    data = [d for d in data if len(d).data > 1000]
+    data = [d for d in data if len(d.data) > 1000]
 
     if arguments.limit and len(data) > arguments.limit:
         print(
@@ -139,7 +140,7 @@ def train_lstma(
     num_layers=1,
     learning_rate=0.001,
 ):
-    columns = ["close", "open", "high", "low", "volume"]
+    columns = ["close", "open", "high", "low", "volume"]  # TODO: Use arguments.columns
     print("Retriving data from database...")
     companies = [
         db_access.SingleCompany([x], window_size, Output_size, columns) for x in data
@@ -161,14 +162,7 @@ def train_lstma(
         criterion,
     )
     print("Model trained")
-    print("Saving model...")
-    pickle.dump(
-        model,
-        open(
-            f"LSTM_Models/R2_{r2}_MSE_{mse}_MAE_{mae}_model_LayerN_{num_layers}_BatchSize_{batch_size}_Epoch_{Epoch}_NHidden_{n_hidden}_NClass_{n_class}_LR_{learning_rate}_WinodwSize_{window_size}_OutputSize_{Output_size}.p",
-            "wb",
-        ),
-    )
+
     print("Model saved")
     print("Freeing memory...")
     del train_set
@@ -176,6 +170,39 @@ def train_lstma(
     del model
     del companies
     print("Memory freed")
+
+    parameters = {
+        window_size: window_size,
+        n_companies: n_companies,
+        n_datapoints: n_datapoints,
+        Output_size: Output_size,
+        n_step: n_step,
+        n_hidden: n_hidden,
+        n_class: n_class,
+        Epoch: Epoch,
+        batch_size: batch_size,
+        num_layers: num_layers,
+        learning_rate: learning_rate,
+    }  # (actual, (y, y_hat))
+
+    result = data_to_pandas(forecasts[1][0], forecasts[1][1], forecasts[0])
+
+    return mae, mse, r2, parameters, result
+
+
+def data_to_pandas(y, y_hat, obs):
+    obsservation = {"y": obs}
+    forcast = {"y": y, "y_hat": y_hat}
+
+    observation_df = pd.DataFrame(data=obsservation)
+    forecast_df = pd.DataFrame(data=forcast)
+
+    result = observation_df.append(forecast_df)
+
+    if not "time" in result.columns:
+        result = result.append(pd.DataFrame(data={"time": []}))
+
+    return result
 
 
 def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
@@ -345,7 +372,7 @@ def train_prophet(arguments, data):
         future,
     )
 
-    forecast.to_csv(iteration + "forecast.csv")
+    # forecast.to_csv(iteration + "forecast.csv")
 
     # e = exp.Experiment(arguments.timeunit, arguments.predict_periods)
     cross_validation = fb.get_cross_validation(model, horizon=arguments.horizon)
@@ -354,7 +381,7 @@ def train_prophet(arguments, data):
         cross_validation,
     )
     # save metrics to csv
-    metrics.to_csv(iteration + "metrics.csv")
+    # metrics.to_csv(iteration + "metrics.csv")
 
     print("Performance \n")
     metrics.head(10)
@@ -369,6 +396,8 @@ def train_prophet(arguments, data):
         testing,
     )
     print("done!")
+
+    # return mae, mse, r_squared, parameters, forecasts
 
 
 def train_arima(data):
@@ -435,6 +464,20 @@ if __name__ == "__main__":
 
     data = get_data(arguments, connection, from_date, to_date)
 
+    # a = {"y": [1, 10, 100]}
+    # b = {"y": [2, 20, 200], "y_hat": [3, 30, 300]}
+
+    # observation_df = pd.DataFrame(data=a)
+    # forecast_df = pd.DataFrame(data=b)
+
+    # print(observation_df)
+    # print(forecast_df)
+
+    # result = observation_df.append(forecast_df)
+
+    # if not "time" in result.columns:
+    #     result = result.append(pd.DataFrame(data={"time": []}))
+
     # db_access.upsert_exp_data(
     #     "ARIMA",  # model name
     #     "ARIMA DESC",  # model description
@@ -449,13 +492,14 @@ if __name__ == "__main__":
     #     False,  # use sentiment
     #     ["IKEA", "Arla"],  # used companies
     #     ["Open", "Close"],  # used columns
-    #     pd.DataFrame(  # forecasts
-    #         data={
-    #             "time": ["2020-12-31 00:00:00", "2021-12-31 23:59:59"],
-    #             "y": [3.1, 4.1],
-    #             "y_hat": [5.1, 6.1],
-    #         }
-    #     ),
+    #     result,
+    #     # pd.DataFrame(  # forecasts
+    #     #     data={
+    #     #         "time": ["2020-12-31 00:00:00", "2021-12-31 23:59:59"],
+    #     #         "y": [3.1, 4.1],
+    #     #         "y_hat": [5.1, 6.1],
+    #     #     }
+    #     # ),
     #     connection,
     # )
 
@@ -519,32 +563,33 @@ if __name__ == "__main__":
             print("about to train the lstma model")
             for WS in [60, 120]:
                 for OS in [10, 30]:
-                    train_lstma(
-                        data.data, window_size=WS + OS, Output_size=OS, Epoch=25
-                    )
-                    # mae, mse, r_squared, parameters, forecasts = train_lstma(
+                    # train_lstma(
                     #     data.data, window_size=WS + OS, Output_size=OS, Epoch=25
                     # )
-                    # parameters["WS"] = WS
-                    # parameters["OS"] = OS
 
-                    # db_access.upsert_exp_data(
-                    #     "lstm",  # model name
-                    #     "lstm desc",  # model description
-                    #     mae,  # mae
-                    #     mse,  # mse
-                    #     r_squared,  # r^2
-                    #     from_date,  # data from
-                    #     to_date,  # data to
-                    #     arguments.timeunit,  # time unit
-                    #     data[0].id,  # company name
-                    #     parameters,  # model parameters
-                    #     arguments.use_sentimen,  # use sentiment
-                    #     [d.id for d in data],  # used companies
-                    #     arguments.columns,  # used columns
-                    #     forecasts,
-                    #     connection,
-                    # )
+                    mae, mse, r_squared, parameters, forecasts = train_lstma(
+                        data.data, window_size=WS + OS, Output_size=OS, Epoch=25
+                    )
+                    parameters["WS"] = WS
+                    parameters["OS"] = OS
+
+                    db_access.upsert_exp_data(
+                        "lstm",  # model name
+                        "lstm desc",  # model description
+                        mae,  # mae
+                        mse,  # mse
+                        r_squared,  # r^2
+                        from_date,  # data from
+                        to_date,  # data to
+                        arguments.timeunit,  # time unit
+                        data[0].id,  # company name
+                        parameters,  # model parameters
+                        arguments.use_sentimen,  # use sentiment
+                        [d.id for d in data],  # used companies
+                        arguments.columns,  # used columns
+                        forecasts,
+                        connection,
+                    )
 
         if arguments.model == "arima" or arguments.model == "all":
             print("about to train the arima model")

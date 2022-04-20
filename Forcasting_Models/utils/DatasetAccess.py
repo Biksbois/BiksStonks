@@ -11,6 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import json
 from utils.data_obj import DataObj
+import datetime
 
 from itertools import islice
 
@@ -209,7 +210,15 @@ def _upsert_score(
 
 def _upsert_graph(score_id, forecasts, cur):
     for _, row in forecasts.iterrows():
-        cur.callproc("upsert_graph", (score_id, row["y"], row["y_hat"], row["time"]))
+        cur.callproc(
+            "upsert_graph",
+            (
+                score_id,
+                row["y"] if not pd.isnull(row["y"]) else None,
+                row["y_hat"] if not pd.isnull(row["y_hat"]) else None,
+                row["tim"] if not pd.isnull(row["time"]) else None,
+            ),
+        )
 
 
 def upsert_exp_data(
@@ -231,7 +240,7 @@ def upsert_exp_data(
 ):
     with connection as conn:
         cur = conn.cursor()
-        executed_time = datetime.now()
+        executed_time = datetime.datetime.now()
         print("upserting company")
         model_id = _upsert_model(model_name, model_desc, cur)
         print(f"model id: {model_id}")
