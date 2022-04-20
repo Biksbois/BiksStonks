@@ -173,26 +173,39 @@ def train_lstma(
     print("Memory freed")
 
     parameters = {
-        window_size: window_size,
-        n_companies: n_companies,
-        n_datapoints: n_datapoints,
-        Output_size: Output_size,
-        n_step: n_step,
-        n_hidden: n_hidden,
-        n_class: n_class,
-        Epoch: Epoch,
-        batch_size: batch_size,
-        num_layers: num_layers,
-        learning_rate: learning_rate,
+        'window_size': window_size,
+        'n_companies': n_companies,
+        'n_datapoints': n_datapoints,
+        'Output_size': Output_size,
+        'n_step': n_step,
+        'n_hidden': n_hidden,
+        'n_class': n_class,
+        'Epoch': Epoch,
+        'batch_size': batch_size,
+        'num_layers': num_layers,
+        'learning_rate': learning_rate,
     }  # (actual, (y, y_hat))
 
-    result = data_to_pandas(forecasts[1][0], forecasts[1][1], forecasts[0])
+    actual = [p[0].item() for p in plots[0][0][0]]
+    y = [p[0].item() for p in plots[0][1][0][0]]
+    y_hat = [p.item() for p in plots[0][1][1][0]]
 
+    result = data_to_pandas(actual, y, y_hat)
+    # print(len(plots))
+    # print("--------------")
+    # print(actual)
+    # print("--------------")
+    # print(y)
+    # print("--------------")
+    # print(y_hat)
+    # exit()
     return mae, mse, r2, parameters, result
 
 
-def data_to_pandas(y, y_hat, obs):
-    obsservation = {"y": obs}
+def data_to_pandas(actual, y, y_hat):
+    obsservation = {"y": actual}
+    print(len(y))
+    print(len(y_hat))
     forcast = {"y": y, "y_hat": y_hat}
 
     observation_df = pd.DataFrame(data=obsservation)
@@ -477,12 +490,12 @@ if __name__ == "__main__":
 
     # if not "time" in result.columns:
     #     result = result.append(pd.DataFrame(data={"time": []}))
-
     data = [
-        x
-        for x in data
-        if pruning.is_there_enough_points(from_date, to_date, x.shape[0], 0.7, 60)
+        d for d in data if pruning.is_there_enough_points(from_date, to_date, d.data.shape[0], 0.7, 60)
     ]
+    data_lst = [d.data for d in data]
+
+
     # db_access.upsert_exp_data(
     #     "ARIMA",  # model name
     #     "ARIMA DESC",  # model description
@@ -538,10 +551,10 @@ if __name__ == "__main__":
             for WS in [60, 120]:
                 for OS in [10, 30]:
                     train_informer(
-                        arguments, data.data, seq_len=WS, pred_len=OS, epoch=25
+                        arguments, data_lst, seq_len=WS, pred_len=OS, epoch=25
                     )
                     # mae, mse, r_squared, parameters, forecasts = train_informer(
-                    #     arguments, data.data, seq_len=WS, pred_len=OS, epoch=25
+                    #     arguments, data_lst, seq_len=WS, pred_len=OS, epoch=25
                     # )
                     # parameters["WS"] = WS
                     # parameters["OS"] = OS
@@ -569,11 +582,11 @@ if __name__ == "__main__":
             for WS in [60, 120]:
                 for OS in [10, 30]:
                     # train_lstma(
-                    #     data.data, window_size=WS + OS, Output_size=OS, Epoch=25
+                    #     data_lst, window_size=WS + OS, Output_size=OS, Epoch=25
                     # )
 
                     mae, mse, r_squared, parameters, forecasts = train_lstma(
-                        data.data, window_size=WS + OS, Output_size=OS, Epoch=25
+                        data_lst, window_size=WS + OS, Output_size=OS, Epoch=1#25
                     )
                     parameters["WS"] = WS
                     parameters["OS"] = OS
@@ -589,7 +602,7 @@ if __name__ == "__main__":
                         arguments.timeunit,  # time unit
                         data[0].id,  # company name
                         parameters,  # model parameters
-                        arguments.use_sentimen,  # use sentiment
+                        arguments.use_sentiment,  # use sentiment
                         [d.id for d in data],  # used companies
                         arguments.columns,  # used columns
                         forecasts,
@@ -598,8 +611,8 @@ if __name__ == "__main__":
 
         if arguments.model == "arima" or arguments.model == "all":
             print("about to train the arima model")
-            train_arima(data.data)
-            # mae, mse, r_squared, parameters, forecasts = train_arima(data.data)
+            train_arima(data_lst)
+            # mae, mse, r_squared, parameters, forecasts = train_arima(data_lst)
             # db_access.upsert_exp_data(
             #     "arima",  # model name
             #     "arima desc",  # model description
