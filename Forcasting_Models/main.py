@@ -299,7 +299,7 @@ def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
                 test_data, batch_x, batch_y, batch_x_mark, batch_y_mark
             )
             if i == 0 and j == 0:
-                in_seq = batch_x[0][-1]
+                in_seq = batch_x[0][-1].detach().cpu().numpy()
             pred = pred.detach().cpu().numpy()
             true = true.detach().cpu().numpy()
             preds.append(pred)
@@ -342,8 +342,15 @@ def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
         f"Metrics: MSE {np.mean(mse_l):.2f}, RMSE {np.mean(rmse_l):.2f}, MAE {np.mean(mae_l):.2f},\
         MAPE {np.mean(mape_l):.2f}, MSPE {np.mean(mspe_l):.2f}, R2 {np.mean(rs2_l):.2f}, R2 IM {np.mean(rs2_intermed_l)}"
     )
-
-    return in_seq, first_pred, first_true
+    mae, mse, r_squared = np.mean(mae_l), np.mean(mse_l), np.mean(rs2_l)
+    informer_params.df = None
+    parameters = informer_params
+    y_hat = first_pred
+    y = np.concatenate((in_seq, first_true))
+    forecast = pd.DataFrame({'y':y,'y_hat':np.nan})
+    forecast['y_hat'][in_seq.shape[0]:] = y_hat
+     
+    return mae, mse, r_squared, parameters, forecast
 
 
 def train_prophet(arguments, data):
@@ -469,7 +476,7 @@ if __name__ == "__main__":
     secondary_category = db_access.get_secondary_category(connection)
     company_id = db_access.get_companyid(connection)
 
-    from_date = "2020-12-31 00:00:00"
+    from_date = "2021-05-31 00:00:00"
     to_date = "2021-12-31 23:59:59"
 
     data = get_data(arguments, connection, from_date, to_date)
@@ -546,15 +553,18 @@ if __name__ == "__main__":
             print("about to train the informer")
             for WS in [60, 120]:
                 for OS in [10, 30]:
-                    train_informer(
-                        arguments, data_lst, seq_len=WS, pred_len=OS, epoch=25
-                    )
-                    # mae, mse, r_squared, parameters, forecasts = train_informer(
-                    #     arguments, data_lst, seq_len=WS, pred_len=OS, epoch=25
+                    # train_informer(
+                    #     arguments, data.data, seq_len=WS, pred_len=OS, epoch=25
                     # )
-                    # parameters["WS"] = WS
-                    # parameters["OS"] = OS
-
+                    mae, mse, r_squared, parameters, forecasts = train_informer(
+                        arguments, data.data, seq_len=WS, pred_len=OS, epoch=25
+                    )
+                    parameters["WS"] = WS
+                    parameters["OS"] = OS
+                    print(mae)
+                    print(mse)
+                    print(r_squared)
+                    print(forecasts)
                     # db_access.upsert_exp_data(
                     #     "informer",  # model name
                     #     "informer desc",  # model description
