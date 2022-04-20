@@ -475,6 +475,16 @@ def train_arima(data):
     mspe_l.append(mspe)
     rs2_l.append(r_squared)
 
+def add_to_parameters(arguments, parameters):
+    if arguments.primarycategory:
+        parameters["primarycategory"] = arguments.primarycategory
+    if arguments.primarycategory:
+        parameters["secondarycategory"] = arguments.secondarycategory
+    if arguments.primarycategory:
+        parameters["limit"] = arguments.limit
+    if arguments.companyid:
+        parameters["companyid"] = arguments.companyid
+
 
 if __name__ == "__main__":
     arguments = arg.get_arguments()
@@ -593,15 +603,16 @@ if __name__ == "__main__":
             print("about to train the lstma model")
             for WS in [60, 120]:
                 for OS in [10, 30]:
-                    # train_lstma(
-                    #     data_lst, window_size=WS + OS, Output_size=OS, Epoch=25
-                    # )
-
                     mae, mse, r_squared, parameters, forecasts = train_lstma(
                         data_lst, window_size=WS + OS, Output_size=OS, Epoch=1#25
                     )
                     parameters["WS"] = WS
                     parameters["OS"] = OS
+
+                    add_to_parameters(arguments, parameters)
+
+
+
 
                     db_access.upsert_exp_data(
                         "lstm",  # model name
