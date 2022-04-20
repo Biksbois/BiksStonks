@@ -105,7 +105,11 @@ def get_data(arguments, connection, from_date, to_date):
         to_time=to_date,
     )
 
-    data = [d for d in data if len(d.data) > 1000]
+    data = [
+        d for d in data if pruning.is_there_enough_points(from_date, to_date, d.data.shape[0], 0.7, arguments.timeunit)
+    ]
+
+    # data = [d for d in data if len(d.data) > 1000]
 
     if arguments.limit and len(data) > arguments.limit:
         print(
@@ -128,6 +132,7 @@ def get_data(arguments, connection, from_date, to_date):
 
 
 def train_lstma(
+    columns,
     data,
     window_size=100,
     n_companies=10,
@@ -141,7 +146,7 @@ def train_lstma(
     num_layers=1,
     learning_rate=0.001,
 ):
-    columns = ["close", "open", "high", "low", "volume"]  # TODO: Use arguments.columns
+    # columns = ["close", "open", "high", "low", "volume"]  # TODO: Use arguments.columns
     print("Retriving data from database...")
     companies = [
         db_access.SingleCompany([x], window_size, Output_size, columns) for x in data
@@ -187,18 +192,11 @@ def train_lstma(
     }  # (actual, (y, y_hat))
 
     actual = [p[0].item() for p in plots[0][0][0]]
-    y = [p[0].item() for p in plots[0][1][0][0]]
-    y_hat = [p.item() for p in plots[0][1][1][0]]
 
+    y = [p[0].item() for p in plots[0][1][0]]
+    y_hat = [p[0].item() for p in plots[0][1][1]]
     result = data_to_pandas(actual, y, y_hat)
-    # print(len(plots))
-    # print("--------------")
-    # print(actual)
-    # print("--------------")
-    # print(y)
-    # print("--------------")
-    # print(y_hat)
-    # exit()
+
     return mae, mse, r2, parameters, result
 
 
@@ -217,7 +215,7 @@ def data_to_pandas(actual, y, y_hat):
     return result
 
 
-def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
+def train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch=None):
     print("training informer")
     epochs = epoch
     informer_params.train_epochs = 1  # iterate over each df once per epoch
@@ -225,6 +223,9 @@ def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
     informer_params.label_len = seq_len
     informer_params.pred_len = pred_len
     informer_params.train_epochs = 1
+    informer_params.target=columns[0]
+    informer_params.cols = columns
+
     exp = Exp_Informer(informer_params)  # here we can change the parameters
     num_of_stocks = len(data)
     for epoch in range(epochs):
@@ -299,7 +300,7 @@ def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
                 test_data, batch_x, batch_y, batch_x_mark, batch_y_mark
             )
             if i == 0 and j == 0:
-                in_seq = batch_x[0][-1].detach().cpu().numpy()
+                in_seq = batch_x[0,:,-1].detach().cpu().numpy()
             pred = pred.detach().cpu().numpy()
             true = true.detach().cpu().numpy()
             preds.append(pred)
@@ -309,8 +310,8 @@ def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
             )
 
         if i == 0:
-            first_pred = preds[0]
-            first_true = trues[0]
+            first_pred = preds[0][0,:,0]
+            first_true = trues[0][0,:,0]
 
         preds = np.array(preds)
         trues = np.array(trues)
@@ -345,15 +346,15 @@ def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
     mae, mse, r_squared = np.mean(mae_l), np.mean(mse_l), np.mean(rs2_l)
     informer_params.df = None
     parameters = informer_params
-    y_hat = first_pred
-    y = np.concatenate((in_seq, first_true))
+    y_hat = first_pred.reshape(-1)
+    y = np.concatenate((in_seq, first_true.reshape(-1)))
     forecast = pd.DataFrame({'y':y,'y_hat':np.nan})
     forecast['y_hat'][in_seq.shape[0]:] = y_hat
      
     return mae, mse, r_squared, parameters, forecast
 
 
-def train_prophet(arguments, data):
+def train_prophet(arguments, data, column):
     from cv2 import triangulatePoints
     import utils.prophet_experiment as exp
     import FbProphet.fbprophet as fb
@@ -368,7 +369,7 @@ def train_prophet(arguments, data):
         "period" : arguments.period,
         "initial" : arguments.initial,
     }
-    data = preprocess.rename_dataset_columns(data[0])
+    data = preprocess.rename_dataset_columns(data[0], column)
     training, testing = preprocess.get_split_data(data)
     result_path = "./FbProphet/Iteration/"
     if not os.path.exists(result_path):
@@ -425,7 +426,6 @@ def train_prophet(arguments, data):
 
 def train_arima(data):
     training, testing = preprocess.get_split_data(data[0], col_name="close")
-    mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l = [], [], [], [], [], []
     p = d = q = range(0, 2)
     pdq = list(itertools.product(p, d, q))
 
@@ -454,6 +454,11 @@ def train_arima(data):
 
     history = [x for x in training.close]
     model_predictions = []
+    
+    forecasts = pd.DataFrame(columns=['time', 'y', 'y_hat'])
+    forecasts['time'] = training['date'][-100:]
+    forecasts['y'] = training['close'][-100:]
+    
     N_test_observations = len(testing)
     for time_point in range(N_test_observations):
         model = ARIMA(history, order=min_order)
@@ -463,14 +468,27 @@ def train_arima(data):
         model_predictions.append(yhat)
         true_test_value = testing.close.iloc[time_point]
         history.append(true_test_value)
+        forecasts.loc[len(forecasts)] = [testing.time.iloc[time_point], true_test_value, yhat]
+
 
     mae, mse, rmse, mape, mspe, r_squared = metric(model_predictions, testing.close)
-    mae_l.append(mae)
-    mse_l.append(mse)
-    rmse_l.append(rmse)
-    mape_l.append(mape)
-    mspe_l.append(mspe)
-    rs2_l.append(r_squared)
+    parameters = {
+        "p": min_order[0],
+        "d": min_order[1],
+        "q": min_order[2],
+    }
+
+    return mae, mse, r_squared, parameters, forecasts
+
+def add_to_parameters(arguments, parameters):
+    if arguments.primarycategory:
+        parameters["primarycategory"] = arguments.primarycategory
+    if arguments.primarycategory:
+        parameters["secondarycategory"] = arguments.secondarycategory
+    if arguments.primarycategory:
+        parameters["limit"] = arguments.limit
+    if arguments.companyid:
+        parameters["companyid"] = arguments.companyid
 
 
 if __name__ == "__main__":
@@ -482,126 +500,54 @@ if __name__ == "__main__":
     secondary_category = db_access.get_secondary_category(connection)
     company_id = db_access.get_companyid(connection)
 
-    from_date = "2021-05-31 00:00:00"
+    from_date = "2021-01-31 00:00:00"
     to_date = "2021-12-31 23:59:59"
 
     data = get_data(arguments, connection, from_date, to_date)
-    # a = {"y": [1, 10, 100]}
-    # b = {"y": [2, 20, 200], "y_hat": [3, 30, 300]}
 
-    # observation_df = pd.DataFrame(data=a)
-    # forecast_df = pd.DataFrame(data=b)
-
-    # print(observation_df)
-    # print(forecast_df)
-
-    # result = observation_df.append(forecast_df)
-
-    # if not "time" in result.columns:
-    #     result = result.append(pd.DataFrame(data={"time": []}))
-    data = [
-        d for d in data if pruning.is_there_enough_points(from_date, to_date, d.data.shape[0], 0.7, 1)
-    ]
     data_lst = [d.data for d in data]
 
-
-    # db_access.upsert_exp_data(
-    #     "ARIMA",  # model name
-    #     "ARIMA DESC",  # model description
-    #     1.22,  # mae
-    #     1.33,  # mse
-    #     1.44,  # r^2
-    #     from_date,  # data from
-    #     to_date,  # data to
-    #     "H",  # time unit
-    #     "IKEA",  # company name
-    #     {"a": 1, "b": 2},  # model parameters
-    #     False,  # use sentiment
-    #     ["IKEA", "Arla"],  # used companies
-    #     ["Open", "Close"],  # used columns
-    #     result,
-    #     # pd.DataFrame(  # forecasts
-    #     #     data={
-    #     #         "time": ["2020-12-31 00:00:00", "2021-12-31 23:59:59"],
-    #     #         "y": [3.1, 4.1],
-    #     #         "y_hat": [5.1, 6.1],
-    #     #     }
-    #     # ),
-    #     connection,
-    # )
-
-    if len(data) > 0:
-        if arguments.model == "fb" or arguments.model == "all":
-            print("about to train the fb prophet model")
-            # train_prophet(arguments, data.data)
-            mae, mse, r_squared, parameters, forecasts = train_prophet(
-                arguments, data_lst
-            )
-            db_access.upsert_exp_data(
-                "prophet",  # model name
-                "prophet desc",  # model description
-                mae,  # mae
-                mse,  # mse
-                r_squared,  # r^2
-                from_date,  # data from
-                to_date,  # data to
-                arguments.timeunit,  # time unit
-                data[0].id,  # company name
-                parameters,  # model parameters
-                arguments.use_sentimen,  # use sentiment
-                [d.id for d in data],  # used companies
-                arguments.columns,  # used columns
-                forecasts,
-                connection,
-            )
-
+    if len(data_lst) > 0:
         if arguments.model == "informer" or arguments.model == "all":
             print("about to train the informer")
             for WS in [60, 120]:
                 for OS in [10, 30]:
-                    # train_informer(
-                    #     arguments, data.data, seq_len=WS, pred_len=OS, epoch=25
-                    # )
                     mae, mse, r_squared, parameters, forecasts = train_informer(
-                        arguments, data.data, seq_len=WS, pred_len=OS, epoch=25
+                        arguments, data_lst, arguments.columns, seq_len=WS, pred_len=OS, epoch=1
                     )
+
                     parameters["WS"] = WS
                     parameters["OS"] = OS
-                    print(mae)
-                    print(mse)
-                    print(r_squared)
-                    print(forecasts)
-                    # db_access.upsert_exp_data(
-                    #     "informer",  # model name
-                    #     "informer desc",  # model description
-                    #     mae,  # mae
-                    #     mse,  # mse
-                    #     r_squared,  # r^2
-                    #     from_date,  # data from
-                    #     to_date,  # data to
-                    #     arguments.timeunit,  # time unit
-                    #     data[0].id,  # company name
-                    #     parameters,  # model parameters
-                    #     arguments.use_sentimen,  # use sentiment
-                    #     [d.id for d in data],  # used companies
-                    #     arguments.columns,  # used columns
-                    #     forecasts,
-                    #     connection,
-                    # )
+                    add_to_parameters(arguments, parameters)
+                    db_access.upsert_exp_data(
+                        "informer",  # model name
+                        "informer desc",  # model description
+                        mae,  # mae
+                        mse,  # mse
+                        r_squared,  # r^2
+                        from_date,  # data from
+                        to_date,  # data to
+                        arguments.timeunit,  # time unit
+                        data[0].id,  # company name
+                        parameters,  # model parameters
+                        arguments.use_sentiment,  # use sentiment
+                        [d.id for d in data],  # used companies
+                        arguments.columns,  # used columns
+                        forecasts,
+                        connection,
+                    )
 
         if arguments.model == "lstm" or arguments.model == "all":
             print("about to train the lstma model")
             for WS in [60, 120]:
                 for OS in [10, 30]:
-                    # train_lstma(
-                    #     data_lst, window_size=WS + OS, Output_size=OS, Epoch=25
-                    # )
-
                     mae, mse, r_squared, parameters, forecasts = train_lstma(
-                        data_lst, window_size=WS + OS, Output_size=OS, Epoch=1#25
+                        arguments.columns, data_lst, window_size=WS + OS, Output_size=OS, Epoch=1#25
                     )
                     parameters["WS"] = WS
                     parameters["OS"] = OS
+
+                    add_to_parameters(arguments, parameters)
 
                     db_access.upsert_exp_data(
                         "lstm",  # model name
@@ -624,23 +570,47 @@ if __name__ == "__main__":
         if arguments.model == "arima" or arguments.model == "all":
             print("about to train the arima model")
             train_arima(data_lst)
-            # mae, mse, r_squared, parameters, forecasts = train_arima(data_lst)
-            # db_access.upsert_exp_data(
-            #     "arima",  # model name
-            #     "arima desc",  # model description
-            #     mae,  # mae
-            #     mse,  # mse
-            #     r_squared,  # r^2
-            #     from_date,  # data from
-            #     to_date,  # data to
-            #     arguments.timeunit,  # time unit
-            #     data[0].id,  # company name
-            #     parameters,  # model parameters
-            #     arguments.use_sentimen,  # use sentiment
-            #     [d.id for d in data],  # used companies
-            #     arguments.columns,  # used columns
-            #     forecasts,
-            #     connection,
-            # )
+            mae, mse, r_squared, parameters, forecasts = train_arima(data_lst)
+            db_access.upsert_exp_data(
+                 "arima",  # model name
+                 "arima desc",  # model description
+                 mae,  # mae
+                 mse,  # mse
+                 r_squared,  # r^2
+                 from_date,  # data from
+                 to_date,  # data to
+                 arguments.timeunit,  # time unit
+                 data[0].id,  # company name
+                 parameters,  # model parameters
+                 arguments.use_sentiment,  # use sentiment
+                 [d.id for d in data],  # used companies
+                 arguments.columns,  # used columns
+                 forecasts,
+                 connection,
+            )
+        
+        if arguments.model == "fb" or arguments.model == "all":
+            print("about to train the fb prophet model")
+            mae, mse, r_squared, parameters, forecasts = train_prophet(
+                arguments, data_lst, arguments.columns[0]
+            )
+            add_to_parameters(arguments, parameters)
+            db_access.upsert_exp_data(
+                "prophet",  # model name
+                "prophet desc",  # model description
+                mae,  # mae
+                mse,  # mse
+                r_squared,  # r^2
+                from_date,  # data from
+                to_date,  # data to
+                arguments.timeunit,  # time unit
+                data[0].id,  # company name
+                parameters,  # model parameters
+                arguments.use_sentiment,  # use sentiment
+                [d.id for d in data],  # used companies
+                arguments.columns,  # used columns
+                forecasts,
+                connection,
+            )
     else:
         print("No data was found. Exiting...")

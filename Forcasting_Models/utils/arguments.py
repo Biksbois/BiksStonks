@@ -27,7 +27,7 @@ def get_arguments():
     parser.add_argument("--period", required=False, default='24 hours')
     parser.add_argument("--initial", required=False, default='72 hours')
     parser.add_argument("--use_sentiment", required=False, default=False)
-    parser.add_argument("--columns", nargs="+", required=False, default=["Close"])
+    parser.add_argument("--columns", nargs="+", required=False, default=["close", "open", "high", "low", "volume"])
 
     args = parser.parse_args()
 

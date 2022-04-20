@@ -189,9 +189,9 @@ def _upsert_score(
         (
             model_id,
             executed_time,
-            mae,
-            mse,
-            r_squared,
+            float(mae),
+            float(mse),
+            float(r_squared),
             data_from,
             data_to,
             time_unit,
@@ -216,7 +216,7 @@ def _upsert_graph(score_id, forecasts, cur):
                 score_id,
                 row["y"] if not pd.isnull(row["y"]) else None,
                 row["y_hat"] if not pd.isnull(row["y_hat"]) else None,
-                row["tim"] if not pd.isnull(row["time"]) else None,
+                row["time"] if "time" in forecasts.columns and not pd.isnull(row["time"]) else None,
             ),
         )
 
