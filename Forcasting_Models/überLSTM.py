@@ -92,17 +92,9 @@ def LSTM(
         dataset, batch_size=batch_size, shuffle=True, drop_last=True
     )
 
-<<<<<<< Updated upstream
-    dataset_test = torch.utils.data.TensorDataset(trainer_test, targeter_test)
-    dtloader_test = torch.utils.data.DataLoader(
-        dataset_test, batch_size=batch_size, shuffle=True, drop_last=True
-    )
-    print("Gpu status", torch.cuda.is_available())
-=======
     dataset_test = torch.utils.data.TensorDataset(trainer_test,targeter_test)
     dtloader_test = torch.utils.data.DataLoader(dataset_test,batch_size=batch_size, shuffle=False, drop_last=True)
     print("Gpu status",torch.cuda.is_available())
->>>>>>> Stashed changes
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     hidden = torch.zeros(num_layers, batch_size, n_hidden)
     hidden = hidden.to(device)
