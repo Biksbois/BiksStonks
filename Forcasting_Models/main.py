@@ -353,7 +353,14 @@ def train_prophet(arguments, data):
     import utils.prophet_experiment as exp
     import FbProphet.fbprophet as fb
     import datetime
-
+    parameters = {
+        "seasonality_mode" : arguments.seasonality_mode,
+        "yearly_seasonality" : arguments.yearly_seasonality,
+        "weekly_seasonality" : arguments.weekly_seasonality,
+        "daily_seasonality" : arguments.daily_seasonality,
+        "include_history" : arguments.include_history,
+        "horizon" : arguments.horizon,   
+    }
     data = preprocess.rename_dataset_columns(data[0])
     training, testing = preprocess.get_split_data(data)
     result_path = "./FbProphet/Iteration/"
@@ -390,26 +397,33 @@ def train_prophet(arguments, data):
 
     # e = exp.Experiment(arguments.timeunit, arguments.predict_periods)
     cross_validation = fb.get_cross_validation(model, horizon=arguments.horizon)
+    forecasts = cross_validation['ds', 'y' 'yhat']
 
     metrics = fb.get_performance_metrics(
         cross_validation,
     )
+    mse = metrics["mse"]
+    mae = metrics["mae"]
+    r_squared = fb.get_rsquared(actual=cross_validation['y'], forecast=cross_validation['yhat'])
     # save metrics to csv
     # metrics.to_csv(iteration + "metrics.csv")
 
     print("Performance \n")
     metrics.head(10)
 
-    print("-------Cross Validation Plot-------")
-    fb.plot_cross_validation(cross_validation)
+    # print("-------Cross Validation Plot-------")
+    # fb.plot_cross_validation(cross_validation)
 
-    print("-------Fututre Forcast Plot-------")
-    fb.plot_forecast(
-        model,
-        forecast,
-        testing,
-    )
+    # print("-------Fututre Forcast Plot-------")
+    # fb.plot_forecast(
+    #     model,
+    #     forecast,
+    #     testing,
+    # )
     print("done!")
+    print(mae, mse, r_squared)
+
+    return  mae, mse, r_squared, parameters, forecasts
 
     # return mae, mse, r_squared, parameters, forecasts
 
@@ -524,27 +538,27 @@ if __name__ == "__main__":
     if len(data) > 0:
         if arguments.model == "fb" or arguments.model == "all":
             print("about to train the fb prophet model")
-            train_prophet(arguments, data.data)
-            # mae, mse, r_squared, parameters, forecasts = train_prophet(
-            #     arguments, data.data
-            # )
-            # db_access.upsert_exp_data(
-            #     "prophet",  # model name
-            #     "prophet desc",  # model description
-            #     mae,  # mae
-            #     mse,  # mse
-            #     r_squared,  # r^2
-            #     from_date,  # data from
-            #     to_date,  # data to
-            #     arguments.timeunit,  # time unit
-            #     data[0].id,  # company name
-            #     parameters,  # model parameters
-            #     arguments.use_sentimen,  # use sentiment
-            #     [d.id for d in data],  # used companies
-            #     arguments.columns,  # used columns
-            #     forecasts,
-            #     connection,
-            # )
+            # train_prophet(arguments, data.data)
+            mae, mse, r_squared, parameters, forecasts = train_prophet(
+                arguments, data.data
+            )
+            db_access.upsert_exp_data(
+                "prophet",  # model name
+                "prophet desc",  # model description
+                mae,  # mae
+                mse,  # mse
+                r_squared,  # r^2
+                from_date,  # data from
+                to_date,  # data to
+                arguments.timeunit,  # time unit
+                data[0].id,  # company name
+                parameters,  # model parameters
+                arguments.use_sentimen,  # use sentiment
+                [d.id for d in data],  # used companies
+                arguments.columns,  # used columns
+                forecasts,
+                connection,
+            )
 
         if arguments.model == "informer" or arguments.model == "all":
             print("about to train the informer")
