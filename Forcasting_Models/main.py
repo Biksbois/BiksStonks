@@ -405,23 +405,20 @@ def train_prophet(arguments, data, column):
     print("metrics have been saved, now performing cross eval..")
     cross_validation = fb.get_cross_validation(model, initial=arguments.initial, period=arguments.period, horizon=arguments.horizon)
     print("cross validation has been performed, now saving..")
-    forecasts = cross_validation['ds', 'y' 'yhat']
-    print(forecasts.head())
+    forecasts = cross_validation[['ds', 'y', 'yhat']].copy()
+    forecasts=forecasts.rename(columns={'yhat':'y_hat', 'ds':'time'})
     print("calling metrics..")
     metrics = fb.get_performance_metrics(
         cross_validation,
     )
-    mse = metrics["mse"]
-    mae = metrics["mae"]
-    r_squared = fb.get_rsquared(actual=cross_validation['y'], forecast=cross_validation['yhat'])
-
-    print("Performance \n")
-    metrics.head(10)
+    mse = metrics[["mse"]].copy()
+    mae = metrics[["mae"]].copy()
+    r_squared = fb.get_rsquared(cross_validation[['yhat']].copy(), cross_validation[['y']].copy())
 
     print("done!")
     print(mae, mse, r_squared)
 
-    return  mae, mse, r_squared, parameters, forecasts
+    return  mae.mae.mean(), mse.mse.mean(), r_squared, parameters, forecasts
 
 
 def train_arima(data):
@@ -468,7 +465,12 @@ def train_arima(data):
         model_predictions.append(yhat)
         true_test_value = testing.close.iloc[time_point]
         history.append(true_test_value)
-        forecasts.loc[len(forecasts)] = [testing.date.iloc[time_point], true_test_value, yhat]
+
+        new_row = {'time':testing.date.iloc[time_point],"y":true_test_value, 'y_hat':yhat}
+        forecasts = forecasts.append(new_row, ignore_index = True)
+        
+        # forecasts.loc[len(forecasts)] = [testing.date.iloc[time_point], true_test_value, yhat]
+    print(forecasts.tail())
 
 
     mae, mse, rmse, mape, mspe, r_squared = metric(model_predictions, testing.close)
@@ -500,8 +502,8 @@ if __name__ == "__main__":
     secondary_category = db_access.get_secondary_category(connection)
     company_id = db_access.get_companyid(connection)
 
-    from_date = "2021-01-31 00:00:00"
-    to_date = "2021-12-31 23:59:59"
+    from_date = "2020-12-31 00:00:00"
+    to_date =   "2021-12-31 23:59:59"
 
     data = get_data(arguments, connection, from_date, to_date)
 
