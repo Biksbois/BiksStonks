@@ -105,7 +105,11 @@ def get_data(arguments, connection, from_date, to_date):
         to_time=to_date,
     )
 
-    data = [d for d in data if len(d.data) > 1000]
+    data = [
+        d for d in data if pruning.is_there_enough_points(from_date, to_date, d.data.shape[0], 0.7, 60)
+    ]
+
+    # data = [d for d in data if len(d.data) > 1000]
 
     if arguments.limit and len(data) > arguments.limit:
         print(
@@ -188,9 +192,9 @@ def train_lstma(
     }  # (actual, (y, y_hat))
 
     actual = [p[0].item() for p in plots[0][0][0]]
-    y = [p[0].item() for p in plots[0][1][0][0]]
-    y_hat = [p.item() for p in plots[0][1][1][0]]
 
+    y = [p[0].item() for p in plots[0][1][0]]
+    y_hat = [p[0].item() for p in plots[0][1][1]]
     result = data_to_pandas(actual, y, y_hat)
 
     return mae, mse, r2, parameters, result
@@ -445,9 +449,9 @@ def train_arima(data):
     history = [x for x in training.close]
     model_predictions = []
     
-    forecasts = pd.DataFrame(columns=['T', 'Y', 'Y_hat'])
-    forecasts['T'] = training[-100:].time
-    forecasts['Y'] = training[-100:].close
+    forecasts = pd.DataFrame(columns=['time', 'y', 'y_hat'])
+    forecasts['time'] = training['date'][-100:]
+    forecasts['y'] = training['close'][-100:]
     
     N_test_observations = len(testing)
     for time_point in range(N_test_observations):
@@ -495,36 +499,10 @@ if __name__ == "__main__":
 
     data = get_data(arguments, connection, from_date, to_date)
 
-    data = [
-        d for d in data if pruning.is_there_enough_points(from_date, to_date, d.data.shape[0], 0.7, 60)
-    ]
+
     data_lst = [d.data for d in data]
 
     if len(data_lst) > 0:
-        if arguments.model == "fb" or arguments.model == "all":
-            print("about to train the fb prophet model")
-            mae, mse, r_squared, parameters, forecasts = train_prophet(
-                arguments, data_lst, arguments.columns[0]
-            )
-            add_to_parameters(arguments, parameters)
-            db_access.upsert_exp_data(
-                "prophet",  # model name
-                "prophet desc",  # model description
-                mae,  # mae
-                mse,  # mse
-                r_squared,  # r^2
-                from_date,  # data from
-                to_date,  # data to
-                arguments.timeunit,  # time unit
-                data[0].id,  # company name
-                parameters,  # model parameters
-                arguments.use_sentiment,  # use sentiment
-                [d.id for d in data],  # used companies
-                arguments.columns,  # used columns
-                forecasts,
-                connection,
-            )
-
         if arguments.model == "informer" or arguments.model == "all":
             print("about to train the informer")
             for WS in [60, 120]:
@@ -604,6 +582,30 @@ if __name__ == "__main__":
                  arguments.columns,  # used columns
                  forecasts,
                  connection,
+            )
+        
+        if arguments.model == "fb" or arguments.model == "all":
+            print("about to train the fb prophet model")
+            mae, mse, r_squared, parameters, forecasts = train_prophet(
+                arguments, data_lst, arguments.columns[0]
+            )
+            add_to_parameters(arguments, parameters)
+            db_access.upsert_exp_data(
+                "prophet",  # model name
+                "prophet desc",  # model description
+                mae,  # mae
+                mse,  # mse
+                r_squared,  # r^2
+                from_date,  # data from
+                to_date,  # data to
+                arguments.timeunit,  # time unit
+                data[0].id,  # company name
+                parameters,  # model parameters
+                arguments.use_sentiment,  # use sentiment
+                [d.id for d in data],  # used companies
+                arguments.columns,  # used columns
+                forecasts,
+                connection,
             )
     else:
         print("No data was found. Exiting...")
