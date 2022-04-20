@@ -1,11 +1,37 @@
 from datetime import datetime
 
+def convert_time_unit(time_str):
+    unit = time_str[-1]
+    num = None
+    if len(time_str) != 1:
+        num = int(time_str[:-1])
+
+    if unit == 't' or unit == 'T':
+        if num != None:
+            return 61-num
+        return 1
+    # elif unit == 'h' or unit == 'H':
+    #     if num != None:
+    #         return 61-num
+    #     return 1
+    # elif unit == 'm' or unit == 'M':
+    #     if num != None:
+    #         return 61-num
+    #     return 1
+    # elif unit == 's' or unit == 'S':
+    #     if num != None:
+    #         return 61-num
+    #     return 1
+    else:
+        return num
+
 def days_between(d1, d2):
     d1 = datetime.strptime(d1, "%Y-%m-%d %H:%M:%S")
     d2 = datetime.strptime(d2, "%Y-%m-%d %H:%M:%S")
     return abs((d2 - d1).days)
 
 def calc_expected_datapoint(days, interval):
+    interval = convert_time_unit(interval)
     working_days = 250
     Total_days = 365
     market_open = 9

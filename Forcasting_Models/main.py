@@ -106,7 +106,7 @@ def get_data(arguments, connection, from_date, to_date):
     )
 
     data = [
-        d for d in data if pruning.is_there_enough_points(from_date, to_date, d.data.shape[0], 0.7, 60)
+        d for d in data if pruning.is_there_enough_points(from_date, to_date, d.data.shape[0], 0.7, arguments.timeunit)
     ]
 
     # data = [d for d in data if len(d.data) > 1000]
@@ -498,7 +498,6 @@ if __name__ == "__main__":
     to_date = "2021-12-31 23:59:59"
 
     data = get_data(arguments, connection, from_date, to_date)
-
 
     data_lst = [d.data for d in data]
 
