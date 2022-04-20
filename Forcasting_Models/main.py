@@ -273,7 +273,7 @@ def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
             print(
                 ">>>>>>>start training : {}>>>>>>>>>>>>>>>>>>>>>>>>>>".format(setting)
             )
-            exp.train(setting)
+            #exp.train(setting)
     torch.cuda.empty_cache()
 
     # test
@@ -299,7 +299,7 @@ def train_informer(arguments, data, seq_len=None, pred_len=None, epoch=None):
                 test_data, batch_x, batch_y, batch_x_mark, batch_y_mark
             )
             if i == 0 and j == 0:
-                in_seq = batch_x[0][-1].detach().cpu().numpy()
+                in_seq = batch_x[0,:,-1].detach().cpu().numpy()
             pred = pred.detach().cpu().numpy()
             true = true.detach().cpu().numpy()
             preds.append(pred)
