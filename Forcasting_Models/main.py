@@ -398,9 +398,6 @@ def train_prophet(arguments, data):
         future,
     )
 
-    # forecast.to_csv(iteration + "forecast.csv")
-
-    # e = exp.Experiment(arguments.timeunit, arguments.predict_periods)
     cross_validation = fb.get_cross_validation(model, horizon=arguments.horizon)
     forecasts = cross_validation['ds', 'y' 'yhat']
 
@@ -410,27 +407,14 @@ def train_prophet(arguments, data):
     mse = metrics["mse"]
     mae = metrics["mae"]
     r_squared = fb.get_rsquared(actual=cross_validation['y'], forecast=cross_validation['yhat'])
-    # save metrics to csv
-    # metrics.to_csv(iteration + "metrics.csv")
 
     print("Performance \n")
     metrics.head(10)
 
-    # print("-------Cross Validation Plot-------")
-    # fb.plot_cross_validation(cross_validation)
-
-    # print("-------Fututre Forcast Plot-------")
-    # fb.plot_forecast(
-    #     model,
-    #     forecast,
-    #     testing,
-    # )
     print("done!")
     print(mae, mse, r_squared)
 
     return  mae, mse, r_squared, parameters, forecasts
-
-    # return mae, mse, r_squared, parameters, forecasts
 
 
 def train_arima(data):
