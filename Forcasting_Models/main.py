@@ -106,7 +106,11 @@ def get_data(arguments, connection, from_date, to_date):
     )
 
     data = [
-        d for d in data if pruning.is_there_enough_points(from_date, to_date, d.data.shape[0], 0.7, arguments.timeunit)
+        d
+        for d in data
+        if pruning.is_there_enough_points(
+            from_date, to_date, d.data.shape[0], 0.7, arguments.timeunit
+        )
     ]
 
     # data = [d for d in data if len(d.data) > 1000]
@@ -178,17 +182,17 @@ def train_lstma(
     print("Memory freed")
 
     parameters = {
-        'window_size': window_size,
-        'n_companies': n_companies,
-        'n_datapoints': n_datapoints,
-        'Output_size': Output_size,
-        'n_step': n_step,
-        'n_hidden': n_hidden,
-        'n_class': n_class,
-        'Epoch': Epoch,
-        'batch_size': batch_size,
-        'num_layers': num_layers,
-        'learning_rate': learning_rate,
+        "window_size": window_size,
+        "n_companies": n_companies,
+        "n_datapoints": n_datapoints,
+        "Output_size": Output_size,
+        "n_step": n_step,
+        "n_hidden": n_hidden,
+        "n_class": n_class,
+        "Epoch": Epoch,
+        "batch_size": batch_size,
+        "num_layers": num_layers,
+        "learning_rate": learning_rate,
     }  # (actual, (y, y_hat))
 
     actual = [p[0].item() for p in plots[0][0][0]]
@@ -223,7 +227,7 @@ def train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch=
     informer_params.label_len = seq_len
     informer_params.pred_len = pred_len
     informer_params.train_epochs = 1
-    informer_params.target=columns[0]
+    informer_params.target = columns[0]
     informer_params.cols = columns
 
     exp = Exp_Informer(informer_params)  # here we can change the parameters
@@ -300,7 +304,7 @@ def train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch=
                 test_data, batch_x, batch_y, batch_x_mark, batch_y_mark
             )
             if i == 0 and j == 0:
-                in_seq = batch_x[0,:,-1].detach().cpu().numpy()
+                in_seq = batch_x[0, :, -1].detach().cpu().numpy()
             pred = pred.detach().cpu().numpy()
             true = true.detach().cpu().numpy()
             preds.append(pred)
@@ -310,8 +314,8 @@ def train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch=
             )
 
         if i == 0:
-            first_pred = preds[0][0,:,0]
-            first_true = trues[0][0,:,0]
+            first_pred = preds[0][0, :, 0]
+            first_true = trues[0][0, :, 0]
 
         preds = np.array(preds)
         trues = np.array(trues)
@@ -348,9 +352,9 @@ def train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch=
     parameters = informer_params
     y_hat = first_pred.reshape(-1)
     y = np.concatenate((in_seq, first_true.reshape(-1)))
-    forecast = pd.DataFrame({'y':y,'y_hat':np.nan})
-    forecast['y_hat'][in_seq.shape[0]:] = y_hat
-     
+    forecast = pd.DataFrame({"y": y, "y_hat": np.nan})
+    forecast["y_hat"][in_seq.shape[0] :] = y_hat
+
     return mae, mse, r_squared, parameters, forecast
 
 
@@ -359,15 +363,16 @@ def train_prophet(arguments, data, column):
     import utils.prophet_experiment as exp
     import FbProphet.fbprophet as fb
     import datetime
+
     parameters = {
-        "seasonality_mode" : arguments.seasonality_mode,
-        "yearly_seasonality" : arguments.yearly_seasonality,
-        "weekly_seasonality" : arguments.weekly_seasonality,
-        "daily_seasonality" : arguments.daily_seasonality,
-        "include_history" : arguments.include_history,
-        "horizon" : arguments.horizon,   
-        "period" : arguments.period,
-        "initial" : arguments.initial,
+        "seasonality_mode": arguments.seasonality_mode,
+        "yearly_seasonality": arguments.yearly_seasonality,
+        "weekly_seasonality": arguments.weekly_seasonality,
+        "daily_seasonality": arguments.daily_seasonality,
+        "include_history": arguments.include_history,
+        "horizon": arguments.horizon,
+        "period": arguments.period,
+        "initial": arguments.initial,
     }
     data = preprocess.rename_dataset_columns(data[0], column)
     training, testing = preprocess.get_split_data(data)
@@ -403,22 +408,29 @@ def train_prophet(arguments, data, column):
     print("prediction has been made, now saving..")
     fb.save_metrics(forecast, iteration + "forecast.csv")
     print("metrics have been saved, now performing cross eval..")
-    cross_validation = fb.get_cross_validation(model, initial=arguments.initial, period=arguments.period, horizon=arguments.horizon)
+    cross_validation = fb.get_cross_validation(
+        model,
+        initial=arguments.initial,
+        period=arguments.period,
+        horizon=arguments.horizon,
+    )
     print("cross validation has been performed, now saving..")
-    forecasts = cross_validation[['ds', 'y', 'yhat']].copy()
-    forecasts=forecasts.rename(columns={'yhat':'y_hat', 'ds':'time'})
+    forecasts = cross_validation[["ds", "y", "yhat"]].copy()
+    forecasts = forecasts.rename(columns={"yhat": "y_hat", "ds": "time"})
     print("calling metrics..")
     metrics = fb.get_performance_metrics(
         cross_validation,
     )
     mse = metrics[["mse"]].copy()
     mae = metrics[["mae"]].copy()
-    r_squared = fb.get_rsquared(cross_validation[['yhat']].copy(), cross_validation[['y']].copy())
+    r_squared = fb.get_rsquared(
+        cross_validation[["yhat"]].copy(), cross_validation[["y"]].copy()
+    )
 
     print("done!")
     print(mae, mse, r_squared)
 
-    return  mae.mae.mean(), mse.mse.mean(), r_squared, parameters, forecasts
+    return mae.mae.mean(), mse.mse.mean(), r_squared, parameters, forecasts
 
 
 def train_arima(data):
@@ -451,11 +463,11 @@ def train_arima(data):
 
     history = [x for x in training.close]
     model_predictions = []
-    
-    forecasts = pd.DataFrame(columns=['time', 'y', 'y_hat'])
-    forecasts['time'] = training['date'][-100:]
-    forecasts['y'] = training['close'][-100:]
-    
+
+    forecasts = pd.DataFrame(columns=["time", "y", "y_hat"])
+    forecasts["time"] = training["date"][-100:]
+    forecasts["y"] = training["close"][-100:]
+
     N_test_observations = len(testing)
     for time_point in range(N_test_observations):
         model = ARIMA(history, order=min_order)
@@ -466,12 +478,15 @@ def train_arima(data):
         true_test_value = testing.close.iloc[time_point]
         history.append(true_test_value)
 
-        new_row = {'time':testing.date.iloc[time_point],"y":true_test_value, 'y_hat':yhat}
-        forecasts = forecasts.append(new_row, ignore_index = True)
-        
+        new_row = {
+            "time": testing.date.iloc[time_point],
+            "y": true_test_value,
+            "y_hat": yhat,
+        }
+        forecasts = forecasts.append(new_row, ignore_index=True)
+
         # forecasts.loc[len(forecasts)] = [testing.date.iloc[time_point], true_test_value, yhat]
     print(forecasts.tail())
-
 
     mae, mse, rmse, mape, mspe, r_squared = metric(model_predictions, testing.close)
     parameters = {
@@ -482,15 +497,17 @@ def train_arima(data):
 
     return mae, mse, r_squared, parameters, forecasts
 
+
 def add_to_parameters(arguments, parameters):
     if arguments.primarycategory:
         parameters["primarycategory"] = arguments.primarycategory
-    if arguments.primarycategory:
+    elif arguments.secondarycategory:
         parameters["secondarycategory"] = arguments.secondarycategory
-    if arguments.primarycategory:
-        parameters["limit"] = arguments.limit
-    if arguments.companyid:
+    else:
         parameters["companyid"] = arguments.companyid
+
+    if arguments.limit:
+        parameters["limit"] = arguments.limit
 
 
 if __name__ == "__main__":
@@ -503,7 +520,7 @@ if __name__ == "__main__":
     company_id = db_access.get_companyid(connection)
 
     from_date = "2020-12-31 00:00:00"
-    to_date =   "2021-12-31 23:59:59"
+    to_date = "2021-12-31 23:59:59"
 
     data = get_data(arguments, connection, from_date, to_date)
 
@@ -515,7 +532,12 @@ if __name__ == "__main__":
             for WS in [60, 120]:
                 for OS in [10, 30]:
                     mae, mse, r_squared, parameters, forecasts = train_informer(
-                        arguments, data_lst, arguments.columns, seq_len=WS, pred_len=OS, epoch=1
+                        arguments,
+                        data_lst,
+                        arguments.columns,
+                        seq_len=WS,
+                        pred_len=OS,
+                        epoch=1,
                     )
 
                     parameters["WS"] = WS
@@ -544,7 +566,11 @@ if __name__ == "__main__":
             for WS in [60, 120]:
                 for OS in [10, 30]:
                     mae, mse, r_squared, parameters, forecasts = train_lstma(
-                        arguments.columns, data_lst, window_size=WS + OS, Output_size=OS, Epoch=1#25
+                        arguments.columns,
+                        data_lst,
+                        window_size=WS + OS,
+                        Output_size=OS,
+                        Epoch=1,  # 25
                     )
                     parameters["WS"] = WS
                     parameters["OS"] = OS
@@ -574,23 +600,23 @@ if __name__ == "__main__":
             train_arima(data_lst)
             mae, mse, r_squared, parameters, forecasts = train_arima(data_lst)
             db_access.upsert_exp_data(
-                 "arima",  # model name
-                 "arima desc",  # model description
-                 mae,  # mae
-                 mse,  # mse
-                 r_squared,  # r^2
-                 from_date,  # data from
-                 to_date,  # data to
-                 arguments.timeunit,  # time unit
-                 data[0].id,  # company name
-                 parameters,  # model parameters
-                 arguments.use_sentiment,  # use sentiment
-                 [d.id for d in data],  # used companies
-                 arguments.columns,  # used columns
-                 forecasts,
-                 connection,
+                "arima",  # model name
+                "arima desc",  # model description
+                mae,  # mae
+                mse,  # mse
+                r_squared,  # r^2
+                from_date,  # data from
+                to_date,  # data to
+                arguments.timeunit,  # time unit
+                data[0].id,  # company name
+                parameters,  # model parameters
+                arguments.use_sentiment,  # use sentiment
+                [d.id for d in data],  # used companies
+                arguments.columns,  # used columns
+                forecasts,
+                connection,
             )
-        
+
         if arguments.model == "fb" or arguments.model == "all":
             print("about to train the fb prophet model")
             mae, mse, r_squared, parameters, forecasts = train_prophet(
