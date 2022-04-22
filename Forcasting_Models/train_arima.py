@@ -36,10 +36,10 @@ def _train_arima(data):
     #Normalize the pandas dataframe 
     from utils.preprocess import StandardScaler
     scaler = StandardScaler()
-    scaler.fit(data[0].values)
-    data_scaled = scaler.transform(data[0].values)
-    data[0] = pd.DataFrame(dict(zip(data[0].columns, data_scaled)))
-    training, testing = preprocess.get_split_data(data[0], col_name="close")
+    scaler.fit(data.values)
+    data_scaled = scaler.transform(data.values)
+    data = pd.DataFrame(dict(zip(data.columns, data_scaled)))
+    training, testing = preprocess.get_split_data(data, col_name="close")
     #split seems to work though a bit cryptic
     p = d = q = range(0, 2)
     pdq = list(itertools.product(p, d, q))
