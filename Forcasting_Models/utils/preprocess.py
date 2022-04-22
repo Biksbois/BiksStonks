@@ -41,7 +41,7 @@ def rename_dataset_columns(df_d, column):
     return df_d
 
 def get_split_data(df, col_name="ds"):
-    split_date = df[col_name].iloc[-1] - ((df[col_name].iloc[-1] - df[col_name].iloc[0]) * 0.3)
+    split_date = df[col_name].iloc[-1] - ((df[col_name].iloc[-1] - df[col_name].iloc[0]) * 0.2)
     training = df[df[col_name] <= split_date]# data[:split_date].iloc[:-1]
     testing = df[df[col_name] > split_date]
     return training, testing
@@ -57,3 +57,22 @@ def min_on_column(df, col_name):
 
 def max_on_column(df, col_name):
     return df[col_name].max()
+
+class StandardScaler():
+    def __init__(self):
+        self.mean = 0.
+        self.std = 1.
+    
+    def fit(self, data):
+        self.mean = data.mean(0)
+        self.std = data.std(0)
+
+    def transform(self, data):
+        mean = torch.from_numpy(self.mean).type_as(data).to(data.device) if torch.is_tensor(data) else self.mean
+        std = torch.from_numpy(self.std).type_as(data).to(data.device) if torch.is_tensor(data) else self.std
+        return (data - mean) / std
+
+    def inverse_transform(self, data):
+        mean = torch.from_numpy(self.mean).type_as(data).to(data.device) if torch.is_tensor(data) else self.mean
+        std = torch.from_numpy(self.std).type_as(data).to(data.device) if torch.is_tensor(data) else self.std
+        return (data * std) + mean
