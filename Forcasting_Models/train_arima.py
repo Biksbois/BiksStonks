@@ -1,3 +1,4 @@
+from locale import normalize
 import utils.preprocess as preprocess
 import itertools
 from statsmodels.tsa.arima.model import ARIMA
@@ -10,27 +11,29 @@ from utils.preprocess import add_to_parameters
 def execute_arima(data_lst, arguments, from_date, to_date, data, connection):
     mae, mse, r_squared, parameters, forecasts = _train_arima(data_lst)
     add_to_parameters(arguments, parameters, is_fb_or_arima=True)
-    db_access.upsert_exp_data(
-        "arima",  # model name
-        "arima desc",  # model description
-        mae,  # mae
-        mse,  # mse
-        r_squared,  # r^2
-        from_date,  # data from
-        to_date,  # data to
-        arguments.timeunit,  # time unit
-        data[0].id,  # company name
-        parameters,  # model parameters
-        arguments.use_sentiment,  # use sentiment
-        [d.id for d in data],  # used companies
-        arguments.columns,  # used columns
-        forecasts,
-        connection,
-    )
+    if arguments.save_data:
+        db_access.upsert_exp_data(
+            "arima",  # model name
+            "arima desc",  # model description
+            mae,  # mae
+            mse,  # mse
+            r_squared,  # r^2
+            from_date,  # data from
+            to_date,  # data to
+            arguments.timeunit,  # time unit
+            data[0].id,  # company name
+            parameters,  # model parameters
+            arguments.use_sentiment,  # use sentiment
+            [d.id for d in data],  # used companies
+            arguments.columns,  # used columns
+            forecasts,
+            connection,
+        )
 
 
 def _train_arima(data):
-    training, testing = preprocess.get_split_data(data[0], col_name="close")
+    # normalized_df = (data[0]-data.mean())# / data.std()
+    training, testing = preprocess.get_split_data(data, col_name="close")
     p = d = q = range(0, 2)
     pdq = list(itertools.product(p, d, q))
 
@@ -68,7 +71,7 @@ def _train_arima(data):
     for time_point in range(N_test_observations):
         model = ARIMA(history, order=min_order)
         model_fit = model.fit()
-        output = model_fit.forecast()
+        output = model_fit.forecast(steps=10)
         yhat = output[0]
         model_predictions.append(yhat)
         true_test_value = testing.close.iloc[time_point]
