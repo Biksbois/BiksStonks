@@ -73,7 +73,7 @@ def _train_arima(data):
         yhat = output
         model_predictions.append(yhat)
         true_test_value = testing.close.iloc[time_point:time_point+out_steps]
-        history.append(true_test_value)
+        history.extend(true_test_value)
 
         new_row = {
             "time": testing.date.iloc[time_point:time_point+out_steps],
