@@ -38,7 +38,7 @@ def _train_arima(data):
     scaler = StandardScaler()
     scaler.fit(data[0].values)
     data_scaled = scaler.transform(data[0].values)
-    data[0] = pd.DataFrame(data_scaled, columns=data[0].columns)
+    data[0] = pd.DataFrame(dict(zip(data[0].columns, data_scaled)))
     training, testing = preprocess.get_split_data(data[0], col_name="close")
     #split seems to work though a bit cryptic
     p = d = q = range(0, 2)
