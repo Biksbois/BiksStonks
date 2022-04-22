@@ -114,8 +114,8 @@ def LSTM(
                 x = x.squeeze(-1)
                 y = y.squeeze(-1)
             else:
-                x = x.squeeze(-1)
-                y = y.squeeze(-1)
+                x = x
+                y = y
             output, _ = model(x, hidden, x)
             y = y.unsqueeze(-1)
             loss = criterion(output, y)
@@ -158,8 +158,8 @@ def LSTM(
                 x = x.squeeze(-1)
                 y = y.squeeze(-1)
             else:
-                x = x.squeeze(-1)
-                y = y.squeeze(-1)
+                x = x
+                y = y
             output, _ = model(x, hidden, x)
             plots.append((x.cpu(), (y.cpu(), output.squeeze(-1).cpu())))  # (actual, (y, y_hat))
             MSE_Scores.append(criterion(output.cpu(), y.unsqueeze(-1).cpu()))

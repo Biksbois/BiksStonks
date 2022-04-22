@@ -292,6 +292,14 @@ def get_data_for_attribute(
 
     return company_data
 
+def get_graph_for_id(id, conn):
+    df = pd.read_sql_query(
+        f"SELECT time, y, y_hat FROM graph where score_id = {id}",
+        conn,
+    )
+
+    return df
+
 
 def get_data_for_datasetid(
     datasetid,

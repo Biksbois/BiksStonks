@@ -30,8 +30,7 @@ informer_params.label_len = 48 # start token length of Informer decoder
 informer_params.pred_len = 30 # prediction sequence length
 # Informer decoder input: concat[start token series(label_len), zero padding series(pred_len)]
 
-informer_params.enc_in = 5 # encoder input size # ohlc + volume + [trade_count, vwap]
-informer_params.dec_in = 5 # decoder input size # ohlc + volume + [trade_count, vwap]
+
 informer_params.c_out = 1 # output size # 1 univariate prediction for close price
 informer_params.factor = 5 # probsparse attn factor
 informer_params.d_model = 512 # dimension of model

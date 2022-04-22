@@ -1,5 +1,21 @@
 import pandas as pd
 
+def add_to_parameters(arguments, parameters, is_fb_or_arima=False):
+    if arguments.primarycategory:
+        parameters["primarycategory"] = arguments.primarycategory
+    elif arguments.secondarycategory:
+        parameters["secondarycategory"] = arguments.secondarycategory
+    else:
+        parameters["companyid"] = arguments.companyid
+
+    if arguments.limit:
+        parameters["limit"] = arguments.limit
+    
+    if is_fb_or_arima:
+        parameters["columns"] = arguments.columns[0]
+    else:
+        parameters["columns"] = arguments.columns
+
 
 
 def resample_data_to_interval(interval, df):
