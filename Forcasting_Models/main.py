@@ -166,15 +166,16 @@ if __name__ == "__main__":
     secondary_category = db_access.get_secondary_category(connection)
     company_id = db_access.get_companyid(connection)
 
-    from_date = "2020-12-31 00:00:00"
-    to_date = "2021-12-31 23:59:59"
-
-    if arguments.use_args:
-        run_experiments(arguments, connection, from_date, to_date)
-    else:
+    if arguments.use_args in ["False", "false", '0']:
+        print("running without parameters")
         for company in oa.companies:
             for granularity in oa.granularities:
                 for column in oa.columns:
                     for period in oa.periods:
-                        arguments = oa.overwrite_arguments(arguments, granularity, column, period)
-                        run_experiments(arguments, connection, from_date, to_date, company)
+                        arguments, from_date,to_date = oa.overwrite_arguments(arguments, granularity, column, period, company)
+                        run_experiments(arguments, connection, from_date, to_date)
+    else:
+        print("running with parameters")
+        from_date = "2020-12-31 00:00:00"
+        to_date = "2021-12-31 23:59:59"
+        run_experiments(arguments, connection, from_date, to_date)

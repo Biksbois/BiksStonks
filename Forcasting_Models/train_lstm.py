@@ -21,7 +21,7 @@ def execute_lstm(arguments, data_lst, from_date, to_date, data, connection):
 
                 add_to_parameters(arguments, parameters)
 
-                if arguments.save_data:
+                if arguments.use_args in ["True", "true", "1"]:
                     db_access.upsert_exp_data(
                         "lstm",  # model name
                         "lstm desc",  # model description

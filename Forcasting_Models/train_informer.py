@@ -29,7 +29,7 @@ def execute_informer(arguments, data_lst, from_date, to_date, data, connection):
             parameters["WS"] = WS
             parameters["OS"] = OS
             add_to_parameters(arguments, parameters)
-            if arguments.save_data:
+            if arguments.use_args in ["True", "true", "1"]:
                 db_access.upsert_exp_data(
                     "informer",  # model name
                     "informer desc",  # model description

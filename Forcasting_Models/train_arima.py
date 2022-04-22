@@ -11,7 +11,7 @@ from utils.preprocess import add_to_parameters
 def execute_arima(data_lst, arguments, from_date, to_date, data, connection):
     mae, mse, r_squared, parameters, forecasts = _train_arima(data_lst)
     add_to_parameters(arguments, parameters, is_fb_or_arima=True)
-    if arguments.save_data:
+    if arguments.use_args in ["True", "true", "1"]:
         db_access.upsert_exp_data(
             "arima",  # model name
             "arima desc",  # model description

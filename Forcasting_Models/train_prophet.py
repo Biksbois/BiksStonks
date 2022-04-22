@@ -14,7 +14,7 @@ def execute_prophet(arguments, data_lst, from_date, to_date, data, connection):
         arguments, data_lst, arguments.columns[0]
     )
     add_to_parameters(arguments, parameters, is_fb_or_arima=True)
-    if arguments.save_data:
+    if arguments.use_args in ["True", "true", "1"]:
         db_access.upsert_exp_data(
             "prophet",  # model name
             "prophet desc",  # model description
