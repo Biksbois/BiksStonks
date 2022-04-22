@@ -8,20 +8,12 @@ def convert_time_unit(time_str):
 
     if unit == 't' or unit == 'T':
         if num != None:
-            return 61-num
+            return 60/num
+        return 60
+    elif unit == 'h' or unit == 'H':
+        if num != None:
+            return num
         return 1
-    # elif unit == 'h' or unit == 'H':
-    #     if num != None:
-    #         return 61-num
-    #     return 1
-    # elif unit == 'm' or unit == 'M':
-    #     if num != None:
-    #         return 61-num
-    #     return 1
-    # elif unit == 's' or unit == 'S':
-    #     if num != None:
-    #         return 61-num
-    #     return 1
     else:
         return num
 
