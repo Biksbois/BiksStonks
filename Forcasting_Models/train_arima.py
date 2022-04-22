@@ -31,6 +31,7 @@ def execute_arima(data_lst, arguments, from_date, to_date, data, connection):
 
 def _train_arima(data):
     training, testing = preprocess.get_split_data(data[0], col_name="close")
+    #split seems to work though a bit cryptic
     p = d = q = range(0, 2)
     pdq = list(itertools.product(p, d, q))
 
@@ -63,19 +64,19 @@ def _train_arima(data):
     forecasts = pd.DataFrame(columns=["time", "y", "y_hat"])
     forecasts["time"] = training["date"][-100:]
     forecasts["y"] = training["close"][-100:]
-
+    out_steps=10
     N_test_observations = len(testing)
     for time_point in range(N_test_observations):
         model = ARIMA(history, order=min_order)
         model_fit = model.fit()
-        output = model_fit.forecast()
-        yhat = output[0]
+        output = model_fit.forecast(steps=out_steps)
+        yhat = output
         model_predictions.append(yhat)
-        true_test_value = testing.close.iloc[time_point]
+        true_test_value = testing.close.iloc[time_point:time_point+out_steps]
         history.append(true_test_value)
 
         new_row = {
-            "time": testing.date.iloc[time_point],
+            "time": testing.date.iloc[time_point:time_point+out_steps],
             "y": true_test_value,
             "y_hat": yhat,
         }
