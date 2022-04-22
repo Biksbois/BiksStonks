@@ -41,7 +41,7 @@ def rename_dataset_columns(df_d, column):
     return df_d
 
 def get_split_data(df, col_name="ds"):
-    split_date = df[col_name].iloc[-1] - ((df[col_name].iloc[-1] - df[col_name].iloc[0]) * 0.3)
+    split_date = df[col_name].iloc[-1] - ((df[col_name].iloc[-1] - df[col_name].iloc[0]) * 0.2)
     training = df[df[col_name] <= split_date]# data[:split_date].iloc[:-1]
     testing = df[df[col_name] > split_date]
     return training, testing

@@ -21,23 +21,24 @@ def execute_lstm(arguments, data_lst, from_date, to_date, data, connection):
 
                 add_to_parameters(arguments, parameters)
 
-                db_access.upsert_exp_data(
-                    "lstm",  # model name
-                    "lstm desc",  # model description
-                    mae,  # mae
-                    mse,  # mse
-                    r_squared,  # r^2
-                    from_date,  # data from
-                    to_date,  # data to
-                    arguments.timeunit,  # time unit
-                    data[0].id,  # company name
-                    parameters,  # model parameters
-                    arguments.use_sentiment,  # use sentiment
-                    [d.id for d in data],  # used companies
-                    arguments.columns,  # used columns
-                    forecasts,
-                    connection,
-                )
+                if arguments.save_data:
+                    db_access.upsert_exp_data(
+                        "lstm",  # model name
+                        "lstm desc",  # model description
+                        mae,  # mae
+                        mse,  # mse
+                        r_squared,  # r^2
+                        from_date,  # data from
+                        to_date,  # data to
+                        arguments.timeunit,  # time unit
+                        data[0].id,  # company name
+                        parameters,  # model parameters
+                        arguments.use_sentiment,  # use sentiment
+                        [d.id for d in data],  # used companies
+                        arguments.columns,  # used columns
+                        forecasts,
+                        connection,
+                    )
 
 def _train_lstma(
     columns,

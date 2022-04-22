@@ -21,6 +21,7 @@ import statsmodels.api as sm
 from statsmodels.tsa.stattools import acf, pacf
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.arima.model import ARIMA
+import utils.overwrite_arguments as oa
 
 from train_lstm import execute_lstm
 from train_arima import execute_arima
@@ -128,19 +129,7 @@ def get_data(arguments, connection, from_date, to_date):
 
     return data
 
-
-if __name__ == "__main__":
-    arguments = arg.get_arguments()
-
-    connection = db_access.get_connection()
-
-    primary_category = db_access.get_primay_category(connection)
-    secondary_category = db_access.get_secondary_category(connection)
-    company_id = db_access.get_companyid(connection)
-
-    from_date = "2020-12-31 00:00:00"
-    to_date = "2021-12-31 23:59:59"
-
+def run_experiments(arguments, connection, from_date, to_date):
     data = get_data(arguments, connection, from_date, to_date)
 
     data_lst = [d.data for d in data]
@@ -157,7 +146,7 @@ if __name__ == "__main__":
 
         if arguments.model == "arima" or arguments.model == "all":
             print("about to train the arima model")
-            execute_arima(data_lst, arguments, from_date, to_date, data, connection)
+            execute_arima(data_lst[0], arguments, from_date, to_date, data, connection)
 
 
         if arguments.model == "fb" or arguments.model == "all":
@@ -166,3 +155,26 @@ if __name__ == "__main__":
 
     else:
         print("No data was found. Exiting...")
+
+
+if __name__ == "__main__":
+    arguments = arg.get_arguments()
+
+    connection = db_access.get_connection()
+
+    primary_category = db_access.get_primay_category(connection)
+    secondary_category = db_access.get_secondary_category(connection)
+    company_id = db_access.get_companyid(connection)
+
+    from_date = "2020-12-31 00:00:00"
+    to_date = "2021-12-31 23:59:59"
+
+    if arguments.use_args:
+        run_experiments(arguments, connection, from_date, to_date)
+    else:
+        for company in oa.companies:
+            for granularity in oa.granularities:
+                for column in oa.columns:
+                    for period in oa.periods:
+                        arguments = oa.overwrite_arguments(arguments, granularity, column, period)
+                        run_experiments(arguments, connection, from_date, to_date, company)
