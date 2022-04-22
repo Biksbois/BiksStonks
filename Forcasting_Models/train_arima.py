@@ -7,6 +7,7 @@ import pandas as pd
 from Informer.utils_in.metrics import metric
 import utils.DatasetAccess as db_access
 from utils.preprocess import add_to_parameters
+import numpy as np
 
 def execute_arima(data_lst, arguments, from_date, to_date, data, connection):
     mae, mse, r_squared, parameters, forecasts = _train_arima(data_lst)
@@ -32,8 +33,14 @@ def execute_arima(data_lst, arguments, from_date, to_date, data, connection):
 
 
 def _train_arima(data):
-    # normalized_df = (data[0]-data.mean())# / data.std()
-    training, testing = preprocess.get_split_data(data, col_name="close")
+    #Normalize the pandas dataframe 
+    from utils.preprocess import StandardScaler
+    scaler = StandardScaler()
+    scaler.fit(data[0].values)
+    data_scaled = scaler.transform(data[0].values)
+    data[0] = pd.DataFrame(data_scaled, columns=data[0].columns)
+    training, testing = preprocess.get_split_data(data[0], col_name="close")
+    #split seems to work though a bit cryptic
     p = d = q = range(0, 2)
     pdq = list(itertools.product(p, d, q))
 
@@ -68,7 +75,7 @@ def _train_arima(data):
     forecasts["y"] = training["close"][-100:]
     out_steps=10
     N_test_observations = len(testing)
-    for time_point in range(N_test_observations):
+    for time_point in range(N_test_observations-out_steps+1):
         model = ARIMA(history, order=min_order)
         model_fit = model.fit()
         output = model_fit.forecast(steps=out_steps)
@@ -86,8 +93,16 @@ def _train_arima(data):
 
         # forecasts.loc[len(forecasts)] = [testing.date.iloc[time_point], true_test_value, yhat]
     print(forecasts.tail())
-
+    
+    test_ = np.lib.stride_tricks.sliding_window_view(testing.close, out_steps)
+    model_predictions = np.asarray(model_predictions)
+    if model_predictions.shape != test_.shape:
+        print("ERROR: model predictions and test data have different shapes")
+        print(f"model predictions shape: {model_predictions.shape}")
+        print(f"test data shape: {test_.shape}")
     mae, mse, rmse, mape, mspe, r_squared = metric(model_predictions, testing.close)
+    # 300, 10
+    # 300, 10
     parameters = {
         "p": min_order[0],
         "d": min_order[1],
