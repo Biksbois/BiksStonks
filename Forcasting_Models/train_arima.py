@@ -13,7 +13,7 @@ def execute_arima(data_lst, arguments, from_date, to_date, data, connection):
     mae, mse, r_squared, parameters, forecasts = _train_arima(data_lst)
     add_to_parameters(arguments, parameters, is_fb_or_arima=True)
     # if arguments.use_args in ["True", "true", "1"]:
-    
+
     db_access.upsert_exp_data(
         "arima",  # model name
         "arima desc",  # model description
@@ -81,8 +81,9 @@ def _train_arima(data):
     forecasts["y"] = training["close"][-100:]
     out_steps=10
     N_test_observations = len(testing)
+    test_ = []
     first = True
-    for time_point in range(N_test_observations-out_steps+1):
+    for time_point in range(0, N_test_observations-out_steps+1, 10):
         model = ARIMA(history, order=min_order)
         model_fit = model.fit()
         output = model_fit.forecast(steps=out_steps)
@@ -90,6 +91,7 @@ def _train_arima(data):
         model_predictions.append(yhat)
         true_test_value = testing.close.iloc[time_point:time_point+out_steps]
         history.extend(true_test_value)
+        test_.append(true_test_value)
 
         if first:
             forecasts = pd.DataFrame({'time': training.date.iloc[-100:] + testing.date.iloc[time_point:time_point+out_steps],
@@ -101,15 +103,13 @@ def _train_arima(data):
             first = False
     print(forecasts.tail())
     
-    test_ = np.lib.stride_tricks.sliding_window_view(testing.close, out_steps)
+    test_ = np.asarray(test_)
     model_predictions = np.asarray(model_predictions)
     if model_predictions.shape != test_.shape:
         print("ERROR: model predictions and test data have different shapes")
         print(f"model predictions shape: {model_predictions.shape}")
         print(f"test data shape: {test_.shape}")
-
     mae, mse, rmse, mape, mspe, r_squared = metric(model_predictions, test_)
-
     # 300, 10
     # 300, 10
     parameters = {

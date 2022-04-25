@@ -145,9 +145,9 @@ def run_experiments(arguments, connection, from_date, to_date):
             execute_lstm(arguments, data_lst, from_date, to_date, data, connection)
 
 
-        # if arguments.model == "arima" or arguments.model == "all":
-        #     print("about to train the arima model")
-        #     execute_arima(data_lst[0], arguments, from_date, to_date, data, connection)
+        if arguments.model == "arima" or arguments.model == "all":
+            print("about to train the arima model")
+            execute_arima(data_lst[0], arguments, from_date, to_date, data, connection)
 
 
         if arguments.model == "fb" or arguments.model == "all":
