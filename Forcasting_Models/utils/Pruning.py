@@ -5,7 +5,6 @@ def convert_time_unit(time_str):
     num = None
     if len(time_str) != 1:
         num = int(time_str[:-1])
-
     if unit == 't' or unit == 'T':
         if num != None:
             return 60/num
@@ -16,8 +15,8 @@ def convert_time_unit(time_str):
         return 1
     elif unit == 'd' or unit == 'D':
         if num != None:
-            return (1/24)/num
-        return (1/24)
+            return (1/8)/num
+        return (1/8)
     else:
         return num
 
