@@ -75,7 +75,8 @@ def _train_arima(data):
     forecasts["y"] = training["close"][-100:]
     out_steps=10
     N_test_observations = len(testing)
-    for time_point in range(N_test_observations-out_steps+1):
+    test_ = []
+    for time_point in range(0, N_test_observations-out_steps+1, 10):
         model = ARIMA(history, order=min_order)
         model_fit = model.fit()
         output = model_fit.forecast(steps=out_steps)
@@ -83,6 +84,7 @@ def _train_arima(data):
         model_predictions.append(yhat)
         true_test_value = testing.close.iloc[time_point:time_point+out_steps]
         history.extend(true_test_value)
+        test_.append(true_test_value)
 
         new_row = {
             "time": testing.date.iloc[time_point:time_point+out_steps],
@@ -94,13 +96,13 @@ def _train_arima(data):
         # forecasts.loc[len(forecasts)] = [testing.date.iloc[time_point], true_test_value, yhat]
     print(forecasts.tail())
     
-    test_ = np.lib.stride_tricks.sliding_window_view(testing.close, out_steps)
+    test_ = np.asarray(test_)
     model_predictions = np.asarray(model_predictions)
     if model_predictions.shape != test_.shape:
         print("ERROR: model predictions and test data have different shapes")
         print(f"model predictions shape: {model_predictions.shape}")
         print(f"test data shape: {test_.shape}")
-    mae, mse, rmse, mape, mspe, r_squared = metric(model_predictions, testing.close)
+    mae, mse, rmse, mape, mspe, r_squared = metric(model_predictions, test_)
     # 300, 10
     # 300, 10
     parameters = {
