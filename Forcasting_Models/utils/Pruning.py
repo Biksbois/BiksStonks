@@ -12,8 +12,12 @@ def convert_time_unit(time_str):
         return 60
     elif unit == 'h' or unit == 'H':
         if num != None:
-            return num
+            return 1/num
         return 1
+    elif unit == 'd' or unit == 'D':
+        if num != None:
+            return (1/24)/num
+        return (1/24)
     else:
         return num
 
