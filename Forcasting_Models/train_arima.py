@@ -43,7 +43,7 @@ def _train_arima(data):
     # data_ = pd.DataFrame(dict(zip(data.columns[1:], data_scaled)))
     # data_['date'] = data['date']
 
-    data = data.apply(lambda x : (x - x.mean()) / x.std())
+    data[data.columns[1:]] = data[data.columns[1:]].apply(lambda x : (x - x.mean()) / x.std(), axis=0)
 
     training, testing = preprocess.get_split_data(data, col_name="close")
     #split seems to work though a bit cryptic
@@ -94,7 +94,7 @@ def _train_arima(data):
         test_.append(true_test_value)
 
         if first:
-            forecasts = pd.DataFrame({'time': training.date.iloc[-100:] + testing.date.iloc[time_point:time_point+out_steps],
+            forecasts = pd.DataFrame({'time': list(training.date.iloc[-100:]) + list(testing.date.iloc[time_point:time_point+out_steps]),
                                     'y': list(history[-100:]) + list(true_test_value),
                                     'y_hat':np.nan 
             })

@@ -7,6 +7,7 @@ import datetime
 import utils.preprocess as preprocess
 import utils.DatasetAccess as db_access
 from utils.preprocess import add_to_parameters
+import pandas as pd
 
 
 def execute_prophet(arguments, data_lst, from_date, to_date, data, connection):
@@ -45,8 +46,10 @@ def _train_prophet(arguments, data, column):
         "period": arguments.period,
         "initial": arguments.initial,
     }
+
     data = preprocess.rename_dataset_columns(data[0], column)
-    data = data.apply(lambda x : (x - x.mean()) / x.std())
+    # data['ds'] = pd.to_datetime(data["ds"].dt.strftime('%Y/%m/%d-%H:%M:%S'))
+    data[data.columns[1:]] = data[data.columns[1:]].apply(lambda x : (x - x.mean()) / x.std(), axis=0)
     training, testing = preprocess.get_split_data(data)
     result_path = "./FbProphet/Iteration/"
     if not os.path.exists(result_path):
@@ -72,6 +75,12 @@ def _train_prophet(arguments, data, column):
         freq=arguments.timeunit,
         include_history=arguments.include_history,
     )
+
+    print(future.head())
+    print(future.tail())
+    print("-----------")
+    print(data.head())
+    print(data.tail())
 
     forecast = fb.make_prediction(
         model,
