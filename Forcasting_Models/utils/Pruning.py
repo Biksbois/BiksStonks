@@ -15,8 +15,8 @@ def convert_time_unit(time_str):
         return 1
     elif unit == 'd' or unit == 'D':
         if num != None:
-            return (1/8)/num
-        return (1/8)
+            return (1/7)/num
+        return (1/7)
     else:
         return num
 
