@@ -14,24 +14,24 @@ def execute_prophet(arguments, data_lst, from_date, to_date, data, connection):
         arguments, data_lst, arguments.columns[0]
     )
     add_to_parameters(arguments, parameters, is_fb_or_arima=True)
-    if arguments.use_args in ["True", "true", "1"]:
-        db_access.upsert_exp_data(
-            "prophet",  # model name
-            "prophet desc",  # model description
-            mae,  # mae
-            mse,  # mse
-            r_squared,  # r^2
-            from_date,  # data from
-            to_date,  # data to
-            arguments.timeunit,  # time unit
-            data[0].id,  # company name
-            parameters,  # model parameters
-            arguments.use_sentiment,  # use sentiment
-            [d.id for d in data],  # used companies
-            arguments.columns,  # used columns
-            forecasts,
-            connection,
-        )
+    # if arguments.use_args in ["True", "true", "1"]:
+    db_access.upsert_exp_data(
+        "prophet",  # model name
+        "prophet desc",  # model description
+        mae,  # mae
+        mse,  # mse
+        r_squared,  # r^2
+        from_date,  # data from
+        to_date,  # data to
+        arguments.timeunit,  # time unit
+        data[0].id,  # company name
+        parameters,  # model parameters
+        arguments.use_sentiment,  # use sentiment
+        [d.id for d in data],  # used companies
+        arguments.columns,  # used columns
+        forecasts,
+        connection,
+    )
 
 def _train_prophet(arguments, data, column):
 
@@ -46,7 +46,7 @@ def _train_prophet(arguments, data, column):
         "initial": arguments.initial,
     }
     data = preprocess.rename_dataset_columns(data[0], column)
-    data =(data-data.mean())/data.std()
+    data = data.apply(lambda x : (x - x.mean()) / x.std())
     training, testing = preprocess.get_split_data(data)
     result_path = "./FbProphet/Iteration/"
     if not os.path.exists(result_path):

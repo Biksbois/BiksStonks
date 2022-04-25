@@ -144,9 +144,10 @@ def run_experiments(arguments, connection, from_date, to_date):
             print("about to train the lstma model")
             execute_lstm(arguments, data_lst, from_date, to_date, data, connection)
 
-        if arguments.model == "arima" or arguments.model == "all":
-            print("about to train the arima model")
-            execute_arima(data_lst[0], arguments, from_date, to_date, data, connection)
+
+        # if arguments.model == "arima" or arguments.model == "all":
+        #     print("about to train the arima model")
+        #     execute_arima(data_lst[0], arguments, from_date, to_date, data, connection)
 
 
         if arguments.model == "fb" or arguments.model == "all":
@@ -167,7 +168,7 @@ if __name__ == "__main__":
     company_id = db_access.get_companyid(connection)
 
     if arguments.use_args in ["False", "false", '0']:
-        print("running without parameters")
+        print("\n\nrunning without parameters\n\n")
         for company in oa.companies:
             for granularity in oa.granularities:
                 for column in oa.columns:
@@ -175,7 +176,8 @@ if __name__ == "__main__":
                         arguments, from_date,to_date = oa.overwrite_arguments(arguments, granularity, column, period, company)
                         run_experiments(arguments, connection, from_date, to_date)
     else:
-        print("running with parameters")
-        from_date = "2020-12-31 00:00:00"
+        print("\n\nrunning with parameters\n\n")
+        from_date = "2021-11-20 00:00:00"
         to_date = "2021-12-31 23:59:59"
+
         run_experiments(arguments, connection, from_date, to_date)

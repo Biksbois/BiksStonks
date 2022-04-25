@@ -29,24 +29,24 @@ def execute_informer(arguments, data_lst, from_date, to_date, data, connection):
             parameters["WS"] = WS
             parameters["OS"] = OS
             add_to_parameters(arguments, parameters)
-            if arguments.use_args in ["True", "true", "1"]:
-                db_access.upsert_exp_data(
-                    "informer",  # model name
-                    "informer desc",  # model description
-                    mae,  # mae
-                    mse,  # mse
-                    r_squared,  # r^2
-                    from_date,  # data from
-                    to_date,  # data to
-                    arguments.timeunit,  # time unit
-                    data[0].id,  # company name
-                    parameters,  # model parameters
-                    arguments.use_sentiment,  # use sentiment
-                    [d.id for d in data],  # used companies
-                    arguments.columns,  # used columns
-                    forecasts,
-                    connection,
-                )
+            # if arguments.use_args in ["True", "true", "1"]:
+            db_access.upsert_exp_data(
+                "informer",  # model name
+                "informer desc",  # model description
+                mae,  # mae
+                mse,  # mse
+                r_squared,  # r^2
+                from_date,  # data from
+                to_date,  # data to
+                arguments.timeunit,  # time unit
+                data[0].id,  # company name
+                parameters,  # model parameters
+                arguments.use_sentiment,  # use sentiment
+                [d.id for d in data],  # used companies
+                arguments.columns,  # used columns
+                forecasts,
+                connection,
+            )
 
 
 def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch=None):

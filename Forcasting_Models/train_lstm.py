@@ -7,7 +7,7 @@ import torch.nn as nn
 def execute_lstm(arguments, data_lst, from_date, to_date, data, connection):
     for WS in [60, 120]:
         for OS in [10, 30]:
-            for epoch in [25]: #[10, 20, 50]:
+            for epoch in [10, 20, 50]:
                 mae, mse, r_squared, parameters, forecasts = _train_lstma(
                     arguments.columns,
                     data_lst,
@@ -21,24 +21,24 @@ def execute_lstm(arguments, data_lst, from_date, to_date, data, connection):
 
                 add_to_parameters(arguments, parameters)
 
-                if arguments.use_args in ["True", "true", "1"]:
-                    db_access.upsert_exp_data(
-                        "lstm",  # model name
-                        "lstm desc",  # model description
-                        mae,  # mae
-                        mse,  # mse
-                        r_squared,  # r^2
-                        from_date,  # data from
-                        to_date,  # data to
-                        arguments.timeunit,  # time unit
-                        data[0].id,  # company name
-                        parameters,  # model parameters
-                        arguments.use_sentiment,  # use sentiment
-                        [d.id for d in data],  # used companies
-                        arguments.columns,  # used columns
-                        forecasts,
-                        connection,
-                    )
+                # if arguments.use_args in ["True", "true", "1"]:
+                db_access.upsert_exp_data(
+                    "lstm",  # model name
+                    "lstm desc",  # model description
+                    mae,  # mae
+                    mse,  # mse
+                    r_squared,  # r^2
+                    from_date,  # data from
+                    to_date,  # data to
+                    arguments.timeunit,  # time unit
+                    data[0].id,  # company name
+                    parameters,  # model parameters
+                    arguments.use_sentiment,  # use sentiment
+                    [d.id for d in data],  # used companies
+                    arguments.columns,  # used columns
+                    forecasts,
+                    connection,
+                )
 
 def _train_lstma(
     columns,

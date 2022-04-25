@@ -5,13 +5,13 @@ companies = [
 ]
 
 granularities = [
-    {"horizon":"120 minutes", "period": "120 minutes", "initial":"800000 minutes", "gran":"5T"}, 
-    {"horizon":"360 minutes", "period": "360 minutes", "initial":"800000 minutes", "gran":"15T"}, 
-    {"horizon":"720 minutes", "period": "720 minutes", "initial":"800000 minutes", "gran":"30T"}, 
-    {"horizon":"1080 minutes", "period": "1080 minutes", "initial":"800000 minutes", "gran":"45T"}, 
-    {"horizon":"6 hours", "period": "6 hours", "initial":"14000 hours", "gran":"1H"}, 
-    {"horizon":"100 hours", "period": "100 hours", "initial":"14000 hours", "gran":"12H"}, 
-    {"horizon":"7 days", "period": "7 days", "initial":"365 days", "gran":"1D"}
+    {"horizon":"120 minutes", "period": "120 minutes", "initial":"450000 minutes", "gran":"5T"}, 
+    {"horizon":"360 minutes", "period": "360 minutes", "initial":"400000 minutes", "gran":"15T"}, 
+    {"horizon":"720 minutes", "period": "720 minutes", "initial":"400000 minutes", "gran":"30T"}, 
+    {"horizon":"1080 minutes", "period": "1080 minutes", "initial":"400000 minutes", "gran":"45T"}, 
+    {"horizon":"6 hours", "period": "6 hours", "initial":"7000 hours", "gran":"1H"}, 
+    {"horizon":"100 hours", "period": "100 hours", "initial":"7000 hours", "gran":"12H"}, 
+    {"horizon":"7 days", "period": "7 days", "initial":"150 days", "gran":"1D"}
 ]
 
 columns = [
@@ -22,11 +22,11 @@ columns = [
 ]
 
 periods = [
-    { "from_date" : "2012-04-01 00:00:00", "to_date" : "2014-04-01 00:00:00"},
-    { "from_date" : "2014-04-01 00:00:00", "to_date" : "2016-04-01 00:00:00"},
-    { "from_date" : "2016-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
-    { "from_date" : "2018-04-01 00:00:00", "to_date" : "2020-04-01 00:00:00"},
-    { "from_date" : "2020-04-01 00:00:00", "to_date" : "2022-04-01 00:00:00"},
+    { "from_date" : "2012-04-01 00:00:00", "to_date" : "2013-04-01 00:00:00"},
+    { "from_date" : "2014-04-01 00:00:00", "to_date" : "2015-04-01 00:00:00"},
+    { "from_date" : "2016-04-01 00:00:00", "to_date" : "2017-04-01 00:00:00"},
+    { "from_date" : "2018-04-01 00:00:00", "to_date" : "2019-04-01 00:00:00"},
+    { "from_date" : "2020-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
 ]
 
 def overwrite_arguments(arguments, granularity, column, period, company):
