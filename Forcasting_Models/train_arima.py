@@ -8,6 +8,7 @@ from Informer.utils_in.metrics import metric
 import utils.DatasetAccess as db_access
 from utils.preprocess import add_to_parameters
 import numpy as np
+from tqdm import tqdm
 
 def execute_arima(data_lst, arguments, from_date, to_date, data, connection):
     mae, mse, r_squared, parameters, forecasts = _train_arima(data_lst)
@@ -83,24 +84,25 @@ def _train_arima(data):
     N_test_observations = len(testing)
     test_ = []
     first = True
-    for time_point in range(0, N_test_observations-out_steps+1, 10):
-        model = ARIMA(history, order=min_order)
-        model_fit = model.fit()
-        output = model_fit.forecast(steps=out_steps)
-        yhat = output
-        model_predictions.append(yhat)
-        true_test_value = testing.close.iloc[time_point:time_point+out_steps]
-        history.extend(true_test_value)
-        test_.append(true_test_value)
+    for i in tqdm(range(0, N_test_observations-out_steps+1), desc="Forecasting with ARIMA..."):
+        for time_point in range(0, N_test_observations-out_steps+1, 10):
+            model = ARIMA(history, order=min_order)
+            model_fit = model.fit()
+            output = model_fit.forecast(steps=out_steps)
+            yhat = output
+            model_predictions.append(yhat)
+            true_test_value = testing.close.iloc[time_point:time_point+out_steps]
+            history.extend(true_test_value)
+            test_.append(true_test_value)
 
-        if first:
-            forecasts = pd.DataFrame({'time': list(training.date.iloc[-100:]) + list(testing.date.iloc[time_point:time_point+out_steps]),
-                                    'y': list(history[-100:]) + list(true_test_value),
-                                    'y_hat':np.nan 
-            })
+            if first:
+                forecasts = pd.DataFrame({'time': list(training.date.iloc[-100:]) + list(testing.date.iloc[time_point:time_point+out_steps]),
+                                        'y': list(history[-100:]) + list(true_test_value),
+                                        'y_hat':np.nan 
+                })
 
-            forecasts['y_hat'][100:] = yhat
-            first = False
+                forecasts['y_hat'][100:] = yhat
+                first = False
     print(forecasts.tail())
     
     test_ = np.asarray(test_)
