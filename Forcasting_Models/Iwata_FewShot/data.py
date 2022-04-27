@@ -1,8 +1,107 @@
 from torch.utils.data import Dataset
-import pandas as pd
 import numpy as np
+import pandas as pd
+import random
+import os 
 
 from utils import StandardScaler
+from utils_iwata.preprocess import preprocess_iwata
+from sktime.datasets import load_from_tsfile_to_dataframe
+
+class IWATA_Classification_Sampler(Dataset):
+    def __init__(self, root_path, seq_len, pred_len, num_samples, flag, 
+                 split=[55,10,24], S_N=16, Q_N=1, series_len=100, seed=0):
+        assert sum(split) == 89 # only 89 datasets 
+        self.num_samples = num_samples
+        self.split = split
+        self.root_path = root_path
+        self.seq_len = seq_len
+        self.pred_len = pred_len
+        self.S_N = S_N # support set size
+        self.Q_N = Q_N # query set size
+        self.series_len = series_len
+        self.data_list = os.listdir(root_path)
+        self.flag = flag
+        random.seed(seed) # important to ensure that train_tasks, val_tasks, target_tasks are the same
+        self.train_tasks, self.val_tasks, self.target_tasks = self.__split_data(self.data_list)
+        self.support_tasks, self.query_tasks = self.__read_data()
+        print(len(self.train_tasks), len(self.val_tasks), len(self.target_tasks))
+    
+    def __split_data(self, data_list):
+        train_tasks, val_tasks, target_tasks = [], [], []
+        data_bowl = self.data_list.copy()
+        # sample train_tasks
+        for i in range(self.split[0]):
+            train_tasks.append(random.choice(data_bowl))
+            data_bowl.remove(train_tasks[-1])
+        # sample val_tasks
+        for i in range(self.split[1]):
+            val_tasks.append(random.choice(data_bowl))
+            data_bowl.remove(val_tasks[-1])
+        target_tasks = data_bowl
+        return train_tasks, val_tasks, target_tasks
+
+    def __len__(self):
+        return self.num_samples
+
+    def __getitem__(self, idx):
+        idx_end = self.series_len - self.seq_len - self.pred_len
+        # sample indexes for train_tasks
+        train_idx = random.sample(range(idx_end), self.S_N)
+        # sample train_tasks for support set
+        sup_tasks = random.sample(range(self.split[0]), self.S_N)
+        if self.flag == 'TEST':
+            # sample indexes for target tasks
+            target_idx = random.sample(range(idx_end), self.Q_N)
+            # sample target tasks for query set
+            query_tasks = random.sample(range(self.split[2]), self.Q_N)
+        else: 
+            # sample target tasks from train_tasks
+            query_tasks = random.sample(range(self.split[0]), self.Q_N)
+            # sample indexes for target tasks
+            target_idx = random.sample(range(idx_end), self.Q_N)
+
+        sup_x, _ = self.__tasks_to_arrays(train_idx, support_set=True)
+        query_x, query_y = self.__tasks_to_arrays(target_idx, support_set=self.flag == 'TRAIN') # if 'TEST' use query_tasks 
+        # univariate add extra dimension
+        sup_x = sup_x[...,None]
+        query_x = query_x[...,None]
+        
+
+        return sup_x, query_x, query_y
+        
+
+    def __tasks_to_arrays(self, idxs, support_set=True):
+        x, y = [], []
+        sample_set = self.support_tasks if support_set else self.query_tasks
+        
+        for idx in idxs:
+            task = random.choice(self.support_tasks)
+            timeseries = task.sample(1).values[0][0].to_numpy() # each task contains multiple timeseries (classification data)
+            x.append(timeseries[idx:idx+self.seq_len])
+            y.append(timeseries[idx+self.seq_len:idx+self.seq_len+self.pred_len])
+        
+        return np.array(x), np.array(y).reshape(-1)[0]
+            
+    
+    def __read_data(self):
+        support_tasks = []
+        query_tasks = None
+        for data in self.train_tasks:
+            root_path = 'preprocessed_iwata_ds/'
+            path = os.path.join(root_path, data, data + '_TRAIN.ts')
+            x, y = load_from_tsfile_to_dataframe(path)
+            support_tasks.append(x)
+
+        if self.flag == 'TEST':
+            query_tasks = []
+            for data in self.target_tasks:
+                root_path = 'preprocessed_iwata_ds/'
+                path = os.path.join(root_path, data, data + '_TRAIN.ts')
+                x, y = load_from_tsfile_to_dataframe(path)
+                query_tasks.append(x)
+
+        return support_tasks, query_tasks         
 
 
 class Iwata_Dataset_DB_Stock(Dataset):

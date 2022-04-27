@@ -15,6 +15,11 @@ Forcasting_Models/results/*
 Forcasting_Models/figures/*
 
 # Checkpoints
+
+Forcasting_Models/Iwata_FewShot/checkpoints
+Forcasting_Models/Iwata_FewShot/Univariate_ts
+Forcasting_Models/Iwata_FewShot/preprocessed_iwata_ds
+Forcasting_Models/Iwata_FewShot/results
 Forcasting_Models/results
 Forcasting_Models/informer_checkpoints
 Forcasting_Models/Informer/results 
