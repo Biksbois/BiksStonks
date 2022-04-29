@@ -5,39 +5,38 @@ from statsmodels.tsa.arima.model import ARIMA
 import statsmodels.api as sm
 import pandas as pd
 from Informer.utils_in.metrics import metric
+import FbProphet.fbprophet as fb
 import utils.DatasetAccess as db_access
+from sklearn.metrics import mean_squared_error, r2_score
 from utils.preprocess import add_to_parameters
 import numpy as np
 from tqdm import tqdm
-import time
 
 def execute_arima(data_lst, arguments, from_date, to_date, data, connection):
-    start_time = time.time()
-    for WS in [20, 40, 60]:
-        mae, mse, r_squared, parameters, forecasts = _train_arima(data_lst, WS)
-        duration = time.time() - start_time
-        add_to_parameters(arguments, parameters, duration, is_fb_or_arima=True)
-        parameters['WS'] = WS
-        db_access.upsert_exp_data(
-            "arima",  # model name
-            "arima desc",  # model description
-            mae,  # mae
-            mse,  # mse
-            r_squared,  # r^2
-            from_date,  # data from
-            to_date,  # data to
-            arguments.timeunit,  # time unit
-            data[0].id,  # company name
-            parameters,  # model parameters
-            arguments.use_sentiment,  # use sentiment
-            [d.id for d in data],  # used companies
-            arguments.columns,  # used columns
-            forecasts,
-            connection,
-        )
+    mae, mse, r_squared, parameters, forecasts = _train_arima(data_lst)
+    add_to_parameters(arguments, parameters, is_fb_or_arima=True)
+    # if arguments.use_args in ["True", "true", "1"]:
+
+    db_access.upsert_exp_data(
+        "arima",  # model name
+        "arima desc",  # model description
+        mae,  # mae
+        mse,  # mse
+        r_squared,  # r^2
+        from_date,  # data from
+        to_date,  # data to
+        arguments.timeunit,  # time unit
+        data[0].id,  # company name
+        parameters,  # model parameters
+        arguments.use_sentiment,  # use sentiment
+        [d.id for d in data],  # used companies
+        arguments.columns,  # used columns
+        forecasts,
+        connection,
+    )
 
 
-def _train_arima(data, window_size):
+def _train_arima(data):
     #Normalize the pandas dataframe 
     from utils.preprocess import StandardScaler
     scaler = StandardScaler()
@@ -83,11 +82,12 @@ def _train_arima(data, window_size):
     forecasts = pd.DataFrame(columns=["time", "y", "y_hat"])
     forecasts["time"] = training["date"][-100:]
     forecasts["y"] = training["close"][-100:]
-    out_steps=window_size
+    out_steps=10
     N_test_observations = len(testing)
     test_ = []
+    r2_scores = []
     first = True
-    for time_point in tqdm(range(0, N_test_observations-out_steps+1, window_size), desc="Forecasting with ARIMA"):
+    for time_point in tqdm(range(0, N_test_observations-out_steps+1, 10), desc="Forecasting with ARIMA..."):
         model = ARIMA(history, order=min_order)
         model_fit = model.fit()
         output = model_fit.forecast(steps=out_steps)
@@ -96,16 +96,14 @@ def _train_arima(data, window_size):
         true_test_value = testing.close.iloc[time_point:time_point+out_steps]
         history.extend(true_test_value)
         test_.append(true_test_value)
-
+        r2_scores.append(r2_score(true_test_value.values,output))
         if first:
-            history_lengt = min(100, len(list(history[-100:])), len(list(training.date.iloc[-100:])))
-
-            forecasts = pd.DataFrame({'time': list(training.date.iloc[-history_lengt:]) + list(testing.date.iloc[time_point:time_point+out_steps]),
-                                    'y': list(history[-history_lengt:]) + list(true_test_value),
+            forecasts = pd.DataFrame({'time': list(training.date.iloc[-100:]) + list(testing.date.iloc[time_point:time_point+out_steps]),
+                                    'y': list(history[-100:]) + list(true_test_value),
                                     'y_hat':np.nan 
             })
 
-            forecasts['y_hat'][history_lengt:] = yhat
+            forecasts['y_hat'][100:] = yhat
             first = False
     print(forecasts.tail())
     
@@ -115,7 +113,8 @@ def _train_arima(data, window_size):
         print("ERROR: model predictions and test data have different shapes")
         print(f"model predictions shape: {model_predictions.shape}")
         print(f"test data shape: {test_.shape}")
-    mae, mse, rmse, mape, mspe, r_squared = metric(model_predictions, test_)
+    mae, mse, rmse, mape, mspe, r2 = metric(model_predictions, test_)
+    r_squared = np.mean(r2_scores)
     # 300, 10
     # 300, 10
     parameters = {
