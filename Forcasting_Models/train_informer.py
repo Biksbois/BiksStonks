@@ -137,13 +137,15 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
             )
             if i == 0 and j == 0:
                 in_seq = batch_x[0, :, -1].detach().cpu().numpy()
+            
+            rs2_intermed_l.append(
+                r2_score_dim(torch.tensor(pred), torch.tensor(true))
+            )
+            
             pred = pred.detach().cpu().numpy()
             true = true.detach().cpu().numpy()
             preds.append(pred)
             trues.append(true)
-            rs2_intermed_l.append(
-                r2_score(torch.tensor(pred.reshape(-1)), torch.tensor(true.reshape(-1)))
-            )
 
         if i == 0:
             first_pred = preds[0][0, :, 0]
@@ -197,3 +199,10 @@ def r2_score(output, target):
     ss_res = torch.sum((target - output) ** 2)
     r2 = 1 - ss_res / ss_tot
     return r2
+
+def r2_score_dim(output, target):
+    target_mean = torch.mean(target, dim=1, keepdim=True)
+    ss_tot = torch.sum((target - target_mean) ** 2, dim=1)
+    ss_res = torch.sum((target - output) ** 2, dim=1)
+    r2 = 1 - (ss_res / (ss_tot))
+    return torch.mean(r2)
