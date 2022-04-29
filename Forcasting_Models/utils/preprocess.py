@@ -20,13 +20,13 @@ def add_to_parameters(arguments, parameters, is_fb_or_arima=False):
 
 
 
-def resample_data_to_interval(interval, df):
+def resample_data_to_interval(interval, df, default = {'open': 'first',
+                                                        'high': 'max', 
+                                                        'low': 'min', 
+                                                        'close': 'last', 
+                                                        'volume': 'sum'}):
     df_d = df.resample(interval).agg(
-            {'open': 'first',
-            'high': 'max', 
-            'low': 'min', 
-            'close': 'last', 
-            'volume': 'sum'}).dropna()
+            default).dropna()
     df_d.reset_index(inplace=True)
 
 
