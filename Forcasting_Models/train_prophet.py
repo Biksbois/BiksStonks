@@ -8,13 +8,16 @@ import utils.preprocess as preprocess
 import utils.DatasetAccess as db_access
 from utils.preprocess import add_to_parameters
 import pandas as pd
+import time
 
 
 def execute_prophet(arguments, data_lst, from_date, to_date, data, connection):
+    start_time = time.time()
     mae, mse, r_squared, parameters, forecasts = _train_prophet(
         arguments, data_lst, arguments.columns[0]
     )
-    add_to_parameters(arguments, parameters, is_fb_or_arima=True)
+    duration = time.time() - start_time
+    add_to_parameters(arguments, parameters, duration, is_fb_or_arima=True)
     # if arguments.use_args in ["True", "true", "1"]:
     db_access.upsert_exp_data(
         "prophet",  # model name
@@ -47,6 +50,12 @@ def _train_prophet(arguments, data, column):
         "initial": arguments.initial,
     }
 
+    print("initial: ", arguments.initial)
+    print("horizon: ", arguments.horizon)
+    print("period: ", arguments.period)
+    print("data: ", data[0].shape)
+    
+
     data = preprocess.rename_dataset_columns(data[0], column)
     # data['ds'] = pd.to_datetime(data["ds"].dt.strftime('%Y/%m/%d-%H:%M:%S'))
     data[data.columns[1:]] = data[data.columns[1:]].apply(lambda x : (x - x.mean()) / x.std(), axis=0)
@@ -58,6 +67,7 @@ def _train_prophet(arguments, data, column):
     iteration = result_path + date_time + "/"
     if not os.path.exists(iteration):
         os.makedirs(iteration)
+
 
     model = fb.model_fit(
         training,

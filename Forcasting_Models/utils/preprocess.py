@@ -2,7 +2,7 @@
 import pandas as pd
 import torch
 
-def add_to_parameters(arguments, parameters, is_fb_or_arima=False):
+def add_to_parameters(arguments, parameters, duration, is_fb_or_arima=False):
     if arguments.primarycategory:
         parameters["primarycategory"] = arguments.primarycategory
     elif arguments.secondarycategory:
@@ -17,6 +17,8 @@ def add_to_parameters(arguments, parameters, is_fb_or_arima=False):
         parameters["columns"] = arguments.columns[0]
     else:
         parameters["columns"] = arguments.columns
+    
+    parameters["duration"] = duration
 
 
 
