@@ -271,10 +271,8 @@ def get_data_for_attribute(
     interval,
     from_time="0001-01-01 00:00:00",
     to_time="9999-01-01 00:00:00",
+    use_sentiment=False,
 ):
-    print("---")
-    print(attribute_name)
-    print(attribute_value)
 
     if isinstance(attribute_value, list):
         datasetids = _get_dataset_ids(
@@ -286,13 +284,21 @@ def get_data_for_attribute(
         )
 
     company_data = []
+    print(use_sentiment)
+    if use_sentiment in [True, "True", "true", "TRUE"]:	
+        sentiment = get_sentiment(from_time, to_time, conn, interval)
 
     for i in range(len(datasetids)):
         datasetid = datasetids.iloc[i]["identifier"]
         description = datasetids.iloc[i]["description"]
 
-        data = get_data_for_datasetid(datasetid, conn, interval, from_time, to_time)
+        data = get_data_for_datasetid(datasetid , conn, interval, from_time, to_time)
         company_data.append(DataObj(data, datasetid, description))
+
+    for company in company_data:
+        if use_sentiment in [True, "True", "true", "TRUE"]:
+            company.data = company.data.merge(sentiment, how="left", on="date")
+            company.data = company.data.fillna(method="ffill")
 
     return company_data
 
@@ -327,6 +333,14 @@ def get_data_for_datasetid(
 
     return df
 
+def get_sentiment(from_time, to_time, conn, interval):
+    df = pd.read_sql_query(f"select release_date, compound from sentiment where release_date between '{from_time}' and '{to_time}'", conn)
+    df["release_date"] = pd.to_datetime(df['release_date'])
+    df=df.rename(columns={"release_date":"date"})
+    datetime_index = pd.DatetimeIndex(df.date)
+    df=df.set_index(datetime_index)
+    df = preprocess.resample_data_to_interval(interval, df, {"compound": "mean"})
+    return df
 
 def get_primay_category(conn):
     df = pd.read_sql_query("SELECT DISTINCT primarycategory FROM dataset", conn)
@@ -454,11 +468,9 @@ def getBigData(colum, n_company, n_datapoints, window_size):
     if NumberOfCompanies >= n_company:
         for stock in GetStocksHourly(n_company, colum):
             stocks.append(np.array(stock[:n_datapoints]).flatten())
-
         WindowedStocks = []
         for stock in stocks:
             WindowedStocks.append(window1(stock, window_size))
-
         result = []
         for window in WindowedStocks:
             for i in window:
