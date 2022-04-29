@@ -167,7 +167,6 @@ def run_experiments_stat(arguments, connection, from_date, to_date):
 
 if __name__ == "__main__":
     arguments = arg.get_arguments()
-
     connection = db_access.get_connection()
 
     primary_category = db_access.get_primay_category(connection)

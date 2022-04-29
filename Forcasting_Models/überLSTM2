@@ -17,13 +17,6 @@ def r2_score(output, target):
     r2 = 1 - ss_res / ss_tot
     return r2
 
-def r2_score_dim(output, target):
-    target_mean = torch.mean(target, dim=1, keepdim=True)
-    ss_tot = torch.sum((target - target_mean) ** 2, dim=1)
-    ss_res = torch.sum((target - output) ** 2, dim=1)
-    r2 = 1 - (ss_res / (ss_tot + 1e-5))
-    return torch.mean(r2)
-
 
 class Attention(nn.Module):
     def __init__(self, Output_size, n_class, hidden_size):
@@ -31,10 +24,10 @@ class Attention(nn.Module):
         self.Output_size = Output_size
         self.n_hidden = hidden_size
         self.n_class = n_class
-        self.enc_cell = nn.RNN(
+        self.enc_cell = nn.LSTM(
             input_size=self.n_class, hidden_size=self.n_hidden, dropout=0.5
         )
-        self.dec_cell = nn.RNN(
+        self.dec_cell = nn.LSTM(
             input_size=self.n_class, hidden_size=self.n_hidden, dropout=0.5
         )
         self.attn = nn.Linear(self.n_hidden, self.n_hidden)
@@ -63,20 +56,8 @@ class Attention(nn.Module):
             self.pls = self.pls.to(device)
         return self.pls(combine), trained_attn
 
-    def get_att_weight(self, dec_output, enc_outputs):
-        n_step = len(enc_outputs)
-        attn_scores = torch.zeros(n_step)
 
-        for i in range(n_step):
-            attn_scores[i] = self.get_att_score(dec_output, enc_outputs[i])
-        return F.softmax(attn_scores).view(1, 1, -1)
-
-    def get_att_score(self, dec_output, enc_output):
-        score = self.attn(enc_output)
-        return score
-
-
-def LSTM(
+def LSTM2(
     training,
     testing,
     batch_size=32,
@@ -106,6 +87,8 @@ def LSTM(
     print("Gpu status",torch.cuda.is_available())
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     hidden = torch.zeros(num_layers, batch_size, n_hidden)
+    cell = torch.zeros(num_layers, batch_size, n_hidden)
+    cell = cell.to(device)
     hidden = hidden.to(device)
     model = Attention(Output_size, n_class, n_hidden)
     optimizer = torch.optim.Adam(model.parameters(), lr=learningRate)
@@ -123,7 +106,7 @@ def LSTM(
             else:
                 x = x
                 y = y
-            output, _ = model(x, hidden, x)
+            output, _ = model(x, (hidden,cell), x)
             y = y.unsqueeze(-1)
             loss = criterion(output, y)
             loss.backward()
@@ -173,7 +156,7 @@ def LSTM(
             MAE_Scores.append(
                 MAE(output.detach().cpu().numpy(), y.unsqueeze(-1).detach().cpu().numpy())
             )
-            R2_Scores.append(r2_score_dim(output.cpu(), y.unsqueeze(-1).cpu()))
+            R2_Scores.append(r2_score(output.cpu(), y.unsqueeze(-1).cpu()))
     print("Testing finished")
     print("R2 score:", np.mean([x.item() for x in R2_Scores]))
     print("MSE score:", np.mean([x.item() for x in MSE_Scores]))
