@@ -129,7 +129,7 @@ def get_data(arguments, connection, from_date, to_date):
 
     return data
 
-def run_experiments(arguments, connection, from_date, to_date):
+def run_experiments_nn(arguments, connection, from_date, to_date):
     data = get_data(arguments, connection, from_date, to_date)
 
     data_lst = [d.data for d in data]
@@ -143,8 +143,15 @@ def run_experiments(arguments, connection, from_date, to_date):
         if arguments.model == "lstm" or arguments.model == "all":
             print("about to train the lstma model")
             execute_lstm(arguments, data_lst, from_date, to_date, data, connection)
+    else:
+        print("No data was found. Exiting...")
+    
+def run_experiments_stat(arguments, connection, from_date, to_date):
+    data = get_data(arguments, connection, from_date, to_date)
 
+    data_lst = [d.data for d in data]
 
+    if len(data_lst) > 0:
         if arguments.model == "arima" or arguments.model == "all":
             print("about to train the arima model")
             execute_arima(data_lst[0], arguments, from_date, to_date, data, connection)
@@ -169,15 +176,23 @@ if __name__ == "__main__":
 
     if arguments.use_args in ["False", "false", '0']:
         print("\n\nrunning without parameters\n\n")
-        for company in oa.companies:
-            for granularity in oa.granularities:
-                for column in oa.columns:
-                    for period in oa.periods:
-                        arguments, from_date,to_date = oa.overwrite_arguments(arguments, granularity, column, period, company)
-                        run_experiments(arguments, connection, from_date, to_date)
+        for granularity in oa.granularities:
+            if arguments.model in ['lstm', 'informer', 'all']:
+                for column in oa.columns_nn:
+                    for company in oa.companies_nn:
+                        for period in oa.periods_nn:
+                            arguments, from_date,to_date = oa.overwrite_arguments(arguments, granularity, column, period, company)
+                            run_experiments_nn(arguments, connection, from_date, to_date)
+            if arguments.model in ['arima', 'fb', 'all']:
+                for column in oa.columns_stat:
+                    for company in oa.companies_stat:
+                        for period in oa.periods_stat:
+                            arguments, from_date,to_date = oa.overwrite_arguments(arguments, granularity, column, period, company)
+                            run_experiments_stat(arguments, connection, from_date, to_date)
     else:
         print("\n\nrunning with parameters\n\n")
         from_date = "2021-11-20 00:00:00"
         to_date = "2021-12-31 23:59:59"
 
-        run_experiments(arguments, connection, from_date, to_date)
+        run_experiments_nn(arguments, connection, from_date, to_date)
+        run_experiments_stat(arguments, connection, from_date, to_date)
