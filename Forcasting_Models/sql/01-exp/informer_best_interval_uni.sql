@@ -33,12 +33,7 @@ where
     
 order by 
 	model_id,
-	CASE WHEN time_unit='5T' THEN 0
-		 WHEN time_unit='15T' THEN 1
-		 WHEN time_unit='30T' THEN 2
-		 WHEN time_unit='45T' THEN 3
-		 WHEN time_unit='1H' THEN 4
-		 ELSE 5 END,
+	time_unit,
 	data_from,
 	metadata ->> 'columns',
 	used_companies, 

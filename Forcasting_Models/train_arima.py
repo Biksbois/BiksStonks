@@ -13,11 +13,11 @@ import time
 
 def execute_arima(data_lst, arguments, from_date, to_date, data, connection):
     start_time = time.time()
-    for WS in [20, 40, 60]:
+    for WS in [10, 30]:
         mae, mse, r_squared, parameters, forecasts = _train_arima(data_lst, WS)
         duration = time.time() - start_time
         add_to_parameters(arguments, parameters, duration, is_fb_or_arima=True)
-        parameters['WS'] = WS
+        parameters['forecasted_points'] = WS
         db_access.upsert_exp_data(
             "arima",  # model name
             "arima desc",  # model description

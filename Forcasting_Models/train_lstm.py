@@ -7,7 +7,7 @@ import time
 def execute_lstm(arguments, data_lst, from_date, to_date, data, connection):
     for WS in [60, 120]:
         for OS in [10, 30]:
-            for epoch in [10, 20, 30]:
+            for epoch in [1, 15, 30]:
                 start_time = time.time()
                 mae, mse, r_squared, parameters, forecasts = _train_lstma(
                     arguments.columns,
@@ -18,8 +18,8 @@ def execute_lstm(arguments, data_lst, from_date, to_date, data, connection):
                     n_class=len(arguments.columns)
                 )
                 duration = time.time() - start_time
-                parameters["WS"] = WS
-                parameters["OS"] = OS
+                parameters["windows_size"] = WS
+                parameters["forecasted_points"] = OS
 
                 add_to_parameters(arguments, parameters, duration)
 

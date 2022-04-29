@@ -29,8 +29,9 @@ def execute_informer(arguments, data_lst, from_date, to_date, data, connection):
             )
             duration = time.time() - start_time
 
-            parameters["WS"] = WS
-            parameters["OS"] = OS
+            parameters["windows_size"] = WS
+            parameters["forecasted_points"] = OS
+            
             add_to_parameters(arguments, parameters, duration)
             # if arguments.use_args in ["True", "true", "1"]:
             db_access.upsert_exp_data(
