@@ -181,13 +181,15 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
     )
     mae, mse, r_squared = np.mean(mae_l), np.mean(mse_l), np.mean(rs2_l)
     informer_params.df = None
+    informer_params.rs2_intermediate = np.mean(rs2_intermed_l)
+    informer_params.rs2_long = r_squared
     parameters = informer_params
     y_hat = first_pred.reshape(-1)
     y = np.concatenate((in_seq, first_true.reshape(-1)))
     forecast = pd.DataFrame({"y": y, "y_hat": np.nan})
     forecast["y_hat"][in_seq.shape[0] :] = y_hat
 
-    return mae, mse, r_squared, parameters, forecast
+    return mae, mse, np.mean(rs2_intermed_l), parameters, forecast
 
 def r2_score(output, target):
     target_mean = torch.mean(target)
