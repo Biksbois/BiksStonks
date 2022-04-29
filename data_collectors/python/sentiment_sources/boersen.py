@@ -35,7 +35,7 @@ class Boersen:
         self.base_url = "https://api.borsen.dk/nyheder/side"
 
     def start(self):
-        i = 1377
+        i = 1433
         while True:
             articels = self._get_article_dataframe()
             try:

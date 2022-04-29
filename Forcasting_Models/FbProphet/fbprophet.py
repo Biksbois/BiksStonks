@@ -4,9 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import psycopg2 as pg
 import datetime
-from fbprophet import Prophet
-from fbprophet.diagnostics import cross_validation, performance_metrics
-from fbprophet.plot import plot_cross_validation_metric
+
 import time
 from sklearn.metrics import mean_squared_error, r2_score
 from matplotlib import dates as mdates
@@ -28,6 +26,9 @@ import pickle
 
 
 def model_fit(training_set, mcmc_samples=300, yearly_seasonality=False, weekly_seasonality=False, daily_seasonality=False, seasonality_mode='multiplicative'):
+    from fbprophet import Prophet
+    from fbprophet.diagnostics import cross_validation, performance_metrics
+    from fbprophet.plot import plot_cross_validation_metric
     model = Prophet(mcmc_samples=mcmc_samples,
                     seasonality_mode=seasonality_mode,
                     yearly_seasonality=yearly_seasonality, 
@@ -40,6 +41,7 @@ def model_fit(training_set, mcmc_samples=300, yearly_seasonality=False, weekly_s
 
 
 def get_cross_validation(model, initial, period, horizon):
+    from fbprophet.diagnostics import cross_validation, performance_metrics
     return cross_validation(model, initial=initial, period=period, horizon=horizon)
 
 def save_model(model, model_path):
@@ -51,6 +53,7 @@ def save_metrics(metrics, metrics_path):
 
 
 def get_performance_metrics(df):
+    from fbprophet.diagnostics import cross_validation, performance_metrics
     return performance_metrics(df)
 
 def get_future_df(model, period, freq, include_history=False):

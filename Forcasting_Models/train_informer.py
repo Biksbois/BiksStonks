@@ -4,6 +4,7 @@ import numpy as np
 
 import torch
 import torch.nn as nn
+from sklearn.metrics import r2_score as sk_r2_score
 
 sys.path += ["Informer"]
 from Informer.exp.exp_informer import Exp_Informer
@@ -12,11 +13,13 @@ from Informer.utils_in.metrics import metric
 from Informer.parameters import informer_params
 import utils.DatasetAccess as db_access
 from utils.preprocess import add_to_parameters
+import time
 
 
 def execute_informer(arguments, data_lst, from_date, to_date, data, connection):
     for WS in [60, 120]:
         for OS in [10, 30]:
+            start_time = time.time()
             mae, mse, r_squared, parameters, forecasts = _train_informer(
                 arguments,
                 data_lst,
@@ -25,10 +28,11 @@ def execute_informer(arguments, data_lst, from_date, to_date, data, connection):
                 pred_len=OS,
                 epoch=1,
             )
+            duration = time.time() - start_time
 
             parameters["WS"] = WS
             parameters["OS"] = OS
-            add_to_parameters(arguments, parameters)
+            add_to_parameters(arguments, parameters, duration)
             # if arguments.use_args in ["True", "true", "1"]:
             db_access.upsert_exp_data(
                 "informer",  # model name
@@ -115,7 +119,8 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
 
     # test
     print(">>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<".format(setting))
-    mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l, rs2_intermed_l = (
+    mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l, rs2_intermed_l, rs2_sk = (
+        [],
         [],
         [],
         [],
@@ -137,13 +142,20 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
             )
             if i == 0 and j == 0:
                 in_seq = batch_x[0, :, -1].detach().cpu().numpy()
+            
+            rs2_intermed_l.append(
+                r2_score_dim(torch.tensor(pred), torch.tensor(true)).item()
+            )
+            
             pred = pred.detach().cpu().numpy()
             true = true.detach().cpu().numpy()
             preds.append(pred)
             trues.append(true)
-            rs2_intermed_l.append(
-                r2_score(torch.tensor(pred.reshape(-1)), torch.tensor(true.reshape(-1)))
-            )
+            # sklearn r2_score
+            rs2_sk_sum = 0 
+            for k in range(len(pred)):
+                rs2_sk_sum += sk_r2_score(true[k], pred[k])
+            rs2_sk.append(rs2_sk_sum / len(pred))
 
         if i == 0:
             first_pred = preds[0][0, :, 0]
@@ -183,6 +195,7 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
     informer_params.df = None
     informer_params.rs2_intermediate = np.mean(rs2_intermed_l)
     informer_params.rs2_long = r_squared
+    informer_params.rs2_sk_way = np.mean(rs2_sk)
     parameters = informer_params
     y_hat = first_pred.reshape(-1)
     y = np.concatenate((in_seq, first_true.reshape(-1)))
@@ -197,3 +210,10 @@ def r2_score(output, target):
     ss_res = torch.sum((target - output) ** 2)
     r2 = 1 - ss_res / ss_tot
     return r2
+
+def r2_score_dim(output, target):
+    target_mean = torch.mean(target, dim=1, keepdim=True)
+    ss_tot = torch.sum((target - target_mean) ** 2, dim=1)
+    ss_res = torch.sum((target - output) ** 2, dim=1)
+    r2 = 1 - (ss_res / (ss_tot))
+    return torch.mean(r2)

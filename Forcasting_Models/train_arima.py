@@ -5,7 +5,9 @@ from statsmodels.tsa.arima.model import ARIMA
 import statsmodels.api as sm
 import pandas as pd
 from Informer.utils_in.metrics import metric
+import FbProphet.fbprophet as fb
 import utils.DatasetAccess as db_access
+from sklearn.metrics import mean_squared_error, r2_score
 from utils.preprocess import add_to_parameters
 import numpy as np
 from tqdm import tqdm
@@ -83,26 +85,26 @@ def _train_arima(data):
     out_steps=10
     N_test_observations = len(testing)
     test_ = []
+    r2_scores = []
     first = True
-    for i in tqdm(range(0, N_test_observations-out_steps+1), desc="Forecasting with ARIMA..."):
-        for time_point in range(0, N_test_observations-out_steps+1, 10):
-            model = ARIMA(history, order=min_order)
-            model_fit = model.fit()
-            output = model_fit.forecast(steps=out_steps)
-            yhat = output
-            model_predictions.append(yhat)
-            true_test_value = testing.close.iloc[time_point:time_point+out_steps]
-            history.extend(true_test_value)
-            test_.append(true_test_value)
+    for time_point in tqdm(range(0, N_test_observations-out_steps+1, 10), desc="Forecasting with ARIMA..."):
+        model = ARIMA(history, order=min_order)
+        model_fit = model.fit()
+        output = model_fit.forecast(steps=out_steps)
+        yhat = output
+        model_predictions.append(yhat)
+        true_test_value = testing.close.iloc[time_point:time_point+out_steps]
+        history.extend(true_test_value)
+        test_.append(true_test_value)
+        r2_scores.append(r2_score(true_test_value.values,output))
+        if first:
+            forecasts = pd.DataFrame({'time': list(training.date.iloc[-100:]) + list(testing.date.iloc[time_point:time_point+out_steps]),
+                                    'y': list(history[-100:]) + list(true_test_value),
+                                    'y_hat':np.nan 
+            })
 
-            if first:
-                forecasts = pd.DataFrame({'time': list(training.date.iloc[-100:]) + list(testing.date.iloc[time_point:time_point+out_steps]),
-                                        'y': list(history[-100:]) + list(true_test_value),
-                                        'y_hat':np.nan 
-                })
-
-                forecasts['y_hat'][100:] = yhat
-                first = False
+            forecasts['y_hat'][100:] = yhat
+            first = False
     print(forecasts.tail())
     
     test_ = np.asarray(test_)
@@ -111,7 +113,8 @@ def _train_arima(data):
         print("ERROR: model predictions and test data have different shapes")
         print(f"model predictions shape: {model_predictions.shape}")
         print(f"test data shape: {test_.shape}")
-    mae, mse, rmse, mape, mspe, r_squared = metric(model_predictions, test_)
+    mae, mse, rmse, mape, mspe, r2 = metric(model_predictions, test_)
+    r_squared = np.mean(r2_scores)
     # 300, 10
     # 300, 10
     parameters = {
