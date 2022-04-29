@@ -26,7 +26,7 @@ import utils.overwrite_arguments as oa
 from train_lstm import execute_lstm
 from train_arima import execute_arima
 from train_informer import execute_informer
-from train_prophet import execute_prophet
+# from train_prophet import execute_prophet
 
 import os
 import sys
@@ -160,7 +160,8 @@ def run_experiments(arguments, connection, from_date, to_date):
 
 if __name__ == "__main__":
     arguments = arg.get_arguments()
-
+    print("arg:",arguments)
+    print("arg.model:", type(arguments))
     connection = db_access.get_connection()
 
     primary_category = db_access.get_primay_category(connection)
