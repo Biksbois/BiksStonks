@@ -17,6 +17,13 @@ def r2_score(output, target):
     r2 = 1 - ss_res / ss_tot
     return r2
 
+def r2_score_dim(output, target):
+    target_mean = torch.mean(target, dim=1, keepdim=True)
+    ss_tot = torch.sum((target - target_mean) ** 2, dim=1)
+    ss_res = torch.sum((target - output) ** 2, dim=1)
+    r2 = 1 - (ss_res / (ss_tot + 1e-5))
+    return torch.mean(r2)
+
 
 class Attention(nn.Module):
     def __init__(self, Output_size, n_class, hidden_size):
@@ -166,7 +173,7 @@ def LSTM(
             MAE_Scores.append(
                 MAE(output.detach().cpu().numpy(), y.unsqueeze(-1).detach().cpu().numpy())
             )
-            R2_Scores.append(r2_score(output.cpu(), y.unsqueeze(-1).cpu()))
+            R2_Scores.append(r2_score_dim(output.cpu(), y.unsqueeze(-1).cpu()))
     print("Testing finished")
     print("R2 score:", np.mean([x.item() for x in R2_Scores]))
     print("MSE score:", np.mean([x.item() for x in MSE_Scores]))
