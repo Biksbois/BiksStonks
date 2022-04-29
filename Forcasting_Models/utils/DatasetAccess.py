@@ -272,6 +272,10 @@ def get_data_for_attribute(
     from_time="0001-01-01 00:00:00",
     to_time="9999-01-01 00:00:00",
 ):
+    print("---")
+    print(attribute_name)
+    print(attribute_value)
+
     if isinstance(attribute_value, list):
         datasetids = _get_dataset_ids(
             conn, f"{attribute_name} in ({','.join(attribute_value)})"

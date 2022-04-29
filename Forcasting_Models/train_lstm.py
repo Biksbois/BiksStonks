@@ -3,11 +3,12 @@ import pandas as pd
 from überLSTM import LSTM
 from utils.preprocess import add_to_parameters
 import torch.nn as nn
-
+import time
 def execute_lstm(arguments, data_lst, from_date, to_date, data, connection):
     for WS in [60, 120]:
         for OS in [10, 30]:
-            for epoch in [10, 20, 50]:
+            for epoch in [10, 20, 30]:
+                start_time = time.time()
                 mae, mse, r_squared, parameters, forecasts = _train_lstma(
                     arguments.columns,
                     data_lst,
@@ -16,10 +17,11 @@ def execute_lstm(arguments, data_lst, from_date, to_date, data, connection):
                     Epoch=epoch,
                     n_class=len(arguments.columns)
                 )
+                duration = time.time() - start_time
                 parameters["WS"] = WS
                 parameters["OS"] = OS
 
-                add_to_parameters(arguments, parameters)
+                add_to_parameters(arguments, parameters, duration)
 
                 # if arguments.use_args in ["True", "true", "1"]:
                 db_access.upsert_exp_data(

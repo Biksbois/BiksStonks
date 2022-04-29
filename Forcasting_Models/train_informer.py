@@ -12,11 +12,13 @@ from Informer.utils_in.metrics import metric
 from Informer.parameters import informer_params
 import utils.DatasetAccess as db_access
 from utils.preprocess import add_to_parameters
+import time
 
 
 def execute_informer(arguments, data_lst, from_date, to_date, data, connection):
     for WS in [60, 120]:
         for OS in [10, 30]:
+            start_time = time.time()
             mae, mse, r_squared, parameters, forecasts = _train_informer(
                 arguments,
                 data_lst,
@@ -25,10 +27,11 @@ def execute_informer(arguments, data_lst, from_date, to_date, data, connection):
                 pred_len=OS,
                 epoch=1,
             )
+            duration = time.time() - start_time
 
             parameters["WS"] = WS
             parameters["OS"] = OS
-            add_to_parameters(arguments, parameters)
+            add_to_parameters(arguments, parameters, duration)
             # if arguments.use_args in ["True", "true", "1"]:
             db_access.upsert_exp_data(
                 "informer",  # model name
