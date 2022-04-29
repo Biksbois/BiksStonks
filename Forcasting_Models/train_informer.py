@@ -4,6 +4,7 @@ import numpy as np
 
 import torch
 import torch.nn as nn
+from sklearn.metrics import r2_score as sk_r2_score
 
 sys.path += ["Informer"]
 from Informer.exp.exp_informer import Exp_Informer
@@ -118,7 +119,8 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
 
     # test
     print(">>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<".format(setting))
-    mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l, rs2_intermed_l = (
+    mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l, rs2_intermed_l, rs2_sk = (
+        [],
         [],
         [],
         [],
@@ -142,13 +144,18 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
                 in_seq = batch_x[0, :, -1].detach().cpu().numpy()
             
             rs2_intermed_l.append(
-                r2_score_dim(torch.tensor(pred), torch.tensor(true))
+                r2_score_dim(torch.tensor(pred), torch.tensor(true)).item()
             )
             
             pred = pred.detach().cpu().numpy()
             true = true.detach().cpu().numpy()
             preds.append(pred)
             trues.append(true)
+            # sklearn r2_score
+            rs2_sk_sum = 0 
+            for k in range(len(pred)):
+                rs2_sk_sum += sk_r2_score(true[k], pred[k])
+            rs2_sk.append(rs2_sk_sum / len(pred))
 
         if i == 0:
             first_pred = preds[0][0, :, 0]
@@ -188,6 +195,7 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
     informer_params.df = None
     informer_params.rs2_intermediate = np.mean(rs2_intermed_l)
     informer_params.rs2_long = r_squared
+    informer_params.rs2_sk_way = np.mean(rs2_sk)
     parameters = informer_params
     y_hat = first_pred.reshape(-1)
     y = np.concatenate((in_seq, first_true.reshape(-1)))
