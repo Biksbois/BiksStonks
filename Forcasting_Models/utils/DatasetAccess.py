@@ -1,5 +1,7 @@
+from pickle import TRUE
 from pydoc import describe
 from unittest import result
+from webbrowser import get
 import psycopg2 as pg
 from utils.DatabaseConnection import DatabaseConnection
 import utils.preprocess as preprocess
@@ -271,7 +273,8 @@ def get_data_for_attribute(
     interval,
     from_time="0001-01-01 00:00:00",
     to_time="9999-01-01 00:00:00",
-    use_sentiment=False,
+    use_sentiment=True,
+    sentiment_cat=None,
 ):
 
     if isinstance(attribute_value, list):
@@ -284,9 +287,11 @@ def get_data_for_attribute(
         )
 
     company_data = []
-    print(use_sentiment)
-    if use_sentiment in [True, "True", "true", "TRUE"]:	
+    if use_sentiment in [True, "True", "true", "TRUE"] and sentiment_cat is None:
         sentiment = get_sentiment(from_time, to_time, conn, interval)
+    else:
+        sentiments = get_sentiments(from_time, to_time, conn, interval)
+
 
     for i in range(len(datasetids)):
         datasetid = datasetids.iloc[i]["identifier"]
@@ -296,11 +301,23 @@ def get_data_for_attribute(
         company_data.append(DataObj(data, datasetid, description))
 
     for company in company_data:
-        if use_sentiment in [True, "True", "true", "TRUE"]:
+        if use_sentiment in [True, "True", "true", "TRUE"] and sentiment_cat is None:
             company.data = company.data.merge(sentiment, how="left", on="date")
             company.data = company.data.fillna(method="ffill")
-
+        else:
+            for cat in sentiments:
+                date = company.data['date'].tolist()[0]
+                PastDates = [x for x in cat['date'].tolist() if x < date]
+                nearest = get_nearest(PastDates, date)
+                value = cat[cat['date'] == nearest][cat.columns[1]].tolist()[0]
+                row = [date, value]
+                cat.loc[-1] = row
+                company.data = company.data.merge(cat, how="left", on="date")
+                company.data = company.data.fillna(method="ffill")
     return company_data
+
+def get_nearest(items, pivot):
+    return min(items, key=lambda x: abs(x - pivot))
 
 def get_graph_for_id(id, conn):
     df = pd.read_sql_query(
@@ -335,6 +352,39 @@ def get_data_for_datasetid(
 
 def get_sentiment(from_time, to_time, conn, interval):
     df = pd.read_sql_query(f"select release_date, compound from sentiment where release_date between '{from_time}' and '{to_time}'", conn)
+    df["release_date"] = pd.to_datetime(df['release_date'])
+    df=df.rename(columns={"release_date":"date"})
+    datetime_index = pd.DatetimeIndex(df.date)
+    df=df.set_index(datetime_index)
+    df = preprocess.resample_data_to_interval(interval, df, {"compound": "mean"})
+    return df
+
+def get_sentiments(from_time, to_time, conn, interval, category = None, cutoff = 2000):
+    if category is None:
+        category = get_sentiment_categories(conn)
+    category = category["category"].tolist()
+        
+    result = []
+    for cat in category:
+        if get_sentiment_count(conn, cat) < cutoff:
+            print(f"cutoff reached: {cat}")
+            continue
+        result.append(get_sentiment_from_cat(from_time,to_time,conn,interval,cat).rename(columns={"release_date":"date", "compound":cat}))
+    return result
+
+
+def get_sentiment_categories(conn):
+    df = pd.read_sql_query("select category from sentiment_dataset", conn)
+    return df
+
+def get_sentiment_count(conn, category):
+    df = pd.read_sql_query(f"select count(*) from sentiment where sentiment.datasetid = (select id from sentiment_dataset where category = '{category}')", conn)
+    return df["count"].iloc[0]
+
+def get_sentiment_from_cat(from_time, to_time,conn, interval, category):
+    from_time = datetime.datetime.strptime(from_time, "%Y-%m-%d %H:%M:%S")- datetime.timedelta(days=365)
+    from_time = from_time.strftime("%Y-%m-%d %H:%M:%S")
+    df = pd.read_sql_query(f"select release_date, compound from sentiment where sentiment.datasetid = (select id from sentiment_dataset where category = '{category}')", conn)
     df["release_date"] = pd.to_datetime(df['release_date'])
     df=df.rename(columns={"release_date":"date"})
     datetime_index = pd.DatetimeIndex(df.date)
