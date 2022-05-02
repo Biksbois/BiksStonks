@@ -184,6 +184,20 @@ def _upsert_score(
     columns,
     cur,
 ):
+    print(type(model_id), model_id)
+    print(type(executed_time), executed_time)
+    print(type(float(mae)), float(mae))
+    print(type(float(mse)), float(mse))
+    print(type(float(r_squared)), float(r_squared))
+    print(type(data_from), data_from)
+    print(type(data_to), data_to)
+    print(type(time_unit), time_unit)
+    print(type(forecasted_company), forecasted_company)
+    print(type(json.dumps(metadata)), json.dumps(metadata))
+    print(type(used_sentiment), used_sentiment)
+    print(type(used_companies), used_companies)
+    print(type(columns), columns)
+
     cur.callproc(
         "upsert_score",
         (

@@ -15,7 +15,7 @@ import time
 
 def execute_arima(data_lst, arguments, from_date, to_date, data, connection):
     start_time = time.time()
-    for WS in [10, 30]:
+    for WS in [1]: #[10, 30]:
         mae, mse, r_squared, parameters, forecasts = _train_arima(data_lst, WS)
         duration = time.time() - start_time
         add_to_parameters(arguments, parameters, duration, is_fb_or_arima=True)
@@ -39,7 +39,7 @@ def execute_arima(data_lst, arguments, from_date, to_date, data, connection):
         )
 
 
-def _train_arima(data):
+def _train_arima(data, WS):
     #Normalize the pandas dataframe 
     from utils.preprocess import StandardScaler
     scaler = StandardScaler()
@@ -85,12 +85,12 @@ def _train_arima(data):
     forecasts = pd.DataFrame(columns=["time", "y", "y_hat"])
     forecasts["time"] = training["date"][-100:]
     forecasts["y"] = training["close"][-100:]
-    out_steps=10
+    out_steps=WS
     N_test_observations = len(testing)
     test_ = []
     r2_scores = []
     first = True
-    for time_point in tqdm(range(0, N_test_observations-out_steps+1, 10), desc="Forecasting with ARIMA..."):
+    for time_point in tqdm(range(0, N_test_observations-out_steps+1, WS), desc="Forecasting with ARIMA..."):
         model = ARIMA(history, order=min_order)
         model_fit = model.fit()
         output = model_fit.forecast(steps=out_steps)
@@ -101,12 +101,13 @@ def _train_arima(data):
         test_.append(true_test_value)
         r2_scores.append(r2_score(true_test_value.values,output))
         if first:
-            forecasts = pd.DataFrame({'time': list(training.date.iloc[-100:]) + list(testing.date.iloc[time_point:time_point+out_steps]),
-                                    'y': list(history[-100:]) + list(true_test_value),
+            history_lengt = min(100, len(list(history[-100:])), len(list(training.date.iloc[-100:])))
+            forecasts = pd.DataFrame({'time': list(training.date.iloc[-history_lengt:]) + list(testing.date.iloc[time_point:time_point+out_steps]),
+                                    'y': list(history[-history_lengt:]) + list(true_test_value),
                                     'y_hat':np.nan 
             })
 
-            forecasts['y_hat'][100:] = yhat
+            forecasts['y_hat'][history_lengt:] = yhat
             first = False
     print(forecasts.tail())
     
