@@ -13,31 +13,34 @@ import time
 
 def execute_prophet(arguments, data_lst, from_date, to_date, data, connection):
     start_time = time.time()
-    mae, mse, r_squared, parameters, forecasts = _train_prophet(
-        arguments, data_lst, arguments.columns[0]
-    )
-    duration = time.time() - start_time
-    add_to_parameters(arguments, parameters, duration, is_fb_or_arima=True)
-    # if arguments.use_args in ["True", "true", "1"]:
-    db_access.upsert_exp_data(
-        "prophet",  # model name
-        "prophet desc",  # model description
-        mae,  # mae
-        mse,  # mse
-        r_squared,  # r^2
-        from_date,  # data from
-        to_date,  # data to
-        arguments.timeunit,  # time unit
-        data[0].id,  # company name
-        parameters,  # model parameters
-        arguments.use_sentiment,  # use sentiment
-        [d.id for d in data],  # used companies
-        arguments.columns,  # used columns
-        forecasts,
-        connection,
-    )
+    for os in [10, 30]:
+        mae, mse, r_squared, parameters, forecasts = _train_prophet(
+            arguments, data_lst, arguments.columns[0], os
+        )
+        duration = time.time() - start_time
+        add_to_parameters(arguments, parameters, duration, is_fb_or_arima=True)
 
-def _train_prophet(arguments, data, column):
+        parameters['forecasted_points'] = os
+        # if arguments.use_args in ["True", "true", "1"]:
+        db_access.upsert_exp_data(
+            "prophet",  # model name
+            "prophet desc",  # model description
+            mae,  # mae
+            mse,  # mse
+            r_squared,  # r^2
+            from_date,  # data from
+            to_date,  # data to
+            arguments.timeunit,  # time unit
+            data[0].id,  # company name
+            parameters,  # model parameters
+            arguments.use_sentiment,  # use sentiment
+            [d.id for d in data],  # used companies
+            arguments.columns,  # used columns
+            forecasts,
+            connection,
+        )
+
+def _train_prophet(arguments, data, column, os):
 
     parameters = {
         "seasonality_mode": arguments.seasonality_mode,
@@ -60,28 +63,28 @@ def _train_prophet(arguments, data, column):
     # data['ds'] = pd.to_datetime(data["ds"].dt.strftime('%Y/%m/%d-%H:%M:%S'))
     data[data.columns[1:]] = data[data.columns[1:]].apply(lambda x : (x - x.mean()) / x.std(), axis=0)
     training, testing = preprocess.get_split_data(data)
-    result_path = "./FbProphet/Iteration/"
-    if not os.path.exists(result_path):
-        os.makedirs(result_path)
-    date_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    iteration = result_path + date_time + "/"
-    if not os.path.exists(iteration):
-        os.makedirs(iteration)
+    # result_path = "./FbProphet/Iteration/"
+    # if not os.path.exists(result_path):
+    #     os.makedirs(result_path)
+    # date_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    # iteration = result_path + date_time + "/"
+    # if not os.path.exists(iteration):
+    #     os.makedirs(iteration)
 
 
     model = fb.model_fit(
         training,
+        mcmc_samples=100,
         yearly_seasonality=arguments.yearly_seasonality,
         weekly_seasonality=arguments.weekly_seasonality,
         daily_seasonality=arguments.daily_seasonality,
         seasonality_mode=arguments.seasonality_mode,
     )
-    fb.save_model(model, iteration + "model")
+    # fb.save_model(model, iteration + "model")
     print("model has been trained, now predicting..")
-
     future = fb.get_future_df(
         model,
-        period=len(testing),
+        period=os,
         freq=arguments.timeunit,
         include_history=arguments.include_history,
     )
@@ -92,12 +95,12 @@ def _train_prophet(arguments, data, column):
     print(data.head())
     print(data.tail())
 
-    forecast = fb.make_prediction(
-        model,
-        future,
-    )
-    print("prediction has been made, now saving..")
-    fb.save_metrics(forecast, iteration + "forecast.csv")
+    # forecast = fb.make_prediction(
+    #     model,
+    #     future,
+    # )
+
+    # fb.save_metrics(forecast, iteration + "forecast.csv")
     print("metrics have been saved, now performing cross eval..")
     cross_validation = fb.get_cross_validation(
         model,
@@ -105,6 +108,7 @@ def _train_prophet(arguments, data, column):
         period=arguments.period,
         horizon=arguments.horizon,
     )
+    print("prediction has been made, now saving..")
     print("cross validation has been performed, now saving..")
     forecasts = cross_validation[["ds", "y", "yhat"]].copy()
     forecasts = forecasts.rename(columns={"yhat": "y_hat", "ds": "time"})

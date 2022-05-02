@@ -2,26 +2,24 @@ select distinct on (
 	model_id, 
 	metadata ->> 'columns',
 	data_from,
-	time_unit
+	data_to
+	-- time_unit
 ) 
 	data_from,
 	data_to,
 	time_unit,
+	model_id,
 	round(r_squared, 4 ) as rsquared,
 	round(mse, 4 ) as mse,
 	round(mae, 4 ) as mae,
-	model_id,
+	metadata ->> 'forecasted_points' as forecasted_points,
+	metadata ->> 'windows_size' as windows_size,
 	metadata ->> 'columns' as columns,	
-	metadata ->> 'forecasted_points' as windows_size,
 	used_companies
 from score
 where
-	not time_unit in ('12H', '1D') and
-	model_id = 10 AND (
+	not time_unit in ('12H', '1D')  AND (
         (
-            'Sydbank A/S' =  ANY(used_companies) and 
-            cardinality(used_companies) = 1
-        ) OR (
             'Sydbank A/S' =  ANY(used_companies) and 
             'Danske Bank A/S' =  ANY(used_companies) and 
             'Jyske Bank A/S' =  ANY(used_companies) and 
@@ -29,12 +27,14 @@ where
         )
     ) AND
 	data_to in ('2021-04-01T00:00:00', '2018-04-01T00:00:00') AND
-	cardinality(columns) = 1
-    
+	cardinality(columns) > 1 AND
+    not metadata ->> 'forecasted_points' is null AND
+	time_unit = '1H' AND
+	metadata ->> 'forecasted_points' = '30'
 order by 
-	model_id,
-	time_unit,
+	model_id, 
 	data_from,
+	data_to,
 	metadata ->> 'columns',
 	used_companies, 
 	r_squared desc
