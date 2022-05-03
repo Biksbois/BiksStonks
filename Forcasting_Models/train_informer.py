@@ -18,7 +18,7 @@ import time
 
 def execute_informer(arguments, data_lst, from_date, to_date, data, connection):
     for WS in [60, 120]:
-        for OS in [10, 30]:
+        for OS in [1]: #[10, 30]:
             start_time = time.time()
             mae, mse, r_squared, parameters, forecasts = _train_informer(
                 arguments,
@@ -30,8 +30,9 @@ def execute_informer(arguments, data_lst, from_date, to_date, data, connection):
             )
             duration = time.time() - start_time
 
-            parameters["WS"] = WS
-            parameters["OS"] = OS
+            parameters["windows_size"] = WS
+            parameters["forecasted_points"] = OS
+            
             add_to_parameters(arguments, parameters, duration)
             # if arguments.use_args in ["True", "true", "1"]:
             db_access.upsert_exp_data(
@@ -193,16 +194,16 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
     )
     mae, mse, r_squared = np.mean(mae_l), np.mean(mse_l), np.mean(rs2_l)
     informer_params.df = None
-    informer_params.rs2_intermediate = np.mean(rs2_intermed_l)
-    informer_params.rs2_long = r_squared
-    informer_params.rs2_sk_way = np.mean(rs2_sk)
+    informer_params.rs2_intermediate = np.mean(rs2_intermed_l) if np.abs(np.mean(rs2_intermed_l)) < 100 else -1000 
+    informer_params.rs2_long = r_squared if np.abs(r_squared) < 100 else -1000 
+    informer_params.rs2_sk_way = np.mean(rs2_sk) if np.abs(np.mean(rs2_sk)) < 100 else -1000 
     parameters = informer_params
     y_hat = first_pred.reshape(-1)
     y = np.concatenate((in_seq, first_true.reshape(-1)))
     forecast = pd.DataFrame({"y": y, "y_hat": np.nan})
     forecast["y_hat"][in_seq.shape[0] :] = y_hat
 
-    return mae, mse, np.mean(rs2_intermed_l), parameters, forecast
+    return mae, mse, informer_params.rs2_sk_way, parameters, forecast
 
 def r2_score(output, target):
     target_mean = torch.mean(target)
@@ -215,5 +216,5 @@ def r2_score_dim(output, target):
     target_mean = torch.mean(target, dim=1, keepdim=True)
     ss_tot = torch.sum((target - target_mean) ** 2, dim=1)
     ss_res = torch.sum((target - output) ** 2, dim=1)
-    r2 = 1 - (ss_res / (ss_tot))
+    r2 = 1 - (ss_res / (ss_tot + 1e-5))
     return torch.mean(r2)

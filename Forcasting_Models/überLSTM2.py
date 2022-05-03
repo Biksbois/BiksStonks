@@ -150,7 +150,7 @@ def LSTM2(
             else:
                 x = x
                 y = y
-            output, _ = model(x, hidden, x)
+            output, _ = model(x, (hidden, cell), x)
             plots.append((x.cpu(), (y.cpu(), output.squeeze(-1).cpu())))  # (actual, (y, y_hat))
             MSE_Scores.append(criterion(output.cpu(), y.unsqueeze(-1).cpu()))
             MAE_Scores.append(

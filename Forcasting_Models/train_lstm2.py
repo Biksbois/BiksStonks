@@ -1,15 +1,15 @@
 import utils.DatasetAccess as db_access
 import pandas as pd
-from überLSTM import LSTM
+from überLSTM2 import LSTM2
 from utils.preprocess import add_to_parameters
 import torch.nn as nn
 import time
-def execute_lstm(arguments, data_lst, from_date, to_date, data, connection):
+def execute_lstm2(arguments, data_lst, from_date, to_date, data, connection):
     for WS in [60, 120]:
         for OS in [1]: #[10, 30]:
             for epoch in [1, 15, 30]:
                 start_time = time.time()
-                mae, mse, r_squared, parameters, forecasts = _train_lstma(
+                mae, mse, r_squared, parameters, forecasts = _train_lstma2(
                     arguments.columns,
                     data_lst,
                     window_size=WS + OS,
@@ -25,8 +25,8 @@ def execute_lstm(arguments, data_lst, from_date, to_date, data, connection):
 
                 # if arguments.use_args in ["True", "true", "1"]:
                 db_access.upsert_exp_data(
-                    "lstm",  # model name
-                    "lstm desc",  # model description
+                    "lstm2",  # model name
+                    "lstm2 desc",  # model description
                     mae,  # mae
                     mse,  # mse
                     r_squared,  # r^2
@@ -42,7 +42,7 @@ def execute_lstm(arguments, data_lst, from_date, to_date, data, connection):
                     connection,
                 )
 
-def _train_lstma(
+def _train_lstma2(
     columns,
     data,
     window_size=100,
@@ -66,7 +66,7 @@ def _train_lstma(
 
     criterion = nn.MSELoss()
     print("training model...")
-    model, r2, mse, mae, plots = LSTM(
+    model, r2, mse, mae, plots = LSTM2(
         train_set,
         test_set,
         batch_size,

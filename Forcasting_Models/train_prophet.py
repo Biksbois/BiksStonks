@@ -12,11 +12,13 @@ import time
 
 
 def execute_prophet(arguments, data_lst, from_date, to_date, data, connection):
+    start_time = time.time()
     for os in [10, 30]:
         mae, mse, r_squared, parameters, forecasts = _train_prophet(
             arguments, data_lst, arguments.columns[0], os
         )
-        add_to_parameters(arguments, parameters, is_fb_or_arima=True)
+        duration = time.time() - start_time
+        add_to_parameters(arguments, parameters, duration, is_fb_or_arima=True)
 
         parameters['forecasted_points'] = os
         # if arguments.use_args in ["True", "true", "1"]:
@@ -72,6 +74,7 @@ def _train_prophet(arguments, data, column, os):
 
     model = fb.model_fit(
         training,
+        mcmc_samples=100,
         yearly_seasonality=arguments.yearly_seasonality,
         weekly_seasonality=arguments.weekly_seasonality,
         daily_seasonality=arguments.daily_seasonality,

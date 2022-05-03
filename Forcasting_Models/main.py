@@ -24,6 +24,7 @@ from statsmodels.tsa.arima.model import ARIMA
 import utils.overwrite_arguments as oa
 
 from train_lstm import execute_lstm
+from train_lstm2 import execute_lstm2
 from train_arima import execute_arima
 from train_informer import execute_informer
 from train_prophet import execute_prophet
@@ -148,6 +149,10 @@ def run_experiments_nn(arguments, connection, from_date, to_date):
         if arguments.model == 'iwataSimple' or arguments.model == 'all':
             print("about to train the iwata model")
             execute_iwata_simple(arguments, data_lst, from_date, to_date, data, connection)
+            
+        if arguments.model == "lstm2" or arguments.model == "all":
+            print("about to train the lstma2 model")
+            execute_lstm2(arguments, data_lst, from_date, to_date, data, connection)
     else:
         print("No data was found. Exiting...")
     
@@ -160,7 +165,6 @@ def run_experiments_stat(arguments, connection, from_date, to_date):
         if arguments.model == "arima" or arguments.model == "all":
             print("about to train the arima model")
             execute_arima(data_lst[0], arguments, from_date, to_date, data, connection)
-
 
         if arguments.model == "fb" or arguments.model == "all":
             print("about to train the fb prophet model")
