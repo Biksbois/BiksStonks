@@ -1,8 +1,6 @@
 import os
 from sktime.datasets import load_from_tsfile_to_dataframe
 
-with open('data_list.csv', 'r') as f:
-    data_list = f.read().splitlines()
 
 def preprocess_ts(filename, x, y, dataset_name, seq_len=100):
     with open(filename, 'w') as f:
@@ -22,6 +20,8 @@ def preprocess_ts(filename, x, y, dataset_name, seq_len=100):
 def preprocess_iwata(data_list_path='data_list.csv', 
                      out_ds_path='preprocessed_iwata_ds', 
                      original_ds_path='Univariate_ts'):
+    with open(data_list_path, 'r') as f:
+        data_list = f.read().splitlines()
     # makedir if not exists 
     root_path = out_ds_path
     DATA_PATH = original_ds_path

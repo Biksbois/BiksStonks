@@ -9,7 +9,7 @@ def get_arguments():
         type=str,
         default="all",
         help="Model to use",
-        choices=["all", "fb", "informer", "lstm", "arima"],
+        choices=["all", "fb", "informer", "lstm", "arima", "iwataSimple"],
     )
     parser.add_argument("--primarycategory", nargs="+", required=False)
     parser.add_argument("--secondarycategory", nargs="+", required=False)

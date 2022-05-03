@@ -27,6 +27,7 @@ from train_lstm import execute_lstm
 from train_arima import execute_arima
 from train_informer import execute_informer
 from train_prophet import execute_prophet
+from train_iwata_simple import execute_iwata_simple
 
 import os
 import sys
@@ -143,6 +144,10 @@ def run_experiments_nn(arguments, connection, from_date, to_date):
         if arguments.model == "lstm" or arguments.model == "all":
             print("about to train the lstma model")
             execute_lstm(arguments, data_lst, from_date, to_date, data, connection)
+
+        if arguments.model == 'iwataSimple' or arguments.model == 'all':
+            print("about to train the iwata model")
+            execute_iwata_simple(arguments, data_lst, from_date, to_date, data, connection)
     else:
         print("No data was found. Exiting...")
     

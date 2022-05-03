@@ -24,6 +24,7 @@ Forcasting_Models/results
 Forcasting_Models/informer_checkpoints
 Forcasting_Models/Informer/results 
 Forcasting_Models/Informer/informer_checkpoints
+Forcasting_Models/iwata_checkpoints
 
 # Distribution / packaging
 .Python

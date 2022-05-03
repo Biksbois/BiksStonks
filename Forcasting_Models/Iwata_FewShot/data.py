@@ -4,7 +4,7 @@ import pandas as pd
 import random
 import os 
 
-from utils import StandardScaler
+from utils_in.tools import StandardScaler
 from utils_iwata.preprocess import preprocess_iwata
 from sktime.datasets import load_from_tsfile_to_dataframe
 
@@ -50,7 +50,7 @@ class IWATA_Classification_Sampler(Dataset):
         train_idx = random.sample(range(idx_end), self.S_N)
         # sample train_tasks for support set
         sup_tasks = random.sample(range(self.split[0]), self.S_N)
-        if self.flag == 'TEST':
+        if self.flag == 'test':
             # sample indexes for target tasks
             target_idx = random.sample(range(idx_end), self.Q_N)
             # sample target tasks for query set
@@ -93,7 +93,7 @@ class IWATA_Classification_Sampler(Dataset):
             x, y = load_from_tsfile_to_dataframe(path)
             support_tasks.append(x)
 
-        if self.flag == 'TEST':
+        if self.flag == 'test':
             query_tasks = []
             for data in self.target_tasks:
                 root_path = 'preprocessed_iwata_ds/'
@@ -106,28 +106,36 @@ class IWATA_Classification_Sampler(Dataset):
 
 class Iwata_Dataset_DB_Stock(Dataset):
     def __init__(self, conn, S_N, Q_N, sup_stck_ids=None, q_stck_ids=None, flag='train', size=None, 
-                 features='M', data_path='ETTh1.csv', 
-                 target='close', scale=True, inverse=False,):
+                 features='M', data_path='ETTh1.csv', target='close', scale=True, inverse=False,
+                 companyID=None, hasTargetDF=False, targetDF=None, seed=0, freq='1T'):
         # size [seq_len, label_len, pred_len]
         # info
         assert len(size)==3
         # init
         assert flag in ['train', 'test']
+        self.flag = flag
         type_map = {'train':0, 'test':1}
         self.set_type = type_map[flag]
+
+        # seed 
+        random.seed(seed)
+        np.random.seed(seed) # also works for pandas
         
         self.agg = {'open': 'first',
         'high': 'max', 
         'low': 'min', 
         'close': 'last',
         'volume': 'sum'}
-        self.freq = '1T'
+        self.freq = freq
         self.S_N = S_N
         self.Q_N = Q_N
         self.features = features
         self.target = target
         self.scale = scale
         self.inverse = inverse
+        self.companyID = companyID
+        self.hasTargetDF = hasTargetDF
+        self.targetDF = targetDF
         self.seq_len = size[0]
         self.label_len = size[1]
         self.pred_len = size[2] 
@@ -156,7 +164,14 @@ class Iwata_Dataset_DB_Stock(Dataset):
                                     GROUP BY dataset.identifier, dataset.description\
                                     HAVING COUNT(close) > 10000;', conn)
         S_stock_meta = stock_meta.sample(n=self.S_N)
-        Q_stock_meta = stock_meta.sample(n=self.Q_N)
+        if self.companyID:
+            pass 
+            Q_stock_meta = pd.read_sql(f'SELECT dataset.identifier as id, description as name, count(close) as points\
+                  FROM stock JOIN dataset ON stock.identifier=dataset.identifier\
+                  WHERE stock.identifier = {int(self.companyID)}\
+                  GROUP BY dataset.identifier, dataset.description', conn)
+        else:
+            Q_stock_meta = stock_meta.sample(n=self.Q_N)
 
         # read data
         '''
@@ -168,7 +183,10 @@ class Iwata_Dataset_DB_Stock(Dataset):
             self.S_dfs.append(self.__stock_id_to_df__(s_id, conn, self.freq))
 
         for q_id in Q_stock_meta.id:
-            self.Q_dfs.append(self.__stock_id_to_df__(q_id, conn, self.freq))
+            if self.hasTargetDF: 
+                self.Q_dfs.append(self.targetDF)
+            else:
+                self.Q_dfs.append(self.__stock_id_to_df__(q_id, conn, self.freq))
         
         # only tuned for Q_N = 1
         cols = list(self.Q_dfs[0].columns); cols.remove(self.target); cols.remove('date')
@@ -209,22 +227,35 @@ class Iwata_Dataset_DB_Stock(Dataset):
         self.data_y = self.Q_dfs_x[0][:, -1]
     
     def __getitem__(self, index):
-        s_begin = index
-        s_end = s_begin + self.seq_len
-        r_begin = s_end
-        r_end = r_begin + self.pred_len        
 
+        if self.flag == 'train':
+            # in training sample targets from support series
+            Q_dfs_x = random.choice(self.S_dfs_x) 
+            end = len(Q_dfs_x) - self.label_len - self.pred_len
+            s_begin = random.randint(0, end)
+            s_end = s_begin + self.seq_len
+            q_seq_x = Q_dfs_x[s_begin:s_end]
+            if self.features == 'MS':
+                q_seq_y = Q_dfs_x[s_end:s_end+self.pred_len][-1][-1] # last value of the target
+            else:
+                q_seq_y = Q_dfs_x[0][s_end:s_end+self.pred_len][-1]
+            
         # check date for all support set is < query index data
         # query_date = self.Q_dfs[0].iloc[index]['date']
         # for i in range(self.S_N):
         #     s_date = self.S_dfs[i].iloc[0]['date']
         #     # check support set date - 
-
-        q_seq_x = self.Q_dfs_x[0][s_begin:s_end]
-        if self.features == 'MS':
-            q_seq_y = self.Q_dfs_x[0][r_begin:r_end][-1][-1] # last value of the target
-        else:
-            q_seq_y = self.Q_dfs_x[0][r_begin:r_end][-1]
+        else: # TEST 
+            s_begin = index
+            s_end = s_begin + self.seq_len
+            r_begin = s_end
+            r_end = r_begin + self.pred_len        
+            Q_dfs_x = self.Q_dfs_x[0]
+            q_seq_x = Q_dfs_x[s_begin:s_end]
+            if self.features == 'MS':
+                q_seq_y = Q_dfs_x[r_begin:r_end][-1][-1] # last value of the target
+            else:
+                q_seq_y = Q_dfs_x[0][r_begin:r_end][-1]
         
         # randomly sample support sequence for each support timeseries 
         # (only works for Q_N = 1)
