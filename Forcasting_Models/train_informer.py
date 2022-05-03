@@ -19,39 +19,40 @@ import time
 def execute_informer(arguments, data_lst, from_date, to_date, data, connection):
     for WS in [60, 120]:
         for OS in [1]: #[10, 30]:
-            start_time = time.time()
-            mae, mse, r_squared, parameters, forecasts = _train_informer(
-                arguments,
-                data_lst,
-                arguments.columns,
-                seq_len=WS,
-                pred_len=OS,
-                epoch=1,
-            )
-            duration = time.time() - start_time
+            for epoch in [10, 1, 30]:
+                start_time = time.time()
+                mae, mse, r_squared, parameters, forecasts = _train_informer(
+                    arguments,
+                    data_lst,
+                    arguments.columns,
+                    seq_len=WS,
+                    pred_len=OS,
+                    epoch=epoch,
+                )
+                duration = time.time() - start_time
 
-            parameters["windows_size"] = WS
-            parameters["forecasted_points"] = OS
-            
-            add_to_parameters(arguments, parameters, duration)
-            # if arguments.use_args in ["True", "true", "1"]:
-            db_access.upsert_exp_data(
-                "informer",  # model name
-                "informer desc",  # model description
-                mae,  # mae
-                mse,  # mse
-                r_squared,  # r^2
-                from_date,  # data from
-                to_date,  # data to
-                arguments.timeunit,  # time unit
-                data[0].id,  # company name
-                parameters,  # model parameters
-                arguments.use_sentiment,  # use sentiment
-                [d.id for d in data],  # used companies
-                arguments.columns,  # used columns
-                forecasts,
-                connection,
-            )
+                parameters["windows_size"] = WS
+                parameters["forecasted_points"] = OS
+                
+                add_to_parameters(arguments, parameters, duration)
+                # if arguments.use_args in ["True", "true", "1"]:
+                db_access.upsert_exp_data(
+                    "informer",  # model name
+                    "informer desc",  # model description
+                    mae,  # mae
+                    mse,  # mse
+                    r_squared,  # r^2
+                    from_date,  # data from
+                    to_date,  # data to
+                    arguments.timeunit,  # time unit
+                    data[0].id,  # company name
+                    parameters,  # model parameters
+                    arguments.use_sentiment,  # use sentiment
+                    [d.id for d in data],  # used companies
+                    arguments.columns,  # used columns
+                    forecasts,
+                    connection,
+                )
 
 
 def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch=None):
@@ -61,7 +62,6 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
     informer_params.seq_len = seq_len
     informer_params.label_len = seq_len
     informer_params.pred_len = pred_len
-    informer_params.train_epochs = 1
     informer_params.target = columns[0]
     informer_params.cols = columns
     informer_params.enc_in = len(columns) # encoder input size # ohlc + volume + [trade_count, vwap]
@@ -173,7 +173,13 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
         rmse_l.append(rmse)
         mape_l.append(mape)
         mspe_l.append(mspe)
-        rs2_l.append(r_squared)
+        rs2_l.append(sk_r2_score(trues, preds))
+
+        print(f'Metrics On Stock {i}/{num_of_stocks}')
+        print(
+        f"Metrics: MAE {mae_l[-1]:.2f}, MSE {mse_l[-1]:.2f}, RMSE {rmse_l[-1]:.2f}, MAPE {mape_l[-1]:.2f},\
+          MSPE {mspe_l[-1]:.2f}, R2 {rs2_l[-1]:.2f}, R2_intermed {rs2_intermed_l[-1]:.2f}, R2_sk {rs2_sk[-1]:.2f}"
+        )
 
     torch.cuda.empty_cache()
 
@@ -197,13 +203,16 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
     informer_params.rs2_intermediate = np.mean(rs2_intermed_l) if np.abs(np.mean(rs2_intermed_l)) < 100 else -1000 
     informer_params.rs2_long = r_squared if np.abs(r_squared) < 100 else -1000 
     informer_params.rs2_sk_way = np.mean(rs2_sk) if np.abs(np.mean(rs2_sk)) < 100 else -1000 
+    informer_params.train_epochs = epochs 
     parameters = informer_params
     y_hat = first_pred.reshape(-1)
     y = np.concatenate((in_seq, first_true.reshape(-1)))
     forecast = pd.DataFrame({"y": y, "y_hat": np.nan})
     forecast["y_hat"][in_seq.shape[0] :] = y_hat
 
-    return mae, mse, informer_params.rs2_sk_way, parameters, forecast
+    r2 = r_squared if informer_params.pred_len == 1 else informer_params.rs2_sk_way
+
+    return mae, mse, r2, parameters, forecast
 
 def r2_score(output, target):
     target_mean = torch.mean(target)
