@@ -6,7 +6,6 @@ import os
 
 from utils_in.tools import StandardScaler
 from utils_iwata.preprocess import preprocess_iwata
-from sktime.datasets import load_from_tsfile_to_dataframe
 
 class IWATA_Classification_Sampler(Dataset):
     def __init__(self, root_path, seq_len, pred_len, num_samples, flag, 
@@ -85,6 +84,7 @@ class IWATA_Classification_Sampler(Dataset):
             
     
     def __read_data(self):
+        from sktime.datasets import load_from_tsfile_to_dataframe
         support_tasks = []
         query_tasks = None
         for data in self.train_tasks:
