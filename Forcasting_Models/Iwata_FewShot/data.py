@@ -5,7 +5,6 @@ import random
 import os 
 
 from utils_in.tools import StandardScaler
-from utils_iwata.preprocess import preprocess_iwata
 
 class IWATA_Classification_Sampler(Dataset):
     def __init__(self, root_path, seq_len, pred_len, num_samples, flag, 
