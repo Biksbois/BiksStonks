@@ -66,6 +66,7 @@ def _train_iwata_simple(arguments, data_lst, columns, target_id, connection,
     print("Training Iwata Simple 1 timepoint predictor")
     epochs = epoch
     iwata_params = dotdict()
+    iwata_params.columns = columns
     iwata_params.bidirectional = True
     iwata_params.seq_len = seq_len 
     iwata_params.enc_in = len(columns)
@@ -97,9 +98,15 @@ def _train_iwata_simple(arguments, data_lst, columns, target_id, connection,
     num_of_stocks = len(data_lst)
     time_now = time.time()
     total_epochs = epochs * num_of_stocks
+    min_len = int(((iwata_params.seq_len + iwata_params.pred_len) / 30) * 100) + 1
     for epoch in range(epochs):
         for i, df in enumerate(data_lst):
             target_df = df 
+
+            if len(df) < min_len:
+                print("SKIPPINT TRAINING stock {} / {} because it is too short".format(i, num_of_stocks))
+                print(f'Min length: {min_len} | Stock length {len(df)}')
+                continue
 
             print(
                 ">>>>> Training on stock {}/{} | epoch {}".format(
@@ -110,7 +117,8 @@ def _train_iwata_simple(arguments, data_lst, columns, target_id, connection,
             conn = connection
             iwata_stck_ds = Iwata_Dataset_DB_Stock(conn, iwata_params.S_N, iwata_params.Q_N, size=[seq_len, seq_len, 1],
                                                    flag='train', features='MS', scale=True, freq=iwata_params.freq, 
-                                                   hasTargetDF=True, targetDF=target_df, seed=iwata_params.seed_end)
+                                                   hasTargetDF=True, targetDF=target_df, seed=iwata_params.seed_end,
+                                                   columns=iwata_params.columns)
             iwata_params.seed_end += 1 # sample differently for each stock
             data_loader = DataLoader(
                         iwata_stck_ds,
@@ -144,13 +152,13 @@ def _train_iwata_simple(arguments, data_lst, columns, target_id, connection,
                     iter_count = 0
                     time_now = time.time()
 
-        train_loss = np.average(train_loss)
-        print(
-                ">>>>> FINISHED Training on stock {}/{} | epoch {}".format(
-                    i, num_of_stocks, epoch + 1
+            train_loss = np.average(train_loss)
+            print(
+                    ">>>>> FINISHED Training on stock {}/{} | epoch {}".format(
+                        i, num_of_stocks, epoch + 1
+                    )
                 )
-            )
-        print('Epoch {}/{} \t Time: {:.2f}s \t Loss: {:.4f}'.format(epoch+1, epochs, time.time() - epoch_time, train_loss))
+            print('Epoch {}/{} \t Time: {:.2f}s \t Loss: {:.4f}'.format(epoch+1, epochs, time.time() - epoch_time, train_loss))
     
     torch.cuda.empty_cache()
 
@@ -171,15 +179,24 @@ def _train_iwata_simple(arguments, data_lst, columns, target_id, connection,
     mae = []
     r2 = []
     p_r = []
+
     with torch.no_grad():
         for i, df in enumerate(data_lst):
+            
+            if len(df) < min_len:
+                print("SKIPPINT TRAINING stock {} / {} because it is too short".format(i, num_of_stocks))
+                print(f'Min length: {min_len} | Stock length {len(df)}')
+                continue
+
             print(f'Evaluating on stock {i}/{num_of_stocks}')
+            
             predictions = []
             y = []
             # Load Test DS
             iwata_stck_ds = Iwata_Dataset_DB_Stock(conn, iwata_params.S_N, iwata_params.Q_N, size=[seq_len, seq_len, 1],
                                                 flag='test', features='MS', scale=True, freq=iwata_params.freq, 
-                                                hasTargetDF=True, targetDF=target_df, seed=iwata_params.seed_end)
+                                                hasTargetDF=True, targetDF=target_df, seed=iwata_params.seed_end,
+                                                columns=iwata_params.columns)
             data_loader = DataLoader(
                         iwata_stck_ds,
                         batch_size=1, # only works with one as they are sampled already from Q_N, S_N

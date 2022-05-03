@@ -107,15 +107,15 @@ class IWATA_Classification_Sampler(Dataset):
 class Iwata_Dataset_DB_Stock(Dataset):
     def __init__(self, conn, S_N, Q_N, sup_stck_ids=None, q_stck_ids=None, flag='train', size=None, 
                  features='M', data_path='ETTh1.csv', target='close', scale=True, inverse=False,
-                 companyID=None, hasTargetDF=False, targetDF=None, seed=0, freq='1T'):
+                 companyID=None, hasTargetDF=False, targetDF=None, seed=0, freq='1T', columns=None):
         # size [seq_len, label_len, pred_len]
         # info
         assert len(size)==3
         # init
         assert flag in ['train', 'test']
         self.flag = flag
-        type_map = {'train':0, 'test':1}
-        self.set_type = type_map[flag]
+        self.type_map = {'train':0, 'test':1}
+        self.set_type = self.type_map[flag]
 
         # seed 
         random.seed(seed)
@@ -139,6 +139,7 @@ class Iwata_Dataset_DB_Stock(Dataset):
         self.seq_len = size[0]
         self.label_len = size[1]
         self.pred_len = size[2] 
+        self.columns = columns
         assert self.pred_len == 1 # for now 
 
         self.__read_data__(conn)
@@ -191,18 +192,15 @@ class Iwata_Dataset_DB_Stock(Dataset):
         # only tuned for Q_N = 1
         cols = list(self.Q_dfs[0].columns); cols.remove(self.target); cols.remove('date')
         df_raw = self.Q_dfs[0][['date']+cols+[self.target]]
-
-        num_train = int(len(df_raw)*0.7)
-        num_test = len(df_raw) - num_train
-        border1s = [0, num_train-self.seq_len]
-        border2s = [num_train, len(df_raw)]
-        border1 = border1s[self.set_type]
-        border2 = border2s[self.set_type]
         
-        if self.features=='M' or self.features=='MS':
-            cols_data = df_raw.columns[1:]
-        elif self.features=='S':
-            cols_data = [self.target]
+        # not used we get it from outside 
+        if not self.columns:
+            if self.features=='M' or self.features=='MS': 
+                cols_data = df_raw.columns[1:]
+            elif self.features=='S':
+                cols_data = [self.target]
+        else:
+            cols_data = self.columns
 
         self.S_dfs_x = []
         self.Q_dfs_x = []
@@ -210,52 +208,53 @@ class Iwata_Dataset_DB_Stock(Dataset):
             self.s_scalers = [StandardScaler() for i in range(self.S_N)]
             self.q_scalers = [StandardScaler() for i in range(self.Q_N)]
             for i in range(self.S_N):
-                train_data = self.S_dfs[i][cols_data][border1s[0]:border2s[0]]
+                b1, b2 = self.__compute_borders(self.S_dfs[i], flag='train')
+                train_data = self.S_dfs[i][cols_data][b1:b2]
                 self.s_scalers[i].fit(train_data)
-                self.S_dfs_x.append(self.s_scalers[i].transform(self.S_dfs[i][cols_data][border1:border2]).values)
+                self.S_dfs_x.append(self.s_scalers[i].transform(self.S_dfs[i][cols_data][b1:b2]).values)
             for i in range(self.Q_N):
-                train_data = self.Q_dfs[i][cols_data][border1s[0]:border2s[0]]
+                b1, b2 = self.__compute_borders(self.Q_dfs[i], flag=self.flag)
+                train_data = self.Q_dfs[i][cols_data][b1:b2]
                 self.q_scalers[i].fit(train_data)
-                self.Q_dfs_x.append(self.q_scalers[i].transform(self.Q_dfs[i][cols_data][border1:border2]).values)
+                self.Q_dfs_x.append(self.q_scalers[i].transform(self.Q_dfs[i][cols_data][b1:b2]).values)
+                n = len(self.Q_dfs[i][cols_data][b1:b2])
+
+                
         else:
             for i in range(self.S_N):
-                self.S_dfs_x.append(self.S_dfs[i][cols_data][border1:border2].values)
+                self.S_dfs_x.append(self.S_dfs[i][cols_data][b1:b2].values)
             for i in range(self.Q_N):
-                self.Q_dfs_x.append(self.Q_dfs[i][cols_data][border1:border2].values)
+                self.Q_dfs_x.append(self.Q_dfs[i][cols_data][b1:b2].values)
         
         self.data_x = self.Q_dfs_x[0]
         self.data_y = self.Q_dfs_x[0][:, -1]
     
-    def __getitem__(self, index):
+    def __compute_borders(self, df, flag='train'):
+        num_train = int(len(df)*0.7)
+        num_test = len(df) - num_train
+        border1s = [0, num_train-self.seq_len]
+        border2s = [num_train, len(df)]
+        border1 = border1s[self.type_map[flag]]
+        border2 = border2s[self.type_map[flag]]
+        return border1, border2
 
-        if self.flag == 'train':
-            # in training sample targets from support series
-            Q_dfs_x = random.choice(self.S_dfs_x) 
-            end = len(Q_dfs_x) - self.label_len - self.pred_len
-            s_begin = random.randint(0, end)
-            s_end = s_begin + self.seq_len
-            q_seq_x = Q_dfs_x[s_begin:s_end]
-            if self.features == 'MS':
-                q_seq_y = Q_dfs_x[s_end:s_end+self.pred_len][-1][-1] # last value of the target
-            else:
-                q_seq_y = Q_dfs_x[0][s_end:s_end+self.pred_len][-1]
-            
+    def __getitem__(self, index):    
         # check date for all support set is < query index data
         # query_date = self.Q_dfs[0].iloc[index]['date']
         # for i in range(self.S_N):
         #     s_date = self.S_dfs[i].iloc[0]['date']
         #     # check support set date - 
-        else: # TEST 
-            s_begin = index
-            s_end = s_begin + self.seq_len
-            r_begin = s_end
-            r_end = r_begin + self.pred_len        
-            Q_dfs_x = self.Q_dfs_x[0]
-            q_seq_x = Q_dfs_x[s_begin:s_end]
-            if self.features == 'MS':
-                q_seq_y = Q_dfs_x[r_begin:r_end][-1][-1] # last value of the target
-            else:
-                q_seq_y = Q_dfs_x[0][r_begin:r_end][-1]
+
+        s_begin = index
+        s_end = s_begin + self.seq_len
+        r_begin = s_end
+        r_end = r_begin + self.pred_len        
+        Q_dfs_x = self.Q_dfs_x[0]
+        q_seq_x = Q_dfs_x[s_begin:s_end]
+        if self.features == 'MS':
+            q_seq_y = Q_dfs_x[r_begin:r_end][-1][-1] # last value of the target
+        else:
+            q_seq_y = Q_dfs_x[0][r_begin:r_end][-1]
         
         # randomly sample support sequence for each support timeseries 
         # (only works for Q_N = 1)
