@@ -118,6 +118,7 @@ def _train_arima(data, WS):
         print(f"model predictions shape: {model_predictions.shape}")
         print(f"test data shape: {test_.shape}")
     mae, mse, rmse, mape, mspe, r2 = metric(model_predictions, test_)
+    print(r2_scores)
     r_squared = np.mean(r2_scores)
     # 300, 10
     # 300, 10
