@@ -90,26 +90,50 @@ def _train_arima(data, WS):
     test_ = []
     r2_scores = []
     first = True
-    for time_point in tqdm(range(0, N_test_observations-out_steps+1, WS), desc="Forecasting with ARIMA..."):
-        model = ARIMA(history, order=min_order)
-        model_fit = model.fit()
-        output = model_fit.forecast(steps=out_steps)
-        yhat = output
-        model_predictions.append(yhat)
-        true_test_value = testing.close.iloc[time_point:time_point+out_steps]
-        history.extend(true_test_value)
-        test_.append(true_test_value)
-        r2_scores.append(r2_score(true_test_value.values,output))
-        if first:
-            history_lengt = min(100, len(list(history[-100:])), len(list(training.date.iloc[-100:])))
-            forecasts = pd.DataFrame({'time': list(training.date.iloc[-history_lengt:]) + list(testing.date.iloc[time_point:time_point+out_steps]),
-                                    'y': list(history[-history_lengt:]) + list(true_test_value),
-                                    'y_hat':np.nan 
-            })
+    mae, mse, rmse, mape, mspe, r_squared = 0, 0, 0, 0, 0, 0
+    if WS == 1:
+        for time_point in tqdm(range(0, N_test_observations-out_steps+1), desc="Forecasting with ARIMA..."):
+            model = ARIMA(history, order=min_order)
+            model_fit = model.fit()
+            output = model_fit.forecast()
+            yhat = output
+            model_predictions.append(yhat)
+            true_test_value = testing.close.iloc[time_point:time_point+out_steps]
+            history.extend(true_test_value)
+            test_.append(true_test_value.values[0])
+            if first:
+                history_lengt = min(100, len(list(history[-100:])), len(list(training.date.iloc[-100:])))
+                forecasts = pd.DataFrame({'time': list(training.date.iloc[-history_lengt:]) + list(testing.date.iloc[time_point:time_point+out_steps]),
+                                        'y': list(history[-history_lengt:]) + list(true_test_value),
+                                        'y_hat':np.nan 
+                })
 
-            forecasts['y_hat'][history_lengt:] = yhat
-            first = False
-    print(forecasts.tail())
+                forecasts['y_hat'][history_lengt:] = yhat
+                first = False
+        mae, mse, rmse = metric(test_, model_predictions)
+        r_squared = r2_score(test_, model_predictions)
+    else:
+        for time_point in tqdm(range(0, N_test_observations-out_steps+1, WS), desc="Forecasting with ARIMA..."):
+            model = ARIMA(history, order=min_order)
+            model_fit = model.fit()
+            output = model_fit.forecast(steps=out_steps)
+            yhat = output
+            model_predictions.append(yhat)
+            true_test_value = testing.close.iloc[time_point:time_point+out_steps]
+            history.extend(true_test_value)
+            test_.append(true_test_value)
+            r2_scores.append(r2_score(true_test_value.values,output))
+            if first:
+                history_lengt = min(100, len(list(history[-100:])), len(list(training.date.iloc[-100:])))
+                forecasts = pd.DataFrame({'time': list(training.date.iloc[-history_lengt:]) + list(testing.date.iloc[time_point:time_point+out_steps]),
+                                        'y': list(history[-history_lengt:]) + list(true_test_value),
+                                        'y_hat':np.nan 
+                })
+
+                forecasts['y_hat'][history_lengt:] = yhat
+                first = False
+        mae, mse, rmse = metric(test_, model_predictions)
+        r_squared = np.mean(r2_scores)
     
     test_ = np.asarray(test_)
     model_predictions = np.asarray(model_predictions)
@@ -117,8 +141,7 @@ def _train_arima(data, WS):
         print("ERROR: model predictions and test data have different shapes")
         print(f"model predictions shape: {model_predictions.shape}")
         print(f"test data shape: {test_.shape}")
-    mae, mse, rmse, mape, mspe, r2 = metric(model_predictions, test_)
-    r_squared = np.mean(r2_scores)
+    
     # 300, 10
     # 300, 10
     parameters = {
@@ -127,4 +150,4 @@ def _train_arima(data, WS):
         "q": min_order[2],
     }
 
-    return mae.mean(), mse.mean(), r_squared.mean(), parameters, forecasts
+    return mae.mean(), mse.mean(), r_squared, parameters, forecasts
