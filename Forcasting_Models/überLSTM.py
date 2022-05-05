@@ -8,6 +8,8 @@ import psycopg2 as pg
 import pandas as pd
 import sys
 import os
+from sklearn.metrics import r2_score as sk_r2_score
+
 
 
 def r2_score(output, target):
@@ -157,7 +159,11 @@ def LSTM(
         R2_Scores = []
         MAE_Scores = []
         MSE_Scores = []
+        R2_1_Scores = []
         plots = []
+        trues = []
+        preds = []
+        print("count", len(dtloader_test))
         for x, y in dtloader_test:
             x = x.to(device)
             y = y.to(device)
@@ -167,25 +173,43 @@ def LSTM(
             else:
                 x = x
                 y = y
+            #print("x shape:", x.shape)
+            # print("y shape:", y.cpu().squeeze(-1).shape)
             output, _ = model(x, hidden, x)
-            plots.append((x.cpu(), (y.cpu(), output.squeeze(-1).cpu())))  # (actual, (y, y_hat))
+            # print("Output shape", output.squeeze(-1).cpu().squeeze(-1).shape)
+            # print("X shape", x.cpu().numpy().shape)
+            # print("Y shape", y.cpu().unsqueeze(-1).numpy().shape)
+            # print("y_hat shape", output.squeeze(-1).cpu().numpy().shape)
+            if Output_size == 1 and n_class !=1:
+                plots.append((x.cpu(), (y.cpu().unsqueeze(-1), output.squeeze(-1).cpu())))  # (actual, (y, y_hat)) (32,1)
+            else:
+                plots.append((x.cpu(), (y.cpu(), output.squeeze(-1).cpu())))
+            trues.append(y.squeeze(-1).detach().cpu().numpy())
+            preds.append(output.squeeze(-1).squeeze(-1).detach().cpu().numpy())
             MSE_Scores.append(criterion(output.cpu(), y.unsqueeze(-1).cpu()))
             MAE_Scores.append(
                 MAE(output.detach().cpu().numpy(), y.unsqueeze(-1).detach().cpu().numpy())
             )
             R2_Scores.append(r2_score_dim(output.cpu(), y.unsqueeze(-1).cpu()))
+
+        trues = np.array(trues)
+        preds = np.array(preds)
+        # print("true", trues.shape)
+        # print("preds", preds.shape)
+
+        if (Output_size == 1):
+            R2_1_Scores.append(sk_r2_score(trues.reshape(-1),preds.reshape(-1)))
     print("Testing finished")
     print("R2 score:", np.mean([x.item() for x in R2_Scores]))
     print("MSE score:", np.mean([x.item() for x in MSE_Scores]))
     print("MAE score:", np.mean([x.item() for x in MAE_Scores]))
     return (
         model,
-        np.mean([x.item() for x in R2_Scores]),
+        np.mean(R2_1_Scores) if Output_size == 1 else np.mean([x.item() for x in R2_Scores]),
         np.mean([x.item() for x in MSE_Scores]),
         np.mean([x.item() for x in MAE_Scores]),
         plots,
     )
-
 
 def MAE(pred, true):
     return np.mean(np.abs(pred - true))

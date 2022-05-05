@@ -35,7 +35,7 @@ def execute_iwata_simple(arguments, data_lst, from_date, to_date, data, connecti
                 connection,
                 seq_len=WS,
                 pred_len=1, # only 1 for Iwata Simple 
-                epoch=1, # 15 epochs? 
+                epoch=15, # 15 epochs? 
             )
             duration = time.time() - start_time
 

@@ -14,11 +14,11 @@ companies_stat = [
 ]
 
 granularities = [
+    {"horizon":"24 hours", "period": "24 hours", "initial":"72 hours", "gran":"1H"}, 
+    {"horizon":"120 minutes", "period": "120 minutes", "initial":"360 minutes", "gran":"30T"}, 
     {"horizon":"120 minutes", "period": "120 minutes", "initial":"360 minutes", "gran":"5T"}, 
     # {"horizon":"360 minutes", "period": "360 minutes", "initial":"400000 minutes", "gran":"15T"}, 
-    {"horizon":"120 minutes", "period": "120 minutes", "initial":"360 minutes", "gran":"30T"}, 
     # # {"horizon":"100 minutes", "period": "100 minutes", "initial":"5800 minutes", "gran":"45T"}, 
-    {"horizon":"24 hours", "period": "24 hours", "initial":"72 hours", "gran":"1H"}, 
     # {"horizon":"84 hours", "period": "84 hours", "initial":"1440 hours", "gran":"12H"}, 
     # {"horizon":"7 days", "period": "7 days", "initial":"30 days", "gran":"1D"}
 ]

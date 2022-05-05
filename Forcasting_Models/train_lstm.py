@@ -3,6 +3,7 @@ import pandas as pd
 from überLSTM import LSTM
 from utils.preprocess import add_to_parameters
 import torch.nn as nn
+import numpy as np
 import time
 def execute_lstm(arguments, data_lst, from_date, to_date, data, connection):
     for WS in [60, 120]:
@@ -62,6 +63,23 @@ def _train_lstma(
     companies = [
         db_access.SingleCompany([x], window_size, Output_size, columns) for x in data
     ]
+    parameters = {
+        "window_size": window_size,
+        "n_companies": n_companies,
+        "n_datapoints": n_datapoints,
+        "Output_size": Output_size,
+        "n_step": n_step,
+        "n_hidden": n_hidden,
+        "n_class": n_class,
+        "Epoch": Epoch,
+        "batch_size": batch_size,
+        "num_layers": num_layers,
+        "learning_rate": learning_rate,
+    }  # (actual, (y, y_hat))
+
+    print("---------------------  start parameters  ----------------------")
+    print(parameters)
+
     train_set, test_set = db_access.GenerateDatasets(companies)
 
     criterion = nn.MSELoss()
@@ -88,20 +106,7 @@ def _train_lstma(
     del companies
     print("Memory freed")
 
-    parameters = {
-        "window_size": window_size,
-        "n_companies": n_companies,
-        "n_datapoints": n_datapoints,
-        "Output_size": Output_size,
-        "n_step": n_step,
-        "n_hidden": n_hidden,
-        "n_class": n_class,
-        "Epoch": Epoch,
-        "batch_size": batch_size,
-        "num_layers": num_layers,
-        "learning_rate": learning_rate,
-    }  # (actual, (y, y_hat))
-
+    #print("plots shape: ", plots.shape)
     actual = [p[0].item() for p in plots[0][0][0]]
 
     y = [p[0].item() for p in plots[0][1][0]]
