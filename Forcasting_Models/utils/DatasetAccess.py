@@ -318,6 +318,8 @@ def get_data_for_attribute(
         if use_sentiment in [True, "True", "true", "TRUE"] and sentiment_cat is None:
             company.data = company.data.merge(sentiment, how="left", on="date")
             company.data = company.data.fillna(method="ffill")
+            company.data = company.data.fillna(0.0)
+
         else:
             for cat in sentiments:
                 date = company.data['date'].tolist()[0]
@@ -328,6 +330,7 @@ def get_data_for_attribute(
                 cat.loc[-1] = row
                 company.data = company.data.merge(cat, how="left", on="date")
                 company.data = company.data.fillna(method="ffill")
+                company.data = company.data.fillna(0.0)
     return company_data
 
 def get_nearest(items, pivot):
