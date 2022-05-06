@@ -41,11 +41,11 @@ def execute_iwata_simple(arguments, data_lst, from_date, to_date, data, connecti
 
             parameters["WS"] = WS
             parameters["OS"] = parameters.pred_len
-            add_to_parameters(arguments, parameters, duration)
+            add_to_parameters(arguments, parameters, duration, data_lst[0])
             # if arguments.use_args in ["True", "true", "1"]:
             db_access.upsert_exp_data(
-                "informer",  # model name
-                "informer desc",  # model description
+                "few-shot",  # model name
+                "few-shot desc",  # model description
                 mae,  # mae
                 mse,  # mse
                 r_squared,  # r^2
@@ -230,7 +230,7 @@ def _train_iwata_simple(arguments, data_lst, columns, target_id, connection,
             print(f'\tMSE: {mse[-1]} | MAE: {mae[-1]} | R2: {r2[-1]} | P_R: {p_r[-1]}')
             print("toni")
 
-    iwata_params.p_r = np.mean(p_r)
+    # iwata_params.p_r = np.mean(p_r)
     test_loss = np.average(test_loss)
     print('Test loss: {:.4f}'.format(test_loss))
     # Compute scores 

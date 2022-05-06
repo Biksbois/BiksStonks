@@ -18,7 +18,7 @@ def execute_arima(data_lst, arguments, from_date, to_date, data, connection):
     for WS in [1]: #[10, 30]:
         mae, mse, r_squared, parameters, forecasts = _train_arima(data_lst, WS)
         duration = time.time() - start_time
-        add_to_parameters(arguments, parameters, duration, is_fb_or_arima=True)
+        add_to_parameters(arguments, parameters, duration, data_lst[0], is_fb_or_arima=True)
         parameters['forecasted_points'] = WS
         db_access.upsert_exp_data(
             "arima",  # model name
@@ -132,7 +132,7 @@ def _train_arima(data, WS):
 
                 forecasts['y_hat'][history_lengt:] = yhat
                 first = False
-        mae,mse,rmse,mape,mspe,r_squared = metric(test_, model_predictions)
+        mae,mse,rmse,mape,mspe,r_squared = metric(np.array(test_), np.array(model_predictions))
         r_squared = np.mean(r2_scores)
     
     test_ = np.asarray(test_)

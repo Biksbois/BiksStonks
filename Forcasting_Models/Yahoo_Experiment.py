@@ -1,5 +1,6 @@
 # from curses import window
 import pandas as pd
+import train_prophet
 from utils.data_obj import DataObj
 import random
 import pandas as pd
@@ -23,11 +24,10 @@ from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.arima.model import ARIMA
 import utils.overwrite_arguments as oa
 
-from train_lstm import execute_lstm
-from train_lstm2 import execute_lstm2
-from train_arima import execute_arima
+from train_lstm import _train_lstma
+from train_arima import _train_arima
 from train_informer import _train_informer
-from train_prophet import execute_prophet
+from train_prophet import _train_prophet
 from train_iwata_simple import execute_iwata_simple
 
 import os
@@ -46,14 +46,13 @@ def rename_df_columns(dfs):
     new_dfs = []
     for df in dfs:
         df = df.reset_index()
-        df = df.rename(columns={"Close": "close"})
+        df = df.rename(columns={"Close": "Close"})
         df = df.rename(columns={"Date": "date"})
-        print(df.head())
         new_dfs.append(df)
     return new_dfs
 
 def get_yahoo_finance_data(index_to_download="ALL", start="2007-12-13", end="2017-12-12"):
-    indeces = ["SPY","HSI","000001.SS"]
+    indeces = ["SPY","^HSI","^GDAXI","000001.SS"]
     dfs = []
 
     if index_to_download == "ALL":
@@ -70,35 +69,45 @@ def convert_data_to_csv(mae, mse, r_squared, idx, name="placeholder"):
     print("mse: ", mse)
     print("r_squared: ", r_squared)
     df =  pd.DataFrame(columns=["mae", "mse", "r_squared"], data=[[mae, mse, r_squared]])
-    print(df.head())
     df.to_csv("{}_{}.csv".format(name, idx))
 
 def run_forecast_algorithms_on_dfs(dfs, ws=2):
+    args = dotdict()
+    arguments = arg.get_arguments()
+    arguments.timeunit='1D'
+    arguments.initial = '365 days'
+    arguments.horizon = '7 days'
+    arguments.period = '7 days'
+    args.primarycategory = None
     for idx, df in enumerate(dfs): 
-        #a_mae, a_mse, a_r_squared, a_parameters, a_forecasts = _train_arima(df, ws)
+        i_mae, i_mse, i_r_squared, i_parameters, i_forecasts = _train_prophet(arguments, [df], 'Close', 1)
+        convert_data_to_csv(i_mae, i_mse, i_r_squared, idx, name="Prophet")
+    
+    #  _train_informer(
+    #         args,
+    #         dfs,
+    #         ["close"],
+    #         seq_len=2,
+    #         pred_len=1,
+    #         epoch=50,
+    #         distil=False,
+    #         # d_layers = 1,
+    #         # e_layers=4,
+    #     )
+    #for idx, df in enumerate(dfs): 
+        #a_mae, a_mse, a_r_squared, a_parameters, a_forecasts = _train_arima(df, 1)
         #convert_data_to_csv(a_mae, a_mse, a_r_squared, idx, name="arima")
 
         #p_mae, p_mse, p_r_squared, p_parameters, p_forecasts = tp.train_prophet()
         #convert_data_to_csv(p_mae, p_mse, p_r_squared, idx, name="prophet")
 
-        #l_mae, l_mse, l_r_squared, l_parameters, l_forecasts = _train_lstma(["close"],df, ws)
+        #l_mae, l_mse, l_r_squared, l_parameters, l_forecasts = _train_lstma(["close"],[df], ws,n_class=1, Output_size=1, yahoo=True)
         #convert_data_to_csv(l_mae, l_mse, l_r_squared, idx, name="lstm")
-        
-        i_mae, i_mse, i_r_squared, i_parameters, i_forecasts =  _train_informer(
-                dict(),
-                [df],
-                ["close"],
-                seq_len=2,
-                pred_len=1,
-                epoch=50,
-            )
-
-        #convert_data_to_csv(i_mae, i_mse, i_r_squared, idx, name="informer")
 
 
 
 if __name__ == "__main__":
-    dfs = get_yahoo_finance_data(start="2007-11-13", end="2007-12-12")
-    for df in dfs:
-        print(df.head())
+    dfs = get_yahoo_finance_data()
     data = run_forecast_algorithms_on_dfs(dfs)
+
+

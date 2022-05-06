@@ -328,6 +328,7 @@ def get_data_for_attribute(
                 cat.loc[-1] = row
                 company.data = company.data.merge(cat, how="left", on="date")
                 company.data = company.data.fillna(method="ffill")
+    
     return company_data
 
 def get_nearest(items, pivot):

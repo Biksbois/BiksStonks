@@ -5,6 +5,7 @@ select distinct on (
 	data_to
 	-- time_unit
 ) 
+	time,
 	data_from,
 	data_to,
 	time_unit,
@@ -21,18 +22,13 @@ where
         (
             'Sydbank A/S' =  ANY(used_companies) and 
             cardinality(used_companies) = 1
-        ) OR (
-            'Sydbank A/S' =  ANY(used_companies) and 
-            'Danske Bank A/S' =  ANY(used_companies) and 
-            'Jyske Bank A/S' =  ANY(used_companies) and 
-            cardinality(used_companies) = 3
         )
     ) AND
 	data_to in ('2021-04-01T00:00:00', '2018-04-01T00:00:00') AND
 	cardinality(columns) = 1 AND
     not metadata ->> 'forecasted_points' is null AND
 	time_unit = '1H' AND
-	metadata ->> 'forecasted_points' = '30'
+	metadata ->> 'forecasted_points' = '1'
 order by 
 	model_id, 
 	data_from,

@@ -34,7 +34,7 @@ def execute_informer(arguments, data_lst, from_date, to_date, data, connection):
                 parameters["windows_size"] = WS
                 parameters["forecasted_points"] = OS
                 
-                add_to_parameters(arguments, parameters, duration)
+                add_to_parameters(arguments, parameters, duration, data_lst[0])
                 # if arguments.use_args in ["True", "true", "1"]:
                 db_access.upsert_exp_data(
                     "informer",  # model name
@@ -55,7 +55,7 @@ def execute_informer(arguments, data_lst, from_date, to_date, data, connection):
                 )
 
 
-def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch=None):
+def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch=None,distil = True, d_layers = 1, e_layers=2):
     print("training informer")
     epochs = epoch
     informer_params.train_epochs = 1  # iterate over each df once per epoch
@@ -66,6 +66,9 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
     informer_params.cols = columns
     informer_params.enc_in = len(columns) # encoder input size # ohlc + volume + [trade_count, vwap]
     informer_params.dec_in = len(columns) # decoder input size # ohlc + volume + [trade_count, vwap]
+    informer_params.distil = distil 
+    informer_params.d_layers = d_layers
+    informer_params.e_layers = e_layers
 
     exp = Exp_Informer(informer_params)  # here we can change the parameters
     num_of_stocks = len(data)
@@ -73,7 +76,6 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
         for i, df in enumerate(data):
             informer_params.df = df
             # args.df = args.df[len(args.df)//2:]
-
             print(
                 ">>>>> Training on stock {}/{} | epoch {}".format(
                     i, num_of_stocks, epoch + 1
@@ -136,11 +138,13 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
         exp.model.eval()
         preds = []
         trues = []
-
+        print(f"length: {len(test_data)}")
+        
         for j, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(test_loader):
             pred, true = exp._process_one_batch(
                 test_data, batch_x, batch_y, batch_x_mark, batch_y_mark
             )
+            print(batch_x.shape, batch_y.shape, batch_x_mark.shape, batch_y_mark.shape)
             if i == 0 and j == 0:
                 in_seq = batch_x[0, :, -1].detach().cpu().numpy()
             
@@ -161,6 +165,7 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
         if i == 0:
             first_pred = preds[0][0, :, 0]
             first_true = trues[0][0, :, 0]
+            
 
         preds = np.array(preds)
         trues = np.array(trues)
@@ -177,8 +182,8 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
 
         print(f'Metrics On Stock {i}/{num_of_stocks}')
         print(
-        f"Metrics: MAE {mae_l[-1]:.2f}, MSE {mse_l[-1]:.2f}, RMSE {rmse_l[-1]:.2f}, MAPE {mape_l[-1]:.2f},\
-          MSPE {mspe_l[-1]:.2f}, R2 {rs2_l[-1]:.2f}, R2_intermed {rs2_intermed_l[-1]:.2f}, R2_sk {rs2_sk[-1]:.2f}"
+        f"Metrics: MAE {mae_l[-1]}, MSE {mse_l[-1]}, RMSE {rmse_l[-1]:.2f}, MAPE {mape_l[-1]:.2f},\
+          MSPE {mspe_l[-1]:.2f}, R2 {rs2_l[-1]}, R2_intermed {rs2_intermed_l[-1]:.2f}, R2_sk {rs2_sk[-1]:.2f}"
         )
 
     torch.cuda.empty_cache()

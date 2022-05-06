@@ -133,7 +133,6 @@ def get_data(arguments, connection, from_date, to_date):
 
 def run_experiments_nn(arguments, connection, from_date, to_date):
     data = get_data(arguments, connection, from_date, to_date)
-
     data_lst = [d.data for d in data]
 
     if len(data_lst) > 0:
@@ -185,7 +184,7 @@ if __name__ == "__main__":
     if arguments.use_args in ["False", "false", '0']:
         print("\n\nrunning without parameters\n\n")
         for granularity in oa.granularities:
-            if arguments.model in ['lstm', 'informer', 'all']:
+            if arguments.model in ['iwataSimple', 'lstm', 'informer', 'all']:
                 for column in oa.columns_nn:
                     for company in oa.companies_nn:
                         for period in oa.periods_nn:

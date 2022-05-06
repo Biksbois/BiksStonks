@@ -5,6 +5,7 @@ select distinct on (
 	data_to
 	-- time_unit
 ) 
+	time,
 	data_from,
 	data_to,
 	time_unit,
@@ -30,7 +31,7 @@ where
 	cardinality(columns) > 1 AND
     not metadata ->> 'forecasted_points' is null AND
 	time_unit = '1H' AND
-	metadata ->> 'forecasted_points' = '30'
+	metadata ->> 'forecasted_points' = '1'
 order by 
 	model_id, 
 	data_from,
