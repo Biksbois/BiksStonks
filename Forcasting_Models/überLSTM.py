@@ -66,18 +66,6 @@ class Attention(nn.Module):
             self.pls = self.pls.to(device)
         return self.pls(combine), trained_attn
 
-    def get_att_weight(self, dec_output, enc_outputs):
-        n_step = len(enc_outputs)
-        attn_scores = torch.zeros(n_step)
-
-        for i in range(n_step):
-            attn_scores[i] = self.get_att_score(dec_output, enc_outputs[i])
-        return F.softmax(attn_scores).view(1, 1, -1)
-
-    def get_att_score(self, dec_output, enc_output):
-        score = self.attn(enc_output)
-        return score
-
 
 def LSTM(
     training,
@@ -124,7 +112,10 @@ def LSTM(
             optimizer.zero_grad()
             if n_class != 1:
                 x = x.squeeze(-1)
-                y = y.squeeze(-1)
+                if Output_size != 1:
+                    y = y.squeeze(-1)
+                else:
+                    y = y
             else:
                 x = x
                 y = y
@@ -177,17 +168,14 @@ def LSTM(
             y = y.to(device)
             if n_class != 1:
                 x = x.squeeze(-1)
-                y = y.squeeze(-1)
+                if Output_size != 1:
+                    y = y.squeeze(-1)
+                else:
+                    y = y
             else:
                 x = x
                 y = y
-            #print("x shape:", x.shape)
-            # print("y shape:", y.cpu().squeeze(-1).shape)
             output, _ = model(x, hidden, x)
-            # print("Output shape", output.squeeze(-1).cpu().squeeze(-1).shape)
-            # print("X shape", x.cpu().numpy().shape)
-            # print("Y shape", y.cpu().unsqueeze(-1).numpy().shape)
-            # print("y_hat shape", output.squeeze(-1).cpu().numpy().shape)
             if Output_size == 1 and n_class !=1:
                 plots.append((x.cpu(), (y.cpu().unsqueeze(-1), output.squeeze(-1).cpu())))  # (actual, (y, y_hat)) (32,1)
             else:
@@ -235,3 +223,11 @@ def LSTM(
 
 def MAE(pred, true):
     return np.mean(np.abs(pred - true))
+
+def create_shifted_mean(data, stride):
+    result = []
+    iter = 0
+    for i in range(0, len(data)):
+        result[i+iter].append(data[i])
+        iter += stride
+    return [np.mean(x) for x in result]
