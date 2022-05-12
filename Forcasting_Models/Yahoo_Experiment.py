@@ -28,7 +28,6 @@ from train_lstm import _train_lstma
 from train_arima import _train_arima
 from train_informer import _train_informer
 from train_prophet import _train_prophet
-from train_iwata_simple import execute_iwata_simple
 
 import os
 import sys
@@ -46,7 +45,7 @@ def rename_df_columns(dfs):
     new_dfs = []
     for df in dfs:
         df = df.reset_index()
-        df = df.rename(columns={"Close": "Close"})
+        df = df.rename(columns={"Close": "close"})
         df = df.rename(columns={"Date": "date"})
         new_dfs.append(df)
     return new_dfs
@@ -79,24 +78,33 @@ def run_forecast_algorithms_on_dfs(dfs, ws=2):
     arguments.horizon = '7 days'
     arguments.period = '7 days'
     args.primarycategory = None
-    for idx, df in enumerate(dfs): 
-        i_mae, i_mse, i_r_squared, i_parameters, i_forecasts = _train_prophet(arguments, [df], 'Close', 1)
-        convert_data_to_csv(i_mae, i_mse, i_r_squared, idx, name="Prophet")
-    
-    #  _train_informer(
+    # _train_informer(
     #         args,
-    #         dfs,
+    #         [dfs[0]],
     #         ["close"],
     #         seq_len=2,
-    #         pred_len=1,
+    #         pred_len=10,
     #         epoch=50,
     #         distil=False,
     #         # d_layers = 1,
     #         # e_layers=4,
-    #     )
+    # )
+    
     #for idx, df in enumerate(dfs): 
-        #a_mae, a_mse, a_r_squared, a_parameters, a_forecasts = _train_arima(df, 1)
-        #convert_data_to_csv(a_mae, a_mse, a_r_squared, idx, name="arima")
+        #i_mae, i_mse, i_r_squared, i_parameters, i_forecasts = _train_prophet(arguments, [df], 'Close', 1)
+        #convert_data_to_csv(i_mae, i_mse, i_r_squared, idx, name="Prophet")
+    
+
+    # get length of dataframe
+
+    print(len(dfs[1])) 
+    
+    a_mae, a_mse, a_r_squared, a_parameters, a_forecasts = _train_arima(dfs[1], 10)
+    convert_data_to_csv(a_mae, a_mse, a_r_squared, 2, name="arima")
+
+    # for idx, df in enumerate(dfs): 
+    #     a_mae, a_mse, a_r_squared, a_parameters, a_forecasts = _train_arima(df, 30)
+    #     convert_data_to_csv(a_mae, a_mse, a_r_squared, idx, name="arima")
 
         #p_mae, p_mse, p_r_squared, p_parameters, p_forecasts = tp.train_prophet()
         #convert_data_to_csv(p_mae, p_mse, p_r_squared, idx, name="prophet")
@@ -107,7 +115,8 @@ def run_forecast_algorithms_on_dfs(dfs, ws=2):
 
 
 if __name__ == "__main__":
-    dfs = get_yahoo_finance_data()
+    dfs = get_yahoo_finance_data("ALL", "2007-12-13", "2017-12-12")
+    
     data = run_forecast_algorithms_on_dfs(dfs)
 
 

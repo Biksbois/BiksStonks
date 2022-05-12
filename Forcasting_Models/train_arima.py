@@ -1,4 +1,6 @@
 from locale import normalize
+
+from sqlalchemy import true
 import utils.preprocess as preprocess
 import itertools
 from statsmodels.tsa.arima.model import ARIMA
@@ -53,8 +55,7 @@ def _train_arima(data, WS):
     # data_['date'] = data['date']
 
     data[data.columns[1:]] = data[data.columns[1:]].apply(lambda x : (x - x.mean()) / x.std(), axis=0)
-
-    training, testing = preprocess.get_split_data(data, col_name="close")
+    training, testing = preprocess.get_split_data(data, col_name="date")
     #split seems to work though a bit cryptic
     p = d = q = range(0, 2)
     pdq = list(itertools.product(p, d, q))
@@ -117,7 +118,10 @@ def _train_arima(data, WS):
         mae,mse,rmse,mape,mspe,r_squared = metric(np.array(test_), np.array(model_predictions))
         r_squared = r2_score(np.array(test_), np.array(model_predictions))
     else:
-        for time_point in tqdm(range(0, N_test_observations-out_steps+1, WS), desc="Forecasting with ARIMA..."):
+        # measure time for forecasting
+        time_start = time.time()
+
+        for time_point in tqdm(range(0, N_test_observations-out_steps+1), desc="Forecasting with ARIMA..."):
             model = ARIMA(history, order=min_order)
             model_fit = model.fit()
             output = model_fit.forecast(steps=out_steps)
@@ -139,13 +143,24 @@ def _train_arima(data, WS):
 
                 forecasts['y_hat'][history_lengt:] = yhat
                 first = False
-        
-        preds = create_shifted_mean([i.tolist() for i in test_], 1, True)
+        # measure time for forecasting
+        print("Forecasting time: %.2f seconds" % (time.time() - time_start))
 
-        other_r2s.append(sk_r2_score(history[:len(preds)], preds))
+        model_predictions = np.asarray(model_predictions)
+        test_ = np.asarray(test_)
+
+        trues = create_shifted_mean(test_, 1, True)
+        preds = create_shifted_mean(model_predictions, 1, True)
+
+        # comp r2 scoty 
+        
+        # print funny joke below, to celebrate completion of prog.
+
 
         mae,mse,rmse,mape,mspe,r_squared = metric(np.array(test_), np.array(model_predictions))
-        r_squared = np.mean(r2_scores)
+        print(trues)
+        print(preds)
+        r_squared = sk_r2_score(trues, preds)
     
     test_ = np.asarray(test_)
     model_predictions = np.asarray(model_predictions)
