@@ -349,6 +349,19 @@ def get_graph_for_id(id, conn):
 
     return df
 
+def get_score_from_r_squared_range(conn, lower, upper, model_id=None, forecasted_point=None):
+    optional = f"and model_id = {model_id}" if model_id else ""
+    optional += f" and metadata ->> 'forecasted_points' = '{forecasted_point}'" if forecasted_point else ""
+
+    df = pd.read_sql_query(
+        f"select id, model_id, r_squared, metadata ->> 'forecasted_points' as forecasted_points, data_to, data_from \
+            from score \
+            where r_squared between {lower} and {upper} and use_sentiment = false and data_from = '2018-04-01 00:00:00' {optional}",
+        conn,
+    )
+
+    return df
+
 
 def get_data_for_datasetid(
     datasetid,

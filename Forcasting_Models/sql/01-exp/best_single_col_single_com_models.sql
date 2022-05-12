@@ -27,10 +27,10 @@ where
 	data_to in ('2021-04-01T00:00:00') AND
 	cardinality(columns) = 1 AND
     not metadata ->> 'forecasted_points' is null AND
-	time_unit = 'T' AND
-	metadata ->> 'forecasted_points' = '10' AND
+	time_unit = '5T' AND
+	metadata ->> 'forecasted_points' = '1' AND
 	use_sentiment = False AND
-	model_id = 16
+	model_id = 18
 order by 
 	model_id, 
 	data_from,

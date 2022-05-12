@@ -17,6 +17,7 @@ if __name__ == '__main__':
     args = get_arg()
     connection = db_access.get_connection()
     graph = db_access.get_graph_for_id(args.scoreid, connection)
+    graph = graph.reset_index()
     graph.to_clipboard(sep=',')
     print("done")
 
