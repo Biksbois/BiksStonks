@@ -13,7 +13,7 @@ import time
 
 def execute_prophet(arguments, data_lst, from_date, to_date, data, connection):
     start_time = time.time()
-    for os in [10, 30]:
+    for os in [1, 2]:
         mae, mse, r_squared, parameters, forecasts = _train_prophet(
             arguments, data_lst, arguments.columns[0], os
         )

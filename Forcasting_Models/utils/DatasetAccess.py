@@ -195,6 +195,10 @@ def _upsert_score(
     print(type(data_to), data_to)
     print(type(time_unit), time_unit)
     print(type(forecasted_company), forecasted_company)
+    print("---")
+    print(metadata)
+    print(type(metadata))
+    print("---")
     print(type(json.dumps(metadata)), json.dumps(metadata))
     print(type(used_sentiment), used_sentiment)
     print(type(used_companies), used_companies)
@@ -271,7 +275,7 @@ def upsert_exp_data(
             time_unit,
             forecasted_company,
             metadata,
-            used_sentiment,
+            "True" if used_sentiment in ['all', 'one'] else used_sentiment,
             used_companies,
             columns,
             cur,
@@ -324,10 +328,11 @@ def get_data_for_attribute(
             for cat in sentiments:
                 date = company.data['date'].tolist()[0]
                 PastDates = [x for x in cat['date'].tolist() if x < date]
-                nearest = get_nearest(PastDates, date)
-                value = cat[cat['date'] == nearest][cat.columns[1]].tolist()[0]
-                row = [date, value]
-                cat.loc[-1] = row
+                if len(PastDates) > 0:
+                    nearest = get_nearest(PastDates, date)
+                    value = cat[cat['date'] == nearest][cat.columns[1]].tolist()[0]
+                    row = [date, value]
+                    cat.loc[-1] = row
                 company.data = company.data.merge(cat, how="left", on="date")
                 company.data = company.data.fillna(method="ffill")
                 company.data = company.data.fillna(0.0)

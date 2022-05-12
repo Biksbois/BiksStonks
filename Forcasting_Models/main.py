@@ -1,4 +1,5 @@
 # from curses import window
+from unittest.mock import sentinel
 import pandas as pd
 from utils.data_obj import DataObj
 import random
@@ -51,7 +52,7 @@ def ensure_valid_values(input_values, actual_values, value_type):
             raise Exception(f"Value '{value}' is not a valid {value_type}")
     return True
 
-def get_data(arguments, connection, from_date, to_date):
+def get_data(arguments, connection, from_date, to_date, sentiment_cat=None):
     attribute_name = ""
     attribute_value = ""
 
@@ -100,6 +101,7 @@ def get_data(arguments, connection, from_date, to_date):
         arguments.timeunit,
         from_time=from_date,
         to_time=to_date,
+        sentiment_cat= None if sentiment_cat == 'one' else sentiment_cat
     )
 
     data = [
@@ -132,9 +134,18 @@ def get_data(arguments, connection, from_date, to_date):
     return data
 
 def run_experiments_nn(arguments, connection, from_date, to_date):
-    data = get_data(arguments, connection, from_date, to_date)
 
-    data_lst = [d.data for d in data]
+    if arguments.use_sentiment == 'all':
+        arguments.columns.extend(oa.sentiment_col['all'])
+        data = get_data(arguments, connection, from_date, to_date, sentiment_cat=True)
+        data_lst = [d.data for d in data]
+    elif arguments.use_sentiment == 'one':
+        arguments.columns.append("compound")
+        data = get_data(arguments, connection, from_date, to_date, sentiment_cat='one')
+        data_lst = [d.data for d in data]
+    else:
+        data = get_data(arguments, connection, from_date, to_date)
+        data_lst = [d.data for d in data]
 
     if len(data_lst) > 0:
         if arguments.model == "informer" or arguments.model == "all":
@@ -185,7 +196,7 @@ if __name__ == "__main__":
     if arguments.use_args in ["False", "false", '0']:
         print("\n\nrunning without parameters\n\n")
         for granularity in oa.granularities:
-            if arguments.model in ['lstm', 'informer', 'all']:
+            if arguments.model in ['iwataSimple', 'lstm', 'informer', 'all']:
                 for column in oa.columns_nn:
                     for company in oa.companies_nn:
                         for period in oa.periods_nn:

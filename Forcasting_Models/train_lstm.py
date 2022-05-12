@@ -7,7 +7,7 @@ import numpy as np
 import time
 def execute_lstm(arguments, data_lst, from_date, to_date, data, connection):
     for WS in [60, 120]:
-        for OS in [1]: #[10, 30]:
+        for OS in [1, 2, 10]:
             for epoch in [1, 15, 30]:
                 start_time = time.time()
                 mae, mse, r_squared, parameters, forecasts = _train_lstma(
@@ -23,6 +23,7 @@ def execute_lstm(arguments, data_lst, from_date, to_date, data, connection):
                 parameters["forecasted_points"] = OS
 
                 add_to_parameters(arguments, parameters, duration)
+
 
                 # if arguments.use_args in ["True", "true", "1"]:
                 db_access.upsert_exp_data(
@@ -57,12 +58,16 @@ def _train_lstma(
     batch_size=32,
     num_layers=1,
     learning_rate=0.001,
+    yahoo = False
 ):
     # columns = ["close", "open", "high", "low", "volume"]  # TODO: Use arguments.columns
     print("Retriving data from database...")
     companies = [
         db_access.SingleCompany([x], window_size, Output_size, columns) for x in data
     ]
+
+    
+    
     parameters = {
         "window_size": window_size,
         "n_companies": n_companies,
@@ -84,7 +89,7 @@ def _train_lstma(
 
     criterion = nn.MSELoss()
     print("training model...")
-    model, r2, mse, mae, plots = LSTM(
+    model, r2, mse, mae, plots, other_r2 = LSTM(
         train_set,
         test_set,
         batch_size,
@@ -96,6 +101,8 @@ def _train_lstma(
         num_layers,
         criterion,
     )
+
+    parameters['other_r2'] = other_r2
     print("Model trained")
 
     print("Model saved")

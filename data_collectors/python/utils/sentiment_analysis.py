@@ -26,3 +26,7 @@ class SentimentAnalysis:
         for k in sorted(ss):
             print("{0}: {1}, ".format(k, ss[k]), end="")
         print()
+
+if __name__ == '__main__':
+    yeet = SentimentAnalysis()
+    yeet.print_score_for_sentence("the market is bullish")

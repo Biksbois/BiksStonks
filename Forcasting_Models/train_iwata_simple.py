@@ -25,7 +25,7 @@ import utils.DatasetAccess as db_access
 
 
 def execute_iwata_simple(arguments, data_lst, from_date, to_date, data, connection):
-    for WS in [60, 120]:
+    for WS in [60]:
             start_time = time.time()
             mae, mse, r_squared, parameters, forecasts = _train_iwata_simple(
                 arguments,
@@ -35,7 +35,7 @@ def execute_iwata_simple(arguments, data_lst, from_date, to_date, data, connecti
                 connection,
                 seq_len=WS,
                 pred_len=1, # only 1 for Iwata Simple 
-                epoch=15, # 15 epochs? 
+                epoch=5, # 15 epochs? 
             )
             duration = time.time() - start_time
 
@@ -44,8 +44,8 @@ def execute_iwata_simple(arguments, data_lst, from_date, to_date, data, connecti
             add_to_parameters(arguments, parameters, duration)
             # if arguments.use_args in ["True", "true", "1"]:
             db_access.upsert_exp_data(
-                "informer",  # model name
-                "informer desc",  # model description
+                "few-shot",  # model name
+                "few-shot desc",  # model description
                 mae,  # mae
                 mse,  # mse
                 r_squared,  # r^2
@@ -230,7 +230,7 @@ def _train_iwata_simple(arguments, data_lst, columns, target_id, connection,
             print(f'\tMSE: {mse[-1]} | MAE: {mae[-1]} | R2: {r2[-1]} | P_R: {p_r[-1]}')
             print("toni")
 
-    iwata_params.p_r = np.mean(p_r)
+    # iwata_params.p_r = np.mean(p_r)
     test_loss = np.average(test_loss)
     print('Test loss: {:.4f}'.format(test_loss))
     # Compute scores 

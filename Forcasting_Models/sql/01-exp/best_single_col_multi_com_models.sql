@@ -5,6 +5,7 @@ select distinct on (
 	data_to
 	-- time_unit
 ) 
+	time,
 	data_from,
 	data_to,
 	time_unit,
@@ -17,11 +18,7 @@ select distinct on (
 	used_companies
 from score
 where
-	not time_unit in ('12H', '1D')  AND (
-        (
-            'Sydbank A/S' =  ANY(used_companies) and 
-            cardinality(used_companies) = 1
-        ) OR (
+	not time_unit in ('12H', '1D')  AND ((
             'Sydbank A/S' =  ANY(used_companies) and 
             'Danske Bank A/S' =  ANY(used_companies) and 
             'Jyske Bank A/S' =  ANY(used_companies) and 
@@ -32,7 +29,9 @@ where
 	cardinality(columns) = 1 AND
     not metadata ->> 'forecasted_points' is null AND
 	time_unit = '1H' AND
-	metadata ->> 'forecasted_points' = '30'
+	metadata ->> 'forecasted_points' = '10' AND
+	use_sentiment = False AND
+	model_id = 3
 order by 
 	model_id, 
 	data_from,
