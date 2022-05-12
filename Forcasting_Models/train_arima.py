@@ -12,13 +12,16 @@ from utils.preprocess import add_to_parameters
 import numpy as np
 from tqdm import tqdm
 import time
+from train_informer import create_shifted_mean
+from sklearn.metrics import r2_score as sk_r2_score
+
 
 def execute_arima(data_lst, arguments, from_date, to_date, data, connection):
     start_time = time.time()
-    for WS in [1]: #[10, 30]:
+    for WS in [1, 2, 10]:
         mae, mse, r_squared, parameters, forecasts = _train_arima(data_lst, WS)
         duration = time.time() - start_time
-        add_to_parameters(arguments, parameters, duration, data_lst[0], is_fb_or_arima=True)
+        add_to_parameters(arguments, parameters, duration, is_fb_or_arima=True)
         parameters['forecasted_points'] = WS
         db_access.upsert_exp_data(
             "arima",  # model name
@@ -89,6 +92,7 @@ def _train_arima(data, WS):
     N_test_observations = len(testing)
     test_ = []
     r2_scores = []
+    other_r2s = []
     first = True
     mae, mse, rmse, mape, mspe, r_squared = 0, 0, 0, 0, 0, 0
     if WS == 1:
@@ -123,6 +127,9 @@ def _train_arima(data, WS):
             history.extend(true_test_value)
             test_.append(true_test_value)
             r2_scores.append(r2_score(true_test_value.values,output))
+
+
+
             if first:
                 history_lengt = min(100, len(list(history[-100:])), len(list(training.date.iloc[-100:])))
                 forecasts = pd.DataFrame({'time': list(training.date.iloc[-history_lengt:]) + list(testing.date.iloc[time_point:time_point+out_steps]),
@@ -132,6 +139,11 @@ def _train_arima(data, WS):
 
                 forecasts['y_hat'][history_lengt:] = yhat
                 first = False
+        
+        preds = create_shifted_mean([i.tolist() for i in test_], 1, True)
+
+        other_r2s.append(sk_r2_score(history[:len(preds)], preds))
+
         mae,mse,rmse,mape,mspe,r_squared = metric(np.array(test_), np.array(model_predictions))
         r_squared = np.mean(r2_scores)
     

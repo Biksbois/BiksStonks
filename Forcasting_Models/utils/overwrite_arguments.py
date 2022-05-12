@@ -23,6 +23,12 @@ granularities = [
     # {"horizon":"7 days", "period": "7 days", "initial":"30 days", "gran":"1D"}
 ]
 
+sentiment_col = {
+    'all' : ['Markedsberetninger', 'Virksomheder','Politik','Opinion','Finans', 'Investor', 'Udland', 'Generelt'],
+    'one' : ['compound'],
+    'false' : []
+}
+
 columns_nn = [
     ['close'],
     # ["close", "volume"],
@@ -42,10 +48,10 @@ periods_nn = [
     # { "from_date" : "2013-04-01 00:00:00", "to_date" : "2015-04-01 00:00:00"},
     # { "from_date" : "2014-04-01 00:00:00", "to_date" : "2015-04-01 00:00:00"},
 
-    { "from_date" : "2014-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
-    { "from_date" : "2016-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
-    { "from_date" : "2015-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
-    { "from_date" : "2017-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
+    # { "from_date" : "2014-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
+    # { "from_date" : "2016-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
+    # { "from_date" : "2015-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
+    # { "from_date" : "2017-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
 
     { "from_date" : "2017-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
     { "from_date" : "2018-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
@@ -54,10 +60,10 @@ periods_nn = [
 ]
 
 periods_stat = [
-    { "from_date" : "2014-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
-    { "from_date" : "2015-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
-    { "from_date" : "2016-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
-    { "from_date" : "2017-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
+    # { "from_date" : "2014-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
+    # { "from_date" : "2015-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
+    # { "from_date" : "2016-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
+    # { "from_date" : "2017-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
 
     { "from_date" : "2017-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
     { "from_date" : "2018-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
@@ -91,7 +97,7 @@ def calculate_fb_arguments(arguments, gran, from_date, to_date):
     horizon = (datapoints - (initial)) / forecasts_to_make
     period = horizon
 
-    arguments.initial = "72 hours"#_add_unit(int(initial), unit)
+    arguments.initial = "144 hours"#_add_unit(int(initial), unit)
     arguments.horizon = "24 hours"#_add_unit(int(horizon), unit)
     arguments.period = "24 hours"#_add_unit(int(period), unit)
     

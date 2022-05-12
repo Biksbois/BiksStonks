@@ -27,11 +27,12 @@ where
             cardinality(used_companies) = 3
         )
     ) AND
-	data_to in ('2021-04-01T00:00:00', '2018-04-01T00:00:00') AND
+	data_to in ('2021-04-01T00:00:00') AND
 	cardinality(columns) > 1 AND
-    not metadata ->> 'forecasted_points' is null AND
 	time_unit = '1H' AND
-	metadata ->> 'forecasted_points' = '1'
+	metadata ->> 'forecasted_points' = '1' AND
+	use_sentiment = False AND
+	model_id = 3
 order by 
 	model_id, 
 	data_from,

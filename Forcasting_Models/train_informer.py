@@ -18,7 +18,7 @@ import time
 
 def execute_informer(arguments, data_lst, from_date, to_date, data, connection):
     for WS in [60, 120]:
-        for OS in [1]: #[10, 30]:
+        for OS in [1, 2, 10]:
             for epoch in [10, 1, 30]:
                 start_time = time.time()
                 mae, mse, r_squared, parameters, forecasts = _train_informer(
@@ -34,7 +34,7 @@ def execute_informer(arguments, data_lst, from_date, to_date, data, connection):
                 parameters["windows_size"] = WS
                 parameters["forecasted_points"] = OS
                 
-                add_to_parameters(arguments, parameters, duration, data_lst[0])
+                add_to_parameters(arguments, parameters, duration)
                 # if arguments.use_args in ["True", "true", "1"]:
                 db_access.upsert_exp_data(
                     "informer",  # model name
@@ -54,6 +54,25 @@ def execute_informer(arguments, data_lst, from_date, to_date, data, connection):
                     connection,
                 )
 
+def create_shifted_mean(batch, shift, mean):
+    index_dict = {}
+    
+    for i in range(len(batch)):
+        for j in range(len(batch[i])):
+            index_of_point = j + (i * shift) + 1
+            if str(index_of_point) not in index_dict:
+                index_dict[str(index_of_point)] = []
+            index_dict[str(index_of_point)].append(batch[i][j])
+    
+    results = []
+    
+    for _, value in index_dict.items():
+        if mean:
+            results.append(np.mean(value))
+        else:
+            results.append(value[0])
+    
+    return results
 
 def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch=None,distil = True, d_layers = 1, e_layers=2):
     print("training informer")
@@ -132,6 +151,8 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
         [],
         [],
     )
+
+    other_r2s = []
     for i, df in enumerate(data):
         informer_params.df = df
         test_data, test_loader = exp._get_data(flag="test")
@@ -169,6 +190,10 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
 
         preds = np.array(preds)
         trues = np.array(trues)
+        
+        new_preds = create_shifted_mean(preds.squeeze(-1).tolist(), 1, True)
+        new_trues = create_shifted_mean(trues.squeeze(-1).tolist(), 1, True)
+
         preds = preds.reshape(-1)
         trues = trues.reshape(-1)
 
@@ -178,7 +203,8 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
         rmse_l.append(rmse)
         mape_l.append(mape)
         mspe_l.append(mspe)
-        rs2_l.append(sk_r2_score(trues, preds))
+        rs2_l.append(sk_r2_score(new_trues, new_preds))
+        other_r2s.append(sk_r2_score(trues, preds))
 
         print(f'Metrics On Stock {i}/{num_of_stocks}')
         print(
@@ -215,9 +241,11 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
     forecast = pd.DataFrame({"y": y, "y_hat": np.nan})
     forecast["y_hat"][in_seq.shape[0] :] = y_hat
 
-    r2 = r_squared if informer_params.pred_len == 1 else informer_params.rs2_sk_way
+    other_r2 = np.mean(other_r2s) if informer_params.pred_len == 1 else informer_params.rs2_sk_way
 
-    return mae, mse, r2, parameters, forecast
+    informer_params['other_r2'] = other_r2
+
+    return mae, mse, r_squared, parameters, forecast
 
 def r2_score(output, target):
     target_mean = torch.mean(target)

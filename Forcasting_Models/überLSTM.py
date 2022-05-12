@@ -9,6 +9,7 @@ import pandas as pd
 import sys
 import os
 from sklearn.metrics import r2_score as sk_r2_score
+from train_informer import create_shifted_mean
 
 
 
@@ -114,6 +115,8 @@ def LSTM(
     # Train
     model.train()
     model.to(device)
+    y_lst = []
+    output_lst = []
     for epoch in range(Epoch):
         for x, y in dtloader:
             x = x.to(device)
@@ -130,6 +133,8 @@ def LSTM(
             loss = criterion(output, y)
             loss.backward()
             optimizer.step()
+
+
             r2score = r2_score(output, y)
 
         if (epoch + 1) % 1 == 0:
@@ -152,6 +157,9 @@ def LSTM(
             )
     print("Model has finished training")
     print("Testing...")
+
+
+
     # test the mode using the test set
     model.eval()
     # model.no_grad()
@@ -190,6 +198,10 @@ def LSTM(
             MAE_Scores.append(
                 MAE(output.detach().cpu().numpy(), y.unsqueeze(-1).detach().cpu().numpy())
             )
+
+            y_lst.append(y.squeeze(-1).cpu().numpy())
+            output_lst.append(output.squeeze(-1).cpu().numpy())
+            
             R2_Scores.append(r2_score_dim(output.cpu(), y.unsqueeze(-1).cpu()))
 
         trues = np.array(trues)
@@ -199,16 +211,26 @@ def LSTM(
 
         if (Output_size == 1):
             R2_1_Scores.append(sk_r2_score(trues.reshape(-1),preds.reshape(-1)))
+    
+    preds = create_shifted_mean(np.array(output_lst).tolist(), 1, True)
+    trues = create_shifted_mean(np.array(y_lst).tolist(), 1, True)
+
+    r2 = sk_r2_score(trues, preds)
+
     print("Testing finished")
     print("R2 score:", np.mean([x.item() for x in R2_Scores]))
     print("MSE score:", np.mean([x.item() for x in MSE_Scores]))
     print("MAE score:", np.mean([x.item() for x in MAE_Scores]))
+
+
+
     return (
         model,
-        np.mean(R2_1_Scores) if Output_size == 1 else np.mean([x.item() for x in R2_Scores]),
+        np.mean(r2),
         np.mean([x.item() for x in MSE_Scores]),
         np.mean([x.item() for x in MAE_Scores]),
         plots,
+        np.mean(R2_1_Scores) if Output_size == 1 else np.mean([x.item() for x in R2_Scores]),
     )
 
 def MAE(pred, true):

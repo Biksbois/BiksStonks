@@ -13,12 +13,12 @@ import time
 
 def execute_prophet(arguments, data_lst, from_date, to_date, data, connection):
     start_time = time.time()
-    for os in [10, 30]:
+    for os in [1, 2]:
         mae, mse, r_squared, parameters, forecasts = _train_prophet(
             arguments, data_lst, arguments.columns[0], os
         )
         duration = time.time() - start_time
-        add_to_parameters(arguments, parameters, duration, data_lst[0], is_fb_or_arima=True)
+        add_to_parameters(arguments, parameters, duration, is_fb_or_arima=True)
 
         parameters['forecasted_points'] = os
         # if arguments.use_args in ["True", "true", "1"]:
