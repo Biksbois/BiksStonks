@@ -1,6 +1,5 @@
 from locale import normalize
 
-from sqlalchemy import true
 import utils.preprocess as preprocess
 import itertools
 from statsmodels.tsa.arima.model import ARIMA
