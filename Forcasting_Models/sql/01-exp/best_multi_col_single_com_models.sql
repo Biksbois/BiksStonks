@@ -28,9 +28,9 @@ where
 	cardinality(columns) > 1 AND
     not metadata ->> 'forecasted_points' is null AND
 	time_unit = '30T' AND
-	metadata ->> 'forecasted_points' = '10' AND
+	metadata ->> 'forecasted_points' = '1' AND
 	use_sentiment = False AND
-	model_id = 10
+	model_id = 18
 order by 
 	model_id, 
 	data_from,
