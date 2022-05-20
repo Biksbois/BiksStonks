@@ -7,7 +7,7 @@ import numpy as np
 import time
 def execute_lstm(arguments, data_lst, from_date, to_date, data, connection):
     for WS in [60, 120]:
-        for OS in [1, 2, 10]:
+        for OS in [1]: #2,10
             for epoch in [1, 15, 30]:
                 start_time = time.time()
                 mae, mse, r_squared, parameters, forecasts = _train_lstma(
@@ -66,8 +66,6 @@ def _train_lstma(
         db_access.SingleCompany([x], window_size, Output_size, columns) for x in data
     ]
 
-    
-    
     parameters = {
         "window_size": window_size,
         "n_companies": n_companies,

@@ -5,6 +5,7 @@ import random
 import os 
 
 from utils_in.tools import StandardScaler
+from utils.DatasetAccess import get_sentiment
 
 class IWATA_Classification_Sampler(Dataset):
     def __init__(self, root_path, seq_len, pred_len, num_samples, flag, 
@@ -143,7 +144,7 @@ class Iwata_Dataset_DB_Stock(Dataset):
 
         self.__read_data__(conn)
 
-    def __stock_id_to_df__(self, stock_id, pg_conn, sample_freq):
+    def __stock_id_to_df__(self, stock_id, pg_conn, sample_freq, sentiment = None, use_sentiment = False):
         query = f'SELECT time AS date, open, high, low, volume, close \
                             FROM stock WHERE identifier = {stock_id} \
                             ORDER BY time ASC;'
@@ -152,6 +153,13 @@ class Iwata_Dataset_DB_Stock(Dataset):
         # resample 
         df = df.resample(sample_freq).agg(self.agg).dropna()
         df.reset_index(inplace=True)
+        if use_sentiment:
+            df = df.merge(sentiment, how="left", on="date")
+            df = df.fillna(method="ffill")
+            df = df.fillna(1)
+            df.reset_index(inplace=True)
+
+        df = df.dropna()
         return df
 
     def __read_data__(self, conn):
@@ -177,16 +185,21 @@ class Iwata_Dataset_DB_Stock(Dataset):
         '''
         df.columns: ['date', ...(other features), target feature]
         '''
+        sentiment = None
+        use_sentiment = False
+        if 'compound' in self.columns:
+            sentiment = get_sentiment(self.targetDF['date'].iloc[0],self.targetDF['date'].iloc[-1],conn, self.freq)
+            use_sentiment = True
         self.S_dfs = []
         self.Q_dfs = []
         for s_id in S_stock_meta.id:
-            self.S_dfs.append(self.__stock_id_to_df__(s_id, conn, self.freq))
-
+            self.S_dfs.append(self.__stock_id_to_df__(s_id, conn, self.freq, sentiment,use_sentiment))
+            
         for q_id in Q_stock_meta.id:
             if self.hasTargetDF: 
                 self.Q_dfs.append(self.targetDF)
             else:
-                self.Q_dfs.append(self.__stock_id_to_df__(q_id, conn, self.freq))
+                self.Q_dfs.append(self.__stock_id_to_df__(q_id, conn, self.freq,sentiment,use_sentiment))
         
         # only tuned for Q_N = 1
         cols = list(self.Q_dfs[0].columns); cols.remove(self.target); cols.remove('date')
@@ -199,7 +212,9 @@ class Iwata_Dataset_DB_Stock(Dataset):
             elif self.features=='S':
                 cols_data = [self.target]
         else:
-            cols_data = self.columns
+            cols_data = self.columns[1:] + [self.target]
+
+        
 
         self.S_dfs_x = []
         self.Q_dfs_x = []
@@ -210,20 +225,32 @@ class Iwata_Dataset_DB_Stock(Dataset):
                 b1, b2 = self.__compute_borders(self.S_dfs[i], flag='train')
                 train_data = self.S_dfs[i][cols_data][b1:b2]
                 self.s_scalers[i].fit(train_data)
+                
+                
                 self.S_dfs_x.append(self.s_scalers[i].transform(self.S_dfs[i][cols_data][b1:b2]).values)
+                
+                # if np.isnan(np.min(self.S_dfs_x[-1])):
+                #     print("CORRUPT")
+                #     print(self.S_dfs_x[-1])
             for i in range(self.Q_N):
                 b1, b2 = self.__compute_borders(self.Q_dfs[i], flag=self.flag)
                 train_data = self.Q_dfs[i][cols_data][b1:b2]
                 self.q_scalers[i].fit(train_data)
                 self.Q_dfs_x.append(self.q_scalers[i].transform(self.Q_dfs[i][cols_data][b1:b2]).values)
+                
                 n = len(self.Q_dfs[i][cols_data][b1:b2])
-
                 
         else:
             for i in range(self.S_N):
                 self.S_dfs_x.append(self.S_dfs[i][cols_data][b1:b2].values)
             for i in range(self.Q_N):
                 self.Q_dfs_x.append(self.Q_dfs[i][cols_data][b1:b2].values)
+
+        # exit()
+        
+        
+        
+        
         
         self.data_x = self.Q_dfs_x[0]
         self.data_y = self.Q_dfs_x[0][:, -1]
@@ -267,7 +294,10 @@ class Iwata_Dataset_DB_Stock(Dataset):
             s_seq_x.append(self.S_dfs_x[i][s_begin:s_end][:-1])
 
         s_seq_x = np.array(s_seq_x)
-            
+        
+        
+        
+        
         return s_seq_x, q_seq_x, q_seq_y
     
     def __len__(self):

@@ -1,4 +1,5 @@
 # from curses import window
+from operator import truediv
 from unittest.mock import sentinel
 import pandas as pd
 from utils.data_obj import DataObj
@@ -136,11 +137,9 @@ def get_data(arguments, connection, from_date, to_date, sentiment_cat=None):
 def run_experiments_nn(arguments, connection, from_date, to_date):
 
     if arguments.use_sentiment == 'all':
-        arguments.columns.extend(oa.sentiment_col['all'])
         data = get_data(arguments, connection, from_date, to_date, sentiment_cat=True)
         data_lst = [d.data for d in data]
     elif arguments.use_sentiment == 'one':
-        arguments.columns.append("compound")
         data = get_data(arguments, connection, from_date, to_date, sentiment_cat='one')
         data_lst = [d.data for d in data]
     else:
@@ -201,6 +200,10 @@ if __name__ == "__main__":
                     for company in oa.companies_nn:
                         for period in oa.periods_nn:
                             arguments, from_date,to_date = oa.overwrite_arguments(arguments, granularity, column, period, company)
+                            if arguments.use_sentiment == 'all' and not oa.sentiment_col['all'][0] in arguments.columns:
+                                arguments.columns.extend(oa.sentiment_col['all'])
+                            elif arguments.use_sentiment == 'one' and not "compound" in arguments.columns:
+                                arguments.columns.append("compound")
                             run_experiments_nn(arguments, connection, from_date, to_date)
             if arguments.model in ['arima', 'fb', 'all']:
                 for column in oa.columns_stat:
