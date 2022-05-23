@@ -20,7 +20,7 @@ from sklearn.metrics import r2_score as sk_r2_score
 def execute_arima(data_lst, arguments, from_date, to_date, data, connection):
     start_time = time.time()
     # for WS in [1, 2, 10]:
-    for WS in [2, 10]:
+    for WS in [1]:
         mae, mse, r_squared, parameters, forecasts = _train_arima(data_lst, WS)
         duration = time.time() - start_time
         add_to_parameters(arguments, parameters, duration, is_fb_or_arima=True)

@@ -115,6 +115,8 @@ def _train_iwata_simple(arguments, data_lst, columns, target_id, connection,
             )
             # Load Train DS
             conn = connection
+            print(iwata_params.columns)
+            print(df.columns)
             iwata_stck_ds = Iwata_Dataset_DB_Stock(conn, iwata_params.S_N, iwata_params.Q_N, size=[seq_len, seq_len, 1],
                                                    flag='train', features='MS', scale=True, freq=iwata_params.freq, 
                                                    hasTargetDF=True, targetDF=target_df, seed=iwata_params.seed_end,
@@ -136,8 +138,17 @@ def _train_iwata_simple(arguments, data_lst, columns, target_id, connection,
                 q_seq_y = q_seq_y.float().to(device) # query set label 
 
                 optimizer.zero_grad()
+                # print("input", s_seq_x.shape)
+                # print("input", s_seq_x.dtype)
+                # print("input", s_seq_x)
+                # print("q_seq_y", q_seq_y)
+                # print("q_seq_x", q_seq_x.shape)
+                # print("q_seq_x", q_seq_x.dtype)
+                # print("q_seq_x", q_seq_x)
                 output = model(s_seq_x, q_seq_x)
+                # print("Output", output)
                 loss = criterion(output, q_seq_y)
+                # print("Loss", loss)
                 loss.backward()
                 optimizer.step()
                 train_loss.append(loss.item())
@@ -169,7 +180,7 @@ def _train_iwata_simple(arguments, data_lst, columns, target_id, connection,
     if not os.path.exists(dir_name):
         os.mkdir(dir_name)
     model_path = os.path.join(dir_name, model_name)
-    torch.save(model.state_dict(), model_path)
+    # torch.save(model.state_dict(), model_path)
 
 
     # Evaluate

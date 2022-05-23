@@ -2,7 +2,8 @@ from datetime import datetime
 
 companies_nn = [
     {"kind": "companyid", "value" : ['15594', '15521', '15554']},
-    {"kind": "companyid", "value" : ['15594']},
+    # {"kind": "companyid", "value" : ['15594']},
+
     # {"kind":"secondarycategory", "value":["bank"]},
     # {"kind":"companyid", "value":['15629', '15611', '15521', '48755', '6041']}
 ]
@@ -30,9 +31,11 @@ sentiment_col = {
 }
 
 columns_nn = [
-    ['close'],
-    # ["close", "volume"],
+    # ['close'],
     ["close", "open", "volume"],
+
+
+    # ["close", "volume"],
     # ["close", "open", "high", "low", "volume"],
 ]
 

@@ -88,6 +88,7 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
     informer_params.distil = distil 
     informer_params.d_layers = d_layers
     informer_params.e_layers = e_layers
+    informer_params.use_sentiment = str(arguments.use_sentiment)
 
     exp = Exp_Informer(informer_params)  # here we can change the parameters
     num_of_stocks = len(data)
@@ -111,7 +112,7 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
 
             # setting record of experiments
             args = informer_params
-            setting = "{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_at{}_fc{}_eb{}_dt{}_mx{}_{}".format(
+            setting = "{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_at{}_fc{}_eb{}_dt{}_mx{}_{}_{}".format(
                 name,
                 args.model,
                 args.data,
@@ -130,6 +131,7 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
                 args.distil,
                 args.mix,
                 args.des,
+                args.use_sentiment,
             )
 
             # train
@@ -219,11 +221,11 @@ def _train_informer(arguments, data, columns, seq_len=None, pred_len=None, epoch
         os.makedirs(folder_path)
 
     metrics_per_stock = np.array([mae_l, mse_l, rmse_l, mape_l, mspe_l, rs2_l])
-    np.save(folder_path + "metrics_per_stock.npy", metrics_per_stock)
-    np.save(
-        folder_path + "metrics_agg.npy",
-        np.mean(metrics_per_stock + [np.mean(rs2_intermed_l)], axis=1),
-    )
+    # np.save(folder_path + "metrics_per_stock.npy", metrics_per_stock)
+    # np.save(
+    #     folder_path + "metrics_agg.npy",
+    #     np.mean(metrics_per_stock + [np.mean(rs2_intermed_l)], axis=1),
+    # )
     print(">>>>> Done!")
     print(
         f"Metrics: MSE {np.mean(mse_l):.2f}, RMSE {np.mean(rmse_l):.2f}, MAE {np.mean(mae_l):.2f},\

@@ -224,10 +224,10 @@ def LSTM(
 def MAE(pred, true):
     return np.mean(np.abs(pred - true))
 
-def create_shifted_mean(data, stride):
-    result = []
-    iter = 0
-    for i in range(0, len(data)):
-        result[i+iter].append(data[i])
-        iter += stride
-    return [np.mean(x) for x in result]
+# def create_shifted_mean(data, stride):
+#     result = []
+#     iter = 0
+#     for i in range(0, len(data)):
+#         result[i+iter].append(data[i])
+#         iter += stride
+#     return [np.mean(x) for x in result]

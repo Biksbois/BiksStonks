@@ -24,6 +24,8 @@ class Iwata_simple(nn.Module):
                              nn.Linear(hidden_size, c_out))
 
    def forward(self, support_set, query_set):
+      #print("Inside forward (support_set)", support_set, torch.isnan(support_set).any())
+      #print("Inside forward (query_set)", query_set, torch.isnan(query_set).any())
       """
       Args: 
          support_set: (batch_size, seq_len, enc_in), batch_size = support_size
@@ -33,17 +35,30 @@ class Iwata_simple(nn.Module):
       assert query_set.shape[0] == 1
       # Encode support set
       support_set = support_set.permute(1, 0, 2)
+      #print("Inside forward (Encode Support set)", support_set, torch.isnan(support_set).any())
+
       support_enc_out, _ = self.support_encoder(support_set)
+      #print("Inside forward (support_enc_out)", support_enc_out, torch.isnan(support_set).any())
       # Encode query set
       query_set = query_set.permute(1, 0, 2)
+      #print("Inside forward (query_set)", query_set, torch.isnan(query_set).any())
+
       query_enc_out, (z, c) = self.query_encoder(query_set)
+      #print("Inside forward (query_enc_out)",query_enc_out, torch.isnan(query_enc_out).any())
       # Attention 
       # broadcast query_enc_out from 
       # (seq_len, 1, hidden_size) -> (seq_len, batch_size, hidden_size) 
-      query_enc_out = query_enc_out.repeat(1, support_set.shape[1], 1) 
+      query_enc_out = query_enc_out.repeat(1, support_set.shape[1], 1)
+      #print("Inside forward (query_enc_out)",query_enc_out, torch.isnan(query_enc_out).any())
       a = self.attention(query_enc_out, support_enc_out, support_enc_out)[0] 
+      #print("Inside forward (Attention)",a, torch.isnan(a).any())
       # sum over support set and time steps to get a as from paper 
-      a = a.sum(dim=(0,1)) 
+      #print("Inside forward (Attention)",a.shape)
+      #print("Inside forward (Attention)",a.dtype)
+      #print("Inside forward (Attention)",a.sum())
+      a = a.sum(dim=(0,1))
+      #print("Inside forward (Attention)",a)
       # a,z (64*2)        
       z = z.squeeze(0).squeeze(0) 
+      #print("Inside forward (Z)",z)
       return self.g(torch.cat((a, z))) 
