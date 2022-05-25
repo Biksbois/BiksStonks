@@ -17,9 +17,11 @@ import time
 
 
 def execute_informer(arguments, data_lst, from_date, to_date, data, connection):
-    for WS in [60, 120]:
+    # for WS in [60, 120]:
+    for WS in [60]:
         for OS in [1, 2, 10]:
-            for epoch in [10, 1, 30]:
+            # for epoch in [10, 1, 30]:
+            for epoch in [1, 10]:
                 start_time = time.time()
                 mae, mse, r_squared, parameters, forecasts = _train_informer(
                     arguments,

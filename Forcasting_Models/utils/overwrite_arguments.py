@@ -15,9 +15,10 @@ companies_stat = [
 ]
 
 granularities = [
-    {"horizon":"24 hours", "period": "24 hours", "initial":"72 hours", "gran":"1H"}, 
     {"horizon":"120 minutes", "period": "120 minutes", "initial":"360 minutes", "gran":"30T"}, 
-    {"horizon":"120 minutes", "period": "120 minutes", "initial":"360 minutes", "gran":"5T"}, 
+    {"horizon":"120 minutes", "period": "120 minutes", "initial":"360 minutes", "gran":"5T"},  
+    {"horizon":"24 hours", "period": "24 hours", "initial":"72 hours", "gran":"1H"}, 
+
     # {"horizon":"360 minutes", "period": "360 minutes", "initial":"400000 minutes", "gran":"15T"}, 
     # # {"horizon":"100 minutes", "period": "100 minutes", "initial":"5800 minutes", "gran":"45T"}, 
     # {"horizon":"84 hours", "period": "84 hours", "initial":"1440 hours", "gran":"12H"}, 
@@ -56,10 +57,10 @@ periods_nn = [
     # { "from_date" : "2015-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
     # { "from_date" : "2017-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
 
-    { "from_date" : "2017-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
-    { "from_date" : "2018-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
+    # { "from_date" : "2017-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
+    # { "from_date" : "2018-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
     { "from_date" : "2019-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
-    { "from_date" : "2020-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
+    # { "from_date" : "2020-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
 ]
 
 periods_stat = [
@@ -68,10 +69,10 @@ periods_stat = [
     # { "from_date" : "2016-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
     # { "from_date" : "2017-04-01 00:00:00", "to_date" : "2018-04-01 00:00:00"},
 
-    { "from_date" : "2017-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
-    { "from_date" : "2018-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
-    { "from_date" : "2019-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
     { "from_date" : "2020-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
+    { "from_date" : "2019-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
+    { "from_date" : "2018-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
+    { "from_date" : "2017-04-01 00:00:00", "to_date" : "2021-04-01 00:00:00"},
 ]
 
 def calculate_fb_arguments(arguments, gran, from_date, to_date):

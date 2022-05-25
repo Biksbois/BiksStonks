@@ -1,3 +1,4 @@
+from traceback import print_tb
 from torch.utils.data import Dataset
 import numpy as np
 import pandas as pd
@@ -5,7 +6,7 @@ import random
 import os 
 
 from utils_in.tools import StandardScaler
-from utils.DatasetAccess import get_sentiment
+from utils.DatasetAccess import get_sentiment, get_sentiments
 
 class IWATA_Classification_Sampler(Dataset):
     def __init__(self, root_path, seq_len, pred_len, num_samples, flag, 
@@ -154,10 +155,17 @@ class Iwata_Dataset_DB_Stock(Dataset):
         df = df.resample(sample_freq).agg(self.agg).dropna()
         df.reset_index(inplace=True)
         if use_sentiment:
-            df = df.merge(sentiment, how="left", on="date")
-            df = df.fillna(method="ffill")
-            df = df.fillna(1)
-            df.reset_index(inplace=True)
+            if isinstance(sentiment, list):
+                for sent in sentiment: # list of dfs for each cat?
+                    df = df.merge(sent, how="left", on="date")
+                    df = df.fillna(method="ffill")
+                    df = df.fillna(1)
+                df.reset_index(inplace=True)
+            else:
+                df = df.merge(sentiment, how="left", on="date")
+                df = df.fillna(method="ffill")
+                df = df.fillna(1)
+                df.reset_index(inplace=True)
 
         df = df.dropna()
         return df
@@ -187,9 +195,16 @@ class Iwata_Dataset_DB_Stock(Dataset):
         '''
         sentiment = None
         use_sentiment = False
-        if 'compound' in self.columns:
+        if 'compound' in self.columns: #  <----------------------------- here oh I see, hmm
             sentiment = get_sentiment(self.targetDF['date'].iloc[0],self.targetDF['date'].iloc[-1],conn, self.freq)
             use_sentiment = True
+            
+        elif 'Markedsberetninger' in self.columns: # read here all sentiment categories 
+            # assume it is always all categories  
+            sentiment = get_sentiments(str(self.targetDF['date'].iloc[0]),str(self.targetDF['date'].iloc[-1]),conn, 
+                                           self.freq, category=None)
+            use_sentiment = True                                    
+
         self.S_dfs = []
         self.Q_dfs = []
         for s_id in S_stock_meta.id:
