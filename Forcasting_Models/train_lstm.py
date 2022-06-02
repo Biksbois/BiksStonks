@@ -6,9 +6,9 @@ import torch.nn as nn
 import numpy as np
 import time
 def execute_lstm(arguments, data_lst, from_date, to_date, data, connection):
-    for WS in [60, 120]:
-        for OS in [1]: #2,10
-            for epoch in [1, 15, 30]:
+    for WS in [60]:
+        for OS in [2, 10]: #2,10
+            for epoch in [1, 15]:
                 start_time = time.time()
                 mae, mse, r_squared, parameters, forecasts = _train_lstma(
                     arguments.columns,
